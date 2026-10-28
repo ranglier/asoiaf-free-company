@@ -9,12 +9,18 @@
 
   <section class="afc-fields grid-2">
     {{#if (eq item.type "weapon")}}
-    <label>{{localize "AFC.Weapon.ability"}}<select name="system.ability">{{selectOptions abilities selected=system.ability localize=true}}</select></label>
-    <label>{{localize "AFC.Weapon.specialty"}}<input type="text" name="system.specialty" value="{{system.specialty}}"></label>
+    <label>{{localize "AFC.Weapon.ability"}}<select name="system.ability">{{selectOptions attackAbilities selected=system.ability localize=true}}</select></label>
+    <label>{{localize "AFC.Weapon.specialty"}}<input type="text" name="system.specialty" value="{{system.specialty}}" placeholder="{{localize "AFC.Weapon.specialtyHint"}}"></label>
+    <label>{{localize "AFC.Weapon.training"}}<input type="number" name="system.training" value="{{system.training}}" min="0"></label>
     <label>{{localize "AFC.Weapon.damageAbility"}}<select name="system.damageAbility">{{selectOptions abilities selected=system.damageAbility localize=true}}</select></label>
     <label>{{localize "AFC.Weapon.damageMod"}}<input type="number" name="system.damageMod" value="{{system.damageMod}}"></label>
     <label>{{localize "AFC.Weapon.defenseBonus"}}<input type="number" name="system.defenseBonus" value="{{system.defenseBonus}}"></label>
-    <label>{{localize "AFC.Weapon.qualities"}}<input type="text" name="system.qualities" value="{{system.qualities}}"></label>
+    <label>{{localize "AFC.Weapon.piercing"}}<input type="number" name="system.piercing" value="{{system.piercing}}" min="0"></label>
+    <label>{{localize "AFC.Armor.bulk"}}<input type="number" name="system.bulk" value="{{system.bulk}}" min="0"></label>
+    <label class="checkbox"><input type="checkbox" name="system.powerful" {{checked system.powerful}}> {{localize "AFC.Weapon.powerful"}}</label>
+    <label class="checkbox"><input type="checkbox" name="system.versatile" {{checked system.versatile}}> {{localize "AFC.Weapon.versatile"}}</label>
+    <label class="checkbox"><input type="checkbox" name="system.twoHanded" {{checked system.twoHanded}}> {{localize "AFC.Weapon.twoHanded"}}</label>
+    <label class="wide">{{localize "AFC.Weapon.qualities"}}<input type="text" name="system.qualities" value="{{system.qualities}}" placeholder="{{localize "AFC.Weapon.qualitiesHint"}}"></label>
     {{/if}}
 
     {{#if (eq item.type "armor")}}

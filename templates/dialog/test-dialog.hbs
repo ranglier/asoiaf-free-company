@@ -1,16 +1,23 @@
 <div class="afc-test-dialog">
-  <p>{{localize "AFC.Roll.Rank"}} : <strong>{{ability.rank}}</strong></p>
+  <p class="rank">{{localize "AFC.Roll.Rank"}} : <strong>{{ability.rank}}</strong></p>
   {{#if ability.specialties.length}}
   <label>{{localize "AFC.Sheet.Specialty"}}
     <select name="specialty">
       <option value="">—</option>
-      {{#each ability.specialties as |sp idx|}}<option value="{{idx}}">{{sp.name}} (+{{sp.bonus}}{{localize "AFC.Roll.BonusAbbr"}})</option>{{/each}}
+      {{#each ability.specialties as |sp idx|}}
+      <option value="{{idx}}" {{#if (eq idx @root.selectedSpecialty)}}selected{{/if}}>{{sp.name}} (+{{sp.bonus}}{{localize "AFC.Roll.BonusAbbr"}})</option>
+      {{/each}}
     </select>
   </label>
   {{/if}}
-  <label>{{localize "AFC.Roll.Bonus"}}<input type="number" name="bonus" value="0" min="0"></label>
-  <label>{{localize "AFC.Roll.Penalty"}}<input type="number" name="penalty" value="0" min="0"></label>
-  <label>{{localize "AFC.Roll.Modifier"}}<input type="number" name="modifier" value="0"></label>
+  <div class="row">
+    <label>{{localize "AFC.Roll.Bonus"}}<input type="number" name="bonus" value="0" min="0"></label>
+    <label>{{localize "AFC.Roll.Penalty"}}<input type="number" name="penalty" value="0" min="0"></label>
+    <label>{{localize "AFC.Roll.Modifier"}}<input type="number" name="modifier" value="0"></label>
+  </div>
+  {{#if auto.notes.length}}
+  <label class="checkbox"><input type="checkbox" name="auto" checked> {{localize "AFC.Roll.ApplyAuto"}} : {{#each auto.notes}}<span class="tag">{{this}}</span>{{/each}}</label>
+  {{/if}}
   <label>{{localize "AFC.Roll.Difficulty"}}
     <select name="difficulty">
       <option value="">{{localize "AFC.Roll.NoDifficulty"}}</option>

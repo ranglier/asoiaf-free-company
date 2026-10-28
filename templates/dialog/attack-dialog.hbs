@@ -1,0 +1,30 @@
+<div class="afc-test-dialog afc-attack-dialog">
+  <p class="rank">{{profile.abilityLabel}} <strong>{{profile.rank}}</strong>
+    {{#if profile.bonus}}+{{profile.bonus}}{{localize "AFC.Roll.BonusAbbr"}}{{/if}}
+    {{#if profile.penalty}}−{{profile.penalty}}D{{/if}}
+    · {{localize "AFC.Attack.BaseDamage"}} <strong>{{profile.damage}}</strong></p>
+
+  <div class="target">
+    {{#if target}}<img src="{{target.img}}" alt=""> {{target.name}}{{else}}{{localize "AFC.Attack.NoTarget"}}{{/if}}
+    <label>{{localize "AFC.Attack.Defense"}}<input type="number" name="defense" value="{{defense}}"></label>
+  </div>
+
+  <fieldset class="options">
+    {{#each options as |o key|}}
+    <label class="checkbox"><input type="checkbox" name="opt-{{key}}"> {{localize o.label}}</label>
+    {{/each}}
+  </fieldset>
+
+  <div class="row">
+    <label>{{localize "AFC.Attack.Cover.label"}}<select name="cover">{{selectOptions cover localize=true}}</select></label>
+    <label>{{localize "AFC.Attack.Visibility.label"}}<select name="visibility">{{selectOptions visibility localize=true}}</select></label>
+  </div>
+  <div class="row">
+    <label>{{localize "AFC.Roll.Bonus"}}<input type="number" name="bonus" value="0" min="0"></label>
+    <label>{{localize "AFC.Roll.Penalty"}}<input type="number" name="penalty" value="0" min="0"></label>
+    <label>{{localize "AFC.Roll.Modifier"}}<input type="number" name="modifier" value="0"></label>
+  </div>
+  {{#if auto.notes.length}}
+  <label class="checkbox"><input type="checkbox" name="auto" checked> {{localize "AFC.Roll.ApplyAuto"}} : {{#each auto.notes}}<span class="tag">{{this}}</span>{{/each}}</label>
+  {{/if}}
+</div>

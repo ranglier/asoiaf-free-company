@@ -1,62 +1,224 @@
-/* ASOIAF Free Company : styles de base (mise en forme provisoire, le design viendra ensuite). */
+/* ASOIAF Free Company : thème « parchemin et sceaux ».
+   Polices (licence OFL) : Grenze Gotisch (noms, onglets), MedievalSharp (libellés), Cormorant Garamond (texte). */
+@import url("https://fonts.googleapis.com/css2?family=Grenze+Gotisch:wght@500;600&family=MedievalSharp&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&display=swap");
 
-.afc.sheet .window-content { padding: 0.5rem; }
-.afc-sheet { display: flex; flex-direction: column; gap: 0.75rem; }
-.afc-sheet h2 { display: flex; align-items: center; gap: 0.5rem; margin: 0 0 0.25rem; font-size: 1.1em; border-bottom: 1px solid var(--color-border, #999); }
-.afc-sheet label { display: flex; flex-direction: column; font-size: 0.85em; gap: 2px; }
-.afc-sheet button.icon { flex: 0 0 auto; width: auto; padding: 0 0.35rem; line-height: 1.5; }
-.afc-sheet button.icon.active { color: var(--color-text-hyperlink, #c9593f); }
+:root {
+  --afc-paper: #e9dcc0;
+  --afc-paper-light: #f3ead6;
+  --afc-ink: #3b2a1a;
+  --afc-ink-soft: #6b5236;
+  --afc-border: #7a5a36;
+  --afc-line: #b79b70;
+  --afc-wax: #8e1b1b;
+  --afc-wax-text: #f3ead6;
+  --afc-success: #2f5d1e;
+  --afc-font-title: "Grenze Gotisch", serif;
+  --afc-font-label: "MedievalSharp", serif;
+  --afc-font-body: "Cormorant Garamond", serif;
+}
 
-.afc-header { display: flex; gap: 0.75rem; }
-.afc-header .portrait { width: 100px; height: 100px; object-fit: cover; border: none; cursor: pointer; }
-.afc-header .portrait.small { width: 64px; height: 64px; }
-.afc-header .identity { flex: 1; display: flex; flex-direction: column; gap: 0.35rem; }
-.afc-header .name { font-size: 1.6em; height: auto; }
+/* ---------- Fenêtres (fiches et dialogues) ---------- */
+.afc.sheet .window-content,
+.afc.afc-dialog .window-content {
+  background: var(--afc-paper);
+  color: var(--afc-ink);
+  font-family: var(--afc-font-body);
+  font-size: 18px;
+  font-weight: 500;
+  padding: 0.6rem 0.8rem;
+}
+.afc.sheet .window-header,
+.afc.afc-dialog .window-header { background: var(--afc-border); color: var(--afc-wax-text); font-family: var(--afc-font-label); }
+.afc.sheet { border: 2px solid var(--afc-border); }
 
-.grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.4rem 0.75rem; }
-.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.4rem 0.75rem; }
-.grid-2 .wide { grid-column: 1 / -1; }
+.afc input, .afc select, .afc textarea {
+  background: rgba(243, 234, 214, 0.75);
+  color: var(--afc-ink);
+  border: 1px solid var(--afc-line);
+  font-family: var(--afc-font-body);
+  font-weight: 600;
+}
+.afc input:focus, .afc select:focus { box-shadow: 0 0 0 1px var(--afc-wax); outline: none; }
+.afc label { display: flex; flex-direction: column; gap: 2px; font-family: var(--afc-font-label); font-size: 15px; color: var(--afc-ink-soft); }
+.afc label.checkbox, .afc label.inline { flex-direction: row; align-items: center; gap: 6px; }
+.afc h1, .afc h2, .afc h3 { color: var(--afc-ink); border: none; }
+.afc h2 { font-family: var(--afc-font-label); font-size: 20px; border-bottom: 1px solid var(--afc-line); margin: 0.6rem 0 0.3rem; display: flex; align-items: center; gap: 0.5rem; }
+.afc a { color: var(--afc-ink); }
+.afc a:hover { color: var(--afc-wax); text-shadow: none; }
+.afc a.icon { flex: none; padding: 0 0.3rem; cursor: pointer; }
+.afc a.icon.active, .afc .icon.active { color: var(--afc-wax); }
+.afc .hint { font-size: 16px; color: var(--afc-ink-soft); font-style: italic; }
+.afc .tag { font-family: var(--afc-font-body); font-size: 15px; border: 1px solid var(--afc-line); border-radius: 3px; padding: 0 0.35rem; background: var(--afc-paper-light); }
+/* Boutons du contenu uniquement : ne pas toucher aux boutons d'en-tête (icônes Font Awesome). */
+.afc .window-content button:not([class*="fa-"]) { font-family: var(--afc-font-label); background: var(--afc-paper-light); color: var(--afc-ink); border: 1px solid var(--afc-border); }
+.afc .window-content button:not([class*="fa-"]):hover { background: var(--afc-wax); color: var(--afc-wax-text); }
+.afc .window-header .header-control { color: var(--afc-wax-text); background: transparent; border: none; font-size: 15px; }
 
-.afc-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
-.afc-stats .stat { display: flex; flex-direction: column; align-items: center; padding: 0.35rem; border: 1px solid var(--color-border, #999); border-radius: 4px; }
-.afc-stats .label { font-size: 0.8em; text-transform: uppercase; opacity: 0.8; }
-.afc-stats .value { font-size: 1.4em; font-weight: bold; display: flex; align-items: center; gap: 0.25rem; }
-.afc-stats .value input { width: 3em; text-align: center; }
-.afc-stats .hint { font-size: 0.8em; opacity: 0.8; }
+.afc .grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.4rem 0.75rem; }
+.afc .grid-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.4rem 0.75rem; }
+.afc .grid-2 .wide { grid-column: 1 / -1; }
 
-.afc-abilities .ability-list { list-style: none; margin: 0; padding: 0; columns: 2; column-gap: 1rem; }
-.afc-abilities .ability { break-inside: avoid; margin-bottom: 0.2rem; }
-.afc-abilities .ability-row { display: flex; align-items: center; gap: 0.35rem; }
-.afc-abilities .ability-roll { flex: 1; text-align: left; justify-content: flex-start; }
-.afc-abilities .rank { width: 3em; text-align: center; font-weight: bold; }
-.afc-abilities .specialties { list-style: none; margin: 0 0 0 1.5rem; padding: 0; }
-.afc-abilities .specialties li { display: flex; align-items: center; gap: 0.25rem; }
-.afc-abilities .specialties .bonus { width: 2.5em; text-align: center; }
+/* ---------- Pastilles ---------- */
+.afc .pips { display: inline-flex; gap: 3px; align-items: center; flex-wrap: wrap; }
+.afc .pip { display: inline-block; width: 14px; height: 14px; border-radius: 50%; border: 1px solid var(--afc-ink); background: transparent; }
+.afc .pip.on { background: var(--afc-ink); }
+.afc a.pip { cursor: pointer; }
+.afc .pip.seal { width: 18px; height: 18px; border-color: var(--afc-wax); }
+.afc .pip.seal.on { background: var(--afc-wax); box-shadow: inset 0 0 0 2px rgba(243, 234, 214, 0.35); }
 
-.afc-resources .resource-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 0.5rem; }
-.afc-resources .resource input { font-size: 1.3em; text-align: center; }
+/* ---------- Fiche de personnage ---------- */
+.afc-sheet { display: flex; flex-direction: column; gap: 0.6rem; height: 100%; }
+.afc-header { display: flex; gap: 0.8rem; align-items: center; border-bottom: 2px solid var(--afc-border); padding-bottom: 0.5rem; }
+.afc-header .portrait { width: 84px; height: 84px; object-fit: cover; border: 2px solid var(--afc-border); border-radius: 50%; cursor: pointer; flex: none; background: var(--afc-ink-soft); }
+.afc-header .identity { flex: 1; display: flex; flex-direction: column; gap: 0.2rem; min-width: 0; }
+.afc-header h1.name, .afc-header input.name { font-family: var(--afc-font-title); font-size: 40px; line-height: 1; margin: 0; height: auto; font-weight: 500; }
+.afc-header input.name { font-size: 28px; }
+.afc-header .subtitle { margin: 0; font-style: italic; font-size: 20px; }
+.afc-header .motto { margin: 0; font-family: var(--afc-font-label); font-size: 16px; color: var(--afc-wax); }
+.afc-header .header-side { display: flex; flex-direction: column; align-items: flex-end; gap: 0.4rem; }
+.afc-header .destiny { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
+.afc-header .destiny .label { font-family: var(--afc-font-label); font-size: 15px; }
+.afc-header .destiny input { width: 3em; }
+.afc-header .mode-toggle { font-size: 22px; cursor: pointer; }
 
-.afc-items ul { list-style: none; margin: 0; padding: 0; }
-.afc-items li { display: flex; align-items: center; gap: 0.4rem; padding: 2px 0; }
-.afc-items li img { width: 24px; height: 24px; border: none; }
-.afc-items li a { flex: 1; }
-.afc-items .tag { font-size: 0.8em; padding: 0 0.3rem; border: 1px solid var(--color-border, #999); border-radius: 3px; }
+.afc-vitals { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 0.4rem; }
+.afc-vitals .vital { background: var(--afc-paper-light); border: 1px solid var(--afc-line); border-radius: 5px; padding: 0.3rem 0.45rem; display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.afc-vitals .label { font-family: var(--afc-font-label); font-size: 15px; color: var(--afc-ink-soft); }
+.afc-vitals .value { font-size: 24px; font-weight: 600; display: flex; align-items: center; gap: 0.25rem; }
+.afc-vitals .value input { width: 2.4em; text-align: center; font-size: 21px; padding: 0; height: 1.5em; }
+.afc-vitals .big .value { font-size: 30px; }
+.afc-vitals .hint { font-size: 15px; }
+.afc-vitals .bar { height: 8px; background: rgba(59, 42, 26, 0.15); border-radius: 3px; overflow: hidden; }
+.afc-vitals .bar > div { height: 100%; background: var(--afc-wax); }
 
-.afc-create { align-self: flex-start; }
-.afc-notes prose-mirror { min-height: 150px; }
+.afc .sheet-tabs { display: flex; gap: 1.2rem; border-bottom: 1px solid var(--afc-border); padding: 0 0.2rem; }
+.afc .sheet-tabs a { font-family: var(--afc-font-title); font-size: 23px; padding: 0 0 2px; color: var(--afc-ink-soft); border-bottom: 2px solid transparent; }
+.afc .sheet-tabs a.active { color: var(--afc-wax); border-bottom-color: var(--afc-wax); text-shadow: none; }
+.afc .tab-body { flex: 1; overflow-y: auto; padding-right: 0.3rem; }
+.afc .tab-body .tab:not(.active) { display: none; }
 
-/* Carte de chat des tests */
-.afc-test-card header { display: flex; justify-content: space-between; align-items: baseline; }
-.afc-test-card h3 { margin: 0; border: none; }
-.afc-test-card .pool { font-size: 0.85em; opacity: 0.8; }
-.afc-test-card .dice { display: flex; flex-wrap: wrap; gap: 4px; list-style: none; margin: 0.4rem 0; padding: 0; }
-.afc-test-card .die { width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; border: 1px solid currentColor; border-radius: 4px; font-weight: bold; }
-.afc-test-card .die.d6 { background: rgba(201, 89, 63, 0.2); }
-.afc-test-card .die.dropped { opacity: 0.35; text-decoration: line-through; }
-.afc-test-card .total { font-size: 2em; font-weight: bold; text-align: center; }
-.afc-test-card .outcome { text-align: center; font-weight: bold; display: flex; flex-direction: column; }
-.afc-test-card .outcome small { font-weight: normal; opacity: 0.8; }
-.afc-test-card.success .outcome { color: #2e7d32; }
-.afc-test-card.failure .outcome { color: #b71c1c; }
+/* Capacités en tuiles */
+/* Ordre alphabétique lu en colonnes (de haut en bas, puis colonne suivante). */
+.afc-abilities { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); grid-template-rows: repeat(5, auto); grid-auto-flow: column; gap: 0.45rem; }
+.afc-abilities .ability { background: var(--afc-paper-light); border: 1px solid var(--afc-line); border-radius: 5px; padding: 0.4rem 0.55rem; display: flex; flex-direction: column; gap: 5px; }
+.edit-mode .afc-abilities { grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-rows: repeat(7, auto); }
+.npc .afc-abilities { grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-rows: repeat(7, auto); }
+.afc-abilities .ability.default { opacity: 0.62; }
+.afc-abilities .ability.default:hover { opacity: 1; }
+.afc-abilities .ability-head { display: flex; align-items: center; gap: 0.3rem; }
+.afc-abilities .ability-name { flex: 1; font-family: var(--afc-font-label); font-size: 18px; cursor: pointer; }
+.afc-abilities .ability-name i { font-size: 14px; color: var(--afc-ink-soft); }
+.afc-abilities .rank-value { font-size: 28px; line-height: 1; font-weight: 600; }
+.afc-abilities input.rank { width: 2.6em; text-align: center; }
+.afc-abilities .specialties { display: flex; flex-wrap: wrap; gap: 3px; }
+.afc-abilities .chip { font-size: 16px; background: var(--afc-wax); color: var(--afc-wax-text); border-radius: 3px; padding: 0 0.35rem; cursor: pointer; }
+.afc-abilities .chip:hover { color: #fff; filter: brightness(1.15); }
+.afc-abilities .specialty-edit { display: flex; align-items: center; gap: 3px; width: 100%; }
+.afc-abilities .specialty-edit input[type=text] { flex: 1; min-width: 0; }
+.afc-abilities .specialty-edit .bonus { width: 2.4em; text-align: center; }
+.afc .footer-hint { margin-top: 0.6rem; }
 
-.afc-test-dialog { display: flex; flex-direction: column; gap: 0.4rem; }
+/* Combat */
+.afc table.afc-table thead tr, .afc table.afc-table tbody tr { background: transparent; }
+.afc table.afc-table thead { background: transparent; text-shadow: none; }
+.afc table.afc-table { width: 100%; border-collapse: collapse; background: var(--afc-paper-light); border: 1px solid var(--afc-line); margin: 0.3rem 0; }
+.afc table.afc-table th { font-family: var(--afc-font-label); font-weight: normal; font-size: 15px; color: var(--afc-ink-soft); text-align: left; padding: 0.3rem 0.4rem; border-bottom: 2px solid var(--afc-border); background: transparent; }
+.afc table.afc-table td { padding: 0.35rem 0.4rem; border-bottom: 1px dotted var(--afc-line); vertical-align: middle; font-size: 18px; }
+.afc table.afc-table tr:last-child td { border-bottom: none; }
+.afc table.afc-table tr.unequipped td:not(.col-equip) { opacity: 0.55; }
+.afc table.afc-table .center { text-align: center; }
+.afc table.afc-table .col-equip { width: 3.2em; text-align: center; }
+.afc table.afc-table .col-equip input { width: 20px; height: 20px; margin: 0; accent-color: var(--afc-wax); cursor: pointer; }
+.afc table.afc-table .item-name { display: flex; align-items: center; gap: 0.45rem; }
+.afc table.afc-table .item-name img { width: 34px; height: 34px; border: none; flex: none; }
+.afc table.afc-table .item-name a { font-family: var(--afc-font-label); font-size: 18px; }
+.afc table.afc-table .sub { display: block; font-size: 14px; font-style: italic; color: var(--afc-ink-soft); }
+.afc table.afc-table .big-num { font-size: 24px; font-weight: 600; }
+.afc .grip-switch { display: inline-flex; border: 1px solid var(--afc-border); border-radius: 5px; overflow: hidden; }
+.afc .grip-switch a { padding: 0.15rem 0.5rem; font-family: var(--afc-font-label); font-size: 15px; white-space: nowrap; }
+.afc .grip-switch a.on { background: var(--afc-ink); color: var(--afc-wax-text); }
+.afc .grip-switch a.on:hover { color: var(--afc-wax-text); }
+.afc .grip-fixed { font-size: 15px; color: var(--afc-ink-soft); }
+.afc .window-content button.attack { width: auto; white-space: nowrap; font-size: 17px; padding: 0.2rem 0.7rem; background: var(--afc-wax); color: var(--afc-wax-text); border-color: var(--afc-wax); }
+.afc .window-content button.attack i { font-size: 18px; margin-right: 0.2rem; }
+.afc .add-item { display: inline-block; margin-top: 0.4rem; font-family: var(--afc-font-label); font-size: 17px; cursor: pointer; }
+.afc .combat-ref { display: flex; gap: 1.5rem; margin-top: 0.8rem; font-size: 17px; color: var(--afc-ink-soft); }
+.afc .item-actions { white-space: nowrap; text-align: right; }
+.afc .item-actions a.icon { font-size: 17px; }
+
+/* Listes d'objets */
+.afc .item-list { list-style: none; margin: 0; padding: 0; }
+.afc .item-list li { display: flex; align-items: center; gap: 0.4rem; padding: 3px 0; border-bottom: 1px dotted var(--afc-line); }
+.afc .item-list li img { width: 26px; height: 26px; border: none; }
+.afc .item-list li > a:not(.icon) { flex: 1; }
+.afc .item-list .summary { font-style: italic; font-size: 14px; color: var(--afc-ink-soft); }
+
+.afc prose-mirror { min-height: 200px; background: rgba(243, 234, 214, 0.5); border: 1px solid var(--afc-line); }
+.afc prose-mirror .toggle { opacity: 1; color: var(--afc-ink); }
+
+/* ---------- Anciennes fiches (PNJ, Maison, Compagnie, objets) ---------- */
+.afc .afc-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.5rem; }
+.afc .afc-stats .stat { display: flex; flex-direction: column; align-items: center; padding: 0.35rem; background: var(--afc-paper-light); border: 1px solid var(--afc-line); border-radius: 5px; }
+.afc .afc-stats .label { font-family: var(--afc-font-label); font-size: 12px; color: var(--afc-ink-soft); }
+.afc .afc-stats .value { font-size: 20px; font-weight: 600; display: flex; align-items: center; gap: 0.25rem; }
+.afc .afc-stats .value input { width: 3em; text-align: center; }
+.afc .afc-resources .resource-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 0.5rem; }
+.afc .afc-resources .resource input { font-size: 1.3em; text-align: center; }
+.afc .afc-items ul { list-style: none; margin: 0; padding: 0; }
+.afc .afc-items li { display: flex; align-items: center; gap: 0.4rem; padding: 2px 0; }
+.afc .afc-items li img { width: 24px; height: 24px; border: none; }
+.afc .afc-items li a { flex: 1; }
+.afc .afc-create { align-self: flex-start; width: auto; }
+.afc .afc-header .portrait.small { width: 64px; height: 64px; border-radius: 6px; }
+.afc .afc-header .type { font-family: var(--afc-font-label); color: var(--afc-ink-soft); }
+.afc .afc-fields .derived { font-style: italic; }
+
+/* ---------- Dialogues ---------- */
+.afc-test-dialog { display: flex; flex-direction: column; gap: 0.45rem; }
+.afc-test-dialog .rank { margin: 0; font-size: 17px; }
+.afc-test-dialog .row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.4rem; }
+.afc-attack-dialog .row:first-of-type { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.afc-test-dialog .target { display: flex; align-items: center; gap: 0.5rem; font-size: 16px; }
+.afc-test-dialog .target img { width: 32px; height: 32px; border: none; }
+.afc-test-dialog .target label { margin-left: auto; width: 6em; }
+.afc-test-dialog fieldset.options { border: 1px solid var(--afc-line); display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.2rem 0.6rem; }
+.afc-test-dialog .tag { margin-left: 3px; }
+
+/* ---------- Cartes de chat ---------- */
+.afc-card { background: var(--afc-paper); color: var(--afc-ink); border: 1px solid var(--afc-border); border-radius: 5px; padding: 0.45rem 0.55rem; font-family: var(--afc-font-body); font-weight: 500; font-size: 15px; display: flex; flex-direction: column; gap: 0.4rem; }
+.afc-card header { display: flex; flex-direction: column; border-bottom: 1px solid var(--afc-line); padding-bottom: 0.25rem; }
+.afc-card h3 { margin: 0; font-family: var(--afc-font-title); font-size: 23px; font-weight: 500; line-height: 1.05; color: var(--afc-ink); border: none; }
+.afc-card .subtitle { font-style: italic; font-size: 15px; color: var(--afc-ink-soft); }
+
+/* Résultat : total à gauche, verdict à droite */
+.afc-card .result { display: flex; align-items: center; gap: 0.6rem; }
+.afc-card .total { font-family: var(--font-primary, "Signika", sans-serif); font-variant-numeric: lining-nums tabular-nums; min-width: 2.2em; font-size: 34px; font-weight: 600; line-height: 1; text-align: center; padding: 0.15rem 0.3rem; border: 2px solid var(--afc-ink); border-radius: 6px; background: var(--afc-paper-light); }
+.afc-card .verdict { display: flex; align-items: center; gap: 0.45rem; flex: 1; min-width: 0; }
+.afc-card .verdict strong { display: block; font-family: var(--afc-font-label); font-weight: normal; font-size: 17px; line-height: 1.15; }
+.afc-card .verdict small { display: block; font-size: 14px; color: var(--afc-ink-soft); }
+.afc-card.success .verdict strong { color: var(--afc-success); }
+.afc-card.failure .verdict strong { color: var(--afc-wax); }
+
+/* Chiffres centrés : police à chiffres alignés (celle de Foundry) et boîtes en flex */
+.afc-card .seal, .afc-card .die, .afc-card .total, .afc-card .damage-box .value { font-family: var(--font-primary, "Signika", sans-serif); font-variant-numeric: lining-nums tabular-nums; line-height: 1; }
+.afc-card .seal { width: 34px; height: 34px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; background: var(--afc-wax); color: var(--afc-wax-text); font-size: 18px; font-weight: 600; flex: none; box-shadow: inset 0 0 0 2px rgba(243, 234, 214, 0.35); }
+.afc-card.failure .seal { background: var(--afc-ink-soft); }
+.afc-card .dice { display: flex; flex-wrap: wrap; gap: 4px; list-style: none; margin: 0; padding: 0; justify-content: center; }
+.afc-card .die { width: 26px; height: 26px; display: inline-flex; align-items: center; justify-content: center; border: 1px solid var(--afc-ink); border-radius: 4px; font-size: 15px; font-weight: 600; background: var(--afc-paper-light); }
+.afc-card .die.d6 { background: var(--afc-wax); color: var(--afc-wax-text); border-color: var(--afc-wax); }
+.afc-card .die.dropped { opacity: 0.35; text-decoration: line-through; background: transparent; color: var(--afc-ink); border-color: var(--afc-ink); }
+
+/* Dégâts */
+.afc-card .damage-box { display: grid; grid-template-columns: auto 1fr; grid-template-rows: auto auto; column-gap: 0.6rem; align-items: center; padding: 0.3rem 0.5rem; border: 1px solid var(--afc-wax); border-radius: 5px; background: var(--afc-paper-light); }
+.afc-card .damage-box .label { grid-row: 1 / 3; font-family: var(--afc-font-label); font-size: 16px; }
+.afc-card .damage-box .value { font-size: 28px; font-weight: 600; color: var(--afc-wax); line-height: 1; text-align: right; }
+.afc-card .damage-box small { font-size: 13px; color: var(--afc-ink-soft); text-align: right; }
+.afc-card button { margin: 0; font-family: var(--afc-font-label); font-size: 16px; background: var(--afc-wax); color: var(--afc-wax-text); border: 1px solid var(--afc-wax); }
+
+/* Détails en pied de carte */
+.afc-card footer { display: flex; flex-wrap: wrap; align-items: center; gap: 3px 4px; border-top: 1px dotted var(--afc-line); padding-top: 0.25rem; font-size: 13px; color: var(--afc-ink-soft); }
+.afc-card footer .pool { font-weight: 600; margin-right: 0.2rem; }
+.afc-card .tag { font-size: 12px; border: 1px solid var(--afc-line); border-radius: 3px; padding: 0 0.3rem; background: var(--afc-paper-light); }
+.afc-card footer .qualities { width: 100%; font-style: italic; }
+.afc-card .hint { margin: 0; font-size: 13px; font-style: italic; color: var(--afc-ink-soft); }
+.afc-card.damage p { margin: 0.1rem 0; }

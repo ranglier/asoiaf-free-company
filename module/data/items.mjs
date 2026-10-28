@@ -1,4 +1,4 @@
-import { ABILITIES, SERVICE_SIZES, UNIT_CLASSES, UNIT_TRAININGS } from "../config.mjs";
+import { ABILITIES, ATTACK_ABILITIES, SERVICE_SIZES, UNIT_CLASSES, UNIT_TRAININGS } from "../config.mjs";
 
 const { fields } = foundry.data;
 
@@ -8,12 +8,21 @@ const int = (initial = 0, opts = {}) => new fields.NumberField({ required: true,
 export class WeaponData extends foundry.abstract.TypeDataModel {
   static defineSchema() {
     return {
-      ability: new fields.StringField({ initial: "fighting", choices: Object.keys(ABILITIES) }),
+      ability: new fields.StringField({ initial: "fighting", choices: ATTACK_ABILITIES }),
       specialty: new fields.StringField({ blank: true }),
+      training: int(0, { min: 0 }),
       damageAbility: new fields.StringField({ initial: "athletics", choices: Object.keys(ABILITIES) }),
       damageMod: int(0),
       defenseBonus: int(0),
+      // Qualités calculées automatiquement.
+      piercing: int(0, { min: 0 }),
+      powerful: new fields.BooleanField({ initial: false }),
+      versatile: new fields.BooleanField({ initial: false }),
+      twoHanded: new fields.BooleanField({ initial: false }),
+      bulk: int(0, { min: 0 }),
+      // Autres qualités, affichées dans la carte d'attaque.
       qualities: new fields.StringField({ blank: true }),
+      grip: new fields.StringField({ initial: "one", choices: ["one", "two"] }),
       equipped: new fields.BooleanField({ initial: false }),
       description: description()
     };

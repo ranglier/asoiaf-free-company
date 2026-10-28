@@ -6,7 +6,7 @@ const { ItemSheetV2 } = foundry.applications.sheets;
 /** Fiche d'objet unique : les champs affichés dépendent du type. */
 export class AFCItemSheet extends HandlebarsApplicationMixin(ItemSheetV2) {
   static DEFAULT_OPTIONS = {
-    classes: ["afc", "sheet", "item"],
+    classes: ["afc", "sheet", "item", "parchment-window"],
     position: { width: 520, height: 560 },
     window: { resizable: true },
     form: { submitOnChange: true }
@@ -26,6 +26,7 @@ export class AFCItemSheet extends HandlebarsApplicationMixin(ItemSheetV2) {
       system: item.system,
       editable: this.isEditable,
       abilities: localized(CONFIG_AFC.ABILITIES),
+      attackAbilities: Object.fromEntries(CONFIG_AFC.ATTACK_ABILITIES.map(k => [k, CONFIG_AFC.ABILITIES[k].label])),
       serviceSizes: localized(CONFIG_AFC.SERVICE_SIZES),
       unitTrainings: localized(CONFIG_AFC.UNIT_TRAININGS),
       qualityKinds: { benefit: "AFC.Quality.benefit", drawback: "AFC.Quality.drawback" },

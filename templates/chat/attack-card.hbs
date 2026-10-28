@@ -1,0 +1,38 @@
+<div class="afc-card attack {{#if outcome}}{{#if outcome.success}}success{{else}}failure{{/if}}{{/if}}">
+  <header>
+    <h3>{{weapon.name}}</h3>
+    <span class="subtitle">{{profile.abilityLabel}}{{#if target}} · {{localize "AFC.Attack.Versus"}} {{target.name}}{{/if}}</span>
+  </header>
+
+  <div class="result">
+    <div class="total">{{total}}</div>
+    {{#if outcome}}
+    <div class="verdict">
+      <span class="seal">{{#if outcome.success}}{{outcome.degrees}}{{else}}<i class="fa-solid fa-xmark"></i>{{/if}}</span>
+      <div><strong>{{verdict.title}}</strong><small>{{#if verdict.detail}}{{verdict.detail}} · {{/if}}{{localize "AFC.Attack.Defense"}} {{defense}}</small></div>
+    </div>
+    {{/if}}
+  </div>
+
+  <ol class="dice">
+    {{#each dice as |d|}}<li class="die d{{d.value}} {{#unless d.kept}}dropped{{/unless}}">{{d.value}}</li>{{/each}}
+  </ol>
+
+  {{#if damage}}
+  <div class="damage-box">
+    <span class="label">{{localize "AFC.Attack.Damage"}}</span>
+    <span class="value">{{damage.final}}</span>
+    <small>{{damage.base}} × {{damage.degrees}}{{#if damage.armor}} − {{damage.armor}} {{localize "AFC.Attack.ArmorAbbr"}}{{/if}}</small>
+  </div>
+  {{#if (and target damage.final)}}
+  <button type="button" data-afc-action="resolve-damage"><i class="fa-solid fa-droplet"></i> {{localize "AFC.Damage.Resolve"}}</button>
+  {{/if}}
+  {{/if}}
+  {{#if selfDefense}}<p class="hint">{{localize "AFC.Attack.SelfDefense"}} {{numberFormat selfDefense sign=true}}</p>{{/if}}
+
+  <footer>
+    <span class="pool">{{rank}}D{{#if bonus}} +{{bonus}}B{{/if}}{{#if penalty}} −{{penalty}}D{{/if}}{{#if modifier}} {{numberFormat modifier sign=true}}{{/if}}</span>
+    {{#each notes}}<span class="tag">{{this}}</span>{{/each}}
+    {{#if qualities}}<span class="qualities">{{qualities}}</span>{{/if}}
+  </footer>
+</div>

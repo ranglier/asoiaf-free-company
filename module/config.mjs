@@ -29,6 +29,31 @@ export const ABILITIES = {
 /** Rang par défaut d'une capacité. */
 export const DEFAULT_RANK = 2;
 
+/** Capacités utilisables pour attaquer. */
+export const ATTACK_ABILITIES = ["fighting", "marksmanship"];
+
+/** Spécialités reconnues par nom (fr et en) pour les calculs automatiques. */
+export const SPECIALTY_NAMES = {
+  strength: ["force", "strength"],
+  run: ["course", "run"]
+};
+
+/** Options du dialogue d'attaque : dés de test, dés bonus, dégâts de base. */
+export const ATTACK_OPTIONS = {
+  aim: { label: "AFC.Attack.Option.aim", bonus: 1 },
+  charge: { label: "AFC.Attack.Option.charge", dice: -1, damage: 2 },
+  cautious: { label: "AFC.Attack.Option.cautious", dice: -1 },
+  reckless: { label: "AFC.Attack.Option.reckless", dice: 1 },
+  surprise: { label: "AFC.Attack.Option.surprise", dice: 1 },
+  helpless: { label: "AFC.Attack.Option.helpless", dice: 1 }
+};
+
+/** Couverture de la cible : bonus à sa Défense de combat. */
+export const COVER = { 0: "AFC.Attack.Cover.none", 5: "AFC.Attack.Cover.partial", 10: "AFC.Attack.Cover.full" };
+
+/** Visibilité : dés de malus. */
+export const VISIBILITY = { 0: "AFC.Attack.Visibility.clear", 1: "AFC.Attack.Visibility.dim", 2: "AFC.Attack.Visibility.dark" };
+
 /** Difficultés des tests (valeur cible). */
 export const DIFFICULTIES = {
   0: "AFC.Difficulty.automatic",

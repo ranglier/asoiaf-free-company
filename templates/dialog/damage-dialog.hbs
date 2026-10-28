@@ -1,0 +1,8 @@
+<div class="afc-test-dialog afc-damage-dialog">
+  <p>{{localize "AFC.Damage.Incoming"}} : <strong>{{damage}}</strong> · {{localize "AFC.Ability.endurance"}} {{endurance}}</p>
+  <label>{{localize "AFC.Damage.InjuriesLabel"}} ({{localize "AFC.Damage.InjuryRule" n=endurance}})
+    <input type="number" name="injuries" value="0" min="0" max="{{maxInjuries}}" {{#unless injuriesLeft}}disabled{{/unless}}>
+  </label>
+  <label class="checkbox"><input type="checkbox" name="wound" {{#unless woundsLeft}}disabled{{/unless}}> {{localize "AFC.Damage.WoundLabel"}}</label>
+  <p class="hint">{{localize "AFC.Damage.Hint"}}</p>
+</div>

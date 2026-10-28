@@ -1,16 +1,25 @@
-<div class="afc-test-card {{#if outcome}}{{#if outcome.success}}success{{else}}failure{{/if}}{{/if}}">
+<div class="afc-card {{#if outcome}}{{#if outcome.success}}success{{else}}failure{{/if}}{{/if}}">
   <header>
-    <h3>{{label}}{{#if specialty}} <small>({{specialty}})</small>{{/if}}</h3>
-    <span class="pool">{{rank}}d6{{#if bonus}} +{{bonus}}{{localize "AFC.Roll.BonusAbbr"}}{{/if}}{{#if penalty}} −{{penalty}}{{localize "AFC.Roll.PenaltyAbbr"}}{{/if}}{{#if modifier}} {{numberFormat modifier sign=true}}{{/if}}</span>
+    <h3>{{label}}</h3>
+    {{#if specialty}}<span class="subtitle">{{specialty}}</span>{{/if}}
   </header>
+
+  <div class="result">
+    <div class="total">{{total}}</div>
+    {{#if outcome}}
+    <div class="verdict">
+      <span class="seal">{{#if outcome.success}}{{outcome.degrees}}{{else}}<i class="fa-solid fa-xmark"></i>{{/if}}</span>
+      <div><strong>{{verdict.title}}</strong><small>{{#if verdict.detail}}{{verdict.detail}} · {{/if}}{{localize "AFC.Roll.Against"}} {{localize difficultyLabel}} ({{difficulty}})</small></div>
+    </div>
+    {{/if}}
+  </div>
+
   <ol class="dice">
     {{#each dice as |d|}}<li class="die d{{d.value}} {{#unless d.kept}}dropped{{/unless}}">{{d.value}}</li>{{/each}}
   </ol>
-  <div class="total">{{total}}</div>
-  {{#if outcome}}
-  <div class="outcome">
-    {{localize outcomeLabel}}
-    <small>{{localize "AFC.Roll.Against"}} {{localize difficultyLabel}} ({{difficulty}})</small>
-  </div>
-  {{/if}}
+
+  <footer>
+    <span class="pool">{{rank}}D{{#if bonus}} +{{bonus}}B{{/if}}{{#if penalty}} −{{penalty}}D{{/if}}{{#if modifier}} {{numberFormat modifier sign=true}}{{/if}}</span>
+    {{#each notes}}<span class="tag">{{this}}</span>{{/each}}
+  </footer>
 </div>

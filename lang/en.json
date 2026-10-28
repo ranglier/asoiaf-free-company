@@ -26,7 +26,82 @@
       "Specialty": "Specialty",
       "AddSpecialty": "Add a specialty",
       "Resources": "Resources",
-      "History": "History"
+      "History": "History",
+      "PlayMode": "Switch to play mode",
+      "EditMode": "Switch to edit mode"
+    },
+    "Tab": {
+      "abilities": "Abilities",
+      "combat": "Combat",
+      "equipment": "Equipment",
+      "qualities": "Blood and qualities",
+      "biography": "Biography"
+    },
+    "Table": {
+      "equipped": "Equipped",
+      "weapon": "Weapon",
+      "armor": "Armor",
+      "test": "Test",
+      "damage": "Damage",
+      "grip": "Grip",
+      "addWeapon": "Add a weapon",
+      "addArmor": "Add armor",
+      "totalBulk": "Total bulk"
+    },
+    "Settings": {
+      "defaultDifficulty": {
+        "name": "Quick test difficulty",
+        "hint": "Difficulty used when a player clicks an ability without opening the dialog. The GM changes it per scene."
+      }
+    },
+    "Attack": {
+      "DialogTitle": "Attack: {weapon}",
+      "Attack": "Attack",
+      "Hint": "Click: quick attack on target. Shift + click: options.",
+      "NoTarget": "No target (target a token with T)",
+      "NoWeapon": "No weapon.",
+      "Defense": "Defense",
+      "Versus": "vs",
+      "BaseDamage": "Damage",
+      "Damage": "Damage",
+      "ArmorAbbr": "AR",
+      "SelfDefense": "Your Combat Defense until your next turn:",
+      "Option": {
+        "aim": "Aim (+1B)",
+        "charge": "Charge (−1D, +2 damage)",
+        "cautious": "Cautious attack (−1D, +3 Defense)",
+        "reckless": "Reckless attack (+1D, −5 Defense)",
+        "surprise": "Surprised target (+1D)",
+        "helpless": "Helpless target (+1D, no Agility)"
+      },
+      "Cover": {
+        "label": "Target cover",
+        "none": "None",
+        "partial": "Cover (+5)",
+        "full": "Good cover (+10)"
+      },
+      "Visibility": {
+        "label": "Visibility",
+        "clear": "Lit",
+        "dim": "Dim (−1D)",
+        "dark": "Darkness (−2D)"
+      }
+    },
+    "Damage": {
+      "Resolve": "Resolve damage",
+      "DialogTitle": "Damage taken: {name}",
+      "Incoming": "Damage",
+      "InjuriesLabel": "Injuries to take",
+      "InjuryRule": "each negates {n} damage, −1 to tests",
+      "WoundLabel": "Take a wound (negates all, −1D to tests)",
+      "Hint": "Remaining damage is subtracted from Health.",
+      "Apply": "Apply",
+      "Taken": "{name} takes {n} damage (Health {health} / {max}).",
+      "InjuriesTaken": "+{n} injury(ies).",
+      "WoundTaken": "+1 wound.",
+      "Defeated": "Defeated.",
+      "Dead": "Dead.",
+      "NotOwner": "Only the target's owner or the GM can resolve this damage."
     },
     "Ability": {
       "agility": "Agility",
@@ -69,7 +144,9 @@
       "defenseCombat": "Combat defense",
       "defenseIntrigue": "Intrigue defense",
       "armor": "Armor",
+      "armorPenalty": "penalty",
       "movement": "Movement",
+      "sprint": "Sprint",
       "biography": "Biography"
     },
     "Npc": {
@@ -140,10 +217,27 @@
     "Weapon": {
       "ability": "Ability",
       "specialty": "Specialty",
+      "specialtyHint": "Long Blades, Bows...",
+      "training": "Training (bonus dice required)",
       "damageAbility": "Damage ability",
       "damageMod": "Damage modifier",
-      "defenseBonus": "Defense bonus",
-      "qualities": "Qualities"
+      "defenseBonus": "Defensive bonus",
+      "piercing": "Piercing",
+      "powerful": "Powerful (+1 damage per Strength B)",
+      "versatile": "Adaptable (+1 damage two-handed)",
+      "twoHanded": "Two-handed (−2D one-handed)",
+      "grip": "Grip: one or two hands",
+      "oneHand": "1 hand",
+      "twoHands": "2 hands",
+      "Short": {
+        "piercing": "Piercing",
+        "powerful": "Powerful",
+        "versatile": "Adaptable",
+        "twoHanded": "Two-handed",
+        "defensive": "Defensive"
+      },
+      "qualities": "Other qualities",
+      "qualitiesHint": "Fast, Slow, Reach, Shattering 1..."
     },
     "Armor": {
       "rating": "Armor rating",
@@ -215,16 +309,26 @@
       "Difficulty": "Difficulty",
       "NoDifficulty": "No difficulty",
       "BonusAbbr": "B",
-      "PenaltyAbbr": "P",
+      "PenaltyAbbr": "D",
+      "QuickHint": "Click: quick test. Shift + click: dialog.",
+      "DegreesSingular": "{n} degree",
+      "DegreesPlural": "{n} degrees",
+      "QuickHintLong": "Click an ability or specialty: quick test against the GM's difficulty. Shift + click: full dialog.",
+      "ApplyAuto": "Automatic penalties",
+      "Auto": {
+        "wounds": "Wounds −{n}D",
+        "injuries": "Injuries −{n}",
+        "armor": "Armor −{n}"
+      },
       "Against": "vs",
       "Success": {
         "1": "Success",
-        "2": "Success (2 degrees)",
-        "3": "Success (3 degrees)",
-        "4": "Success (4 degrees)"
+        "2": "Great success",
+        "3": "Superb success",
+        "4": "Astonishing success"
       },
       "Failure": {
-        "1": "Marginal failure",
+        "1": "Failure",
         "2": "Critical failure"
       }
     }

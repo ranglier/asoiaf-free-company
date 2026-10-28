@@ -10,10 +10,13 @@ import { ArmorData, BloodData, QualityData, ServiceData, UnitData, WeaponData } 
 import { CharacterSheet, CompanySheet, HouseSheet, NpcSheet } from "./module/sheets/actor-sheets.mjs";
 import { AFCItemSheet } from "./module/sheets/item-sheet.mjs";
 import { evaluateTest, rollAbilityTest, rollTest } from "./module/dice/test-roll.mjs";
+import { onRenderChatMessage, resolveDamage, rollAttack } from "./module/dice/attack.mjs";
+import { registerSettings } from "./module/settings.mjs";
 
 Hooks.once("init", () => {
   CONFIG.AFC = AFC;
-  game.afc = { rollAbilityTest, rollTest, evaluateTest };
+  game.afc = { rollAbilityTest, rollTest, evaluateTest, rollAttack, resolveDamage };
+  registerSettings();
 
   Object.assign(CONFIG.Actor.dataModels, {
     character: CharacterData,
@@ -43,3 +46,5 @@ Hooks.once("init", () => {
     `systems/${AFC.SYSTEM_ID}/templates/actor/parts/abilities.hbs`
   ]);
 });
+
+Hooks.on("renderChatMessageHTML", onRenderChatMessage);

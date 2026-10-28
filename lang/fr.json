@@ -26,7 +26,82 @@
       "Specialty": "Spécialité",
       "AddSpecialty": "Ajouter une spécialité",
       "Resources": "Ressources",
-      "History": "Histoire"
+      "History": "Histoire",
+      "PlayMode": "Passer en mode jeu",
+      "EditMode": "Passer en mode édition"
+    },
+    "Tab": {
+      "abilities": "Capacités",
+      "combat": "Combat",
+      "equipment": "Équipement",
+      "qualities": "Sang et avantages",
+      "biography": "Biographie"
+    },
+    "Table": {
+      "equipped": "Équipé",
+      "weapon": "Arme",
+      "armor": "Armure",
+      "test": "Test",
+      "damage": "Dégâts",
+      "grip": "Prise",
+      "addWeapon": "Ajouter une arme",
+      "addArmor": "Ajouter une armure",
+      "totalBulk": "Encombrement total"
+    },
+    "Settings": {
+      "defaultDifficulty": {
+        "name": "Difficulté des tests rapides",
+        "hint": "Difficulté utilisée quand un joueur clique sur une capacité sans ouvrir le dialogue. Le MJ la change selon la scène."
+      }
+    },
+    "Attack": {
+      "DialogTitle": "Attaque : {weapon}",
+      "Attack": "Attaque",
+      "Hint": "Clic : attaque rapide sur la cible. Maj + clic : options.",
+      "NoTarget": "Aucune cible (ciblez un jeton avec T)",
+      "NoWeapon": "Aucune arme.",
+      "Defense": "Défense",
+      "Versus": "contre",
+      "BaseDamage": "Dégâts",
+      "Damage": "Dégâts",
+      "ArmorAbbr": "VA",
+      "SelfDefense": "Votre Défense de combat jusqu'à votre prochain tour :",
+      "Option": {
+        "aim": "Viser (+1B)",
+        "charge": "Charge (−1D, +2 dégâts)",
+        "cautious": "Attaque prudente (−1D, +3 Défense)",
+        "reckless": "Attaque intrépide (+1D, −5 Défense)",
+        "surprise": "Cible surprise (+1D)",
+        "helpless": "Cible impuissante (+1D, sans Agilité)"
+      },
+      "Cover": {
+        "label": "Abri de la cible",
+        "none": "Aucun",
+        "partial": "Abri (+5)",
+        "full": "Bon abri (+10)"
+      },
+      "Visibility": {
+        "label": "Visibilité",
+        "clear": "Éclairé",
+        "dim": "Sombre (−1D)",
+        "dark": "Obscurité (−2D)"
+      }
+    },
+    "Damage": {
+      "Resolve": "Résoudre les dégâts",
+      "DialogTitle": "Dégâts subis : {name}",
+      "Incoming": "Dégâts",
+      "InjuriesLabel": "Lésions à prendre",
+      "InjuryRule": "chacune annule {n} dégâts, −1 aux tests",
+      "WoundLabel": "Prendre une blessure (annule tout, −1D aux tests)",
+      "Hint": "Le reste des dégâts est retiré de la Santé.",
+      "Apply": "Appliquer",
+      "Taken": "{name} encaisse {n} dégâts (Santé {health} / {max}).",
+      "InjuriesTaken": "+{n} lésion(s).",
+      "WoundTaken": "+1 blessure.",
+      "Defeated": "Vaincu.",
+      "Dead": "Mort.",
+      "NotOwner": "Seul le propriétaire de la cible ou le MJ peut résoudre ces dégâts."
     },
     "Ability": {
       "agility": "Agilité",
@@ -69,7 +144,9 @@
       "defenseCombat": "Défense de combat",
       "defenseIntrigue": "Défense d'intrigue",
       "armor": "Armure",
-      "movement": "Mouvement",
+      "armorPenalty": "malus",
+      "movement": "Déplacement",
+      "sprint": "Sprint",
       "biography": "Biographie"
     },
     "Npc": {
@@ -140,10 +217,27 @@
     "Weapon": {
       "ability": "Capacité",
       "specialty": "Spécialité",
+      "specialtyHint": "Lames longues, Arcs...",
+      "training": "Formation (dés bonus requis)",
       "damageAbility": "Capacité de dégâts",
       "damageMod": "Modificateur de dégâts",
-      "defenseBonus": "Bonus de défense",
-      "qualities": "Qualités"
+      "defenseBonus": "Bonus défensif",
+      "piercing": "Perforante",
+      "powerful": "Puissante (+1 dégât par B en Force)",
+      "versatile": "Polyvalente (+1 dégât à deux mains)",
+      "twoHanded": "Deux mains (−2D à une main)",
+      "grip": "Prise : une ou deux mains",
+      "oneHand": "1 main",
+      "twoHands": "2 mains",
+      "Short": {
+        "piercing": "Perforante",
+        "powerful": "Puissante",
+        "versatile": "Polyvalente",
+        "twoHanded": "Deux mains",
+        "defensive": "Défensive"
+      },
+      "qualities": "Autres qualités",
+      "qualitiesHint": "Rapide, Lente, Allonge, Fracassante 1..."
     },
     "Armor": {
       "rating": "Valeur d'armure",
@@ -215,16 +309,26 @@
       "Difficulty": "Difficulté",
       "NoDifficulty": "Sans difficulté",
       "BonusAbbr": "B",
-      "PenaltyAbbr": "P",
+      "PenaltyAbbr": "D",
+      "QuickHint": "Clic : test rapide. Maj + clic : dialogue.",
+      "DegreesSingular": "{n} degré",
+      "DegreesPlural": "{n} degrés",
+      "QuickHintLong": "Clic sur une capacité ou une spécialité : test rapide contre la difficulté fixée par le MJ. Maj + clic : dialogue complet.",
+      "ApplyAuto": "Malus automatiques",
+      "Auto": {
+        "wounds": "Blessures −{n}D",
+        "injuries": "Lésions −{n}",
+        "armor": "Armure −{n}"
+      },
       "Against": "contre",
       "Success": {
         "1": "Réussite",
-        "2": "Réussite (2 degrés)",
-        "3": "Réussite (3 degrés)",
-        "4": "Réussite (4 degrés)"
+        "2": "Belle réussite",
+        "3": "Superbe réussite",
+        "4": "Réussite ahurissante"
       },
       "Failure": {
-        "1": "Échec de peu",
+        "1": "Échec",
         "2": "Échec critique"
       }
     }

@@ -1,61 +1,188 @@
-<div class="afc-sheet">
+<div class="afc-sheet parchment {{#if editMode}}edit-mode{{else}}play-mode{{/if}}">
   <header class="afc-header">
+    {{#if actor.img}}
     <img class="portrait" src="{{actor.img}}" data-edit="img" alt="{{actor.name}}">
+    {{/if}}
     <div class="identity">
-      <input class="name" type="text" name="name" value="{{actor.name}}" placeholder="{{localize "Name"}}">
+      {{#if editMode}}
+      <input class="name" type="text" name="name" value="{{actor.name}}">
       <div class="grid-3">
         <label>{{localize "AFC.Character.alias"}}<input type="text" name="system.alias" value="{{system.alias}}"></label>
         <label>{{localize "AFC.Character.house"}}<input type="text" name="system.house" value="{{system.house}}"></label>
         <label>{{localize "AFC.Character.role"}}<input type="text" name="system.role" value="{{system.role}}"></label>
-        <label>{{localize "AFC.Character.age"}}
-          <select name="system.age">{{selectOptions config.AGES selected=system.age localize=true}}</select></label>
+        <label>{{localize "AFC.Character.age"}}<select name="system.age">{{selectOptions config.AGES selected=system.age localize=true}}</select></label>
         <label>{{localize "AFC.Character.gender"}}<input type="text" name="system.gender" value="{{system.gender}}"></label>
         <label>{{localize "AFC.Character.motto"}}<input type="text" name="system.motto" value="{{system.motto}}"></label>
       </div>
+      {{else}}
+      <h1 class="name">{{actor.name}}</h1>
+      <p class="subtitle">
+        {{#if system.alias}}« {{system.alias}} » · {{/if}}{{#each items.blood as |b|}}{{b.name}} · {{/each}}{{#if system.role}}{{system.role}} · {{/if}}{{localize (lookup config.AGES system.age)}}
+      </p>
+      {{#if system.motto}}<p class="motto">{{system.motto}}</p>{{/if}}
+      {{/if}}
+    </div>
+    <div class="header-side">
+      <div class="destiny">
+        <span class="label">{{localize "AFC.Character.destiny"}}</span>
+        <span class="pips">{{#each track.destiny as |p|}}<a class="pip seal {{#if p.on}}on{{/if}}" data-action="setPip" data-path="system.destiny.value" data-n="{{p.n}}"></a>{{/each}}</span>
+        {{#if editMode}}<label class="inline">max <input type="number" name="system.destiny.max" value="{{system.destiny.max}}" min="0"></label>{{/if}}
+      </div>
+      {{#if editable}}
+      <a class="mode-toggle" data-action="toggleEdit" data-tooltip="{{#if editMode}}{{localize "AFC.Sheet.PlayMode"}}{{else}}{{localize "AFC.Sheet.EditMode"}}{{/if}}">
+        <i class="fa-solid {{#if editMode}}fa-lock-open{{else}}fa-lock{{/if}}"></i>
+      </a>
+      {{/if}}
     </div>
   </header>
 
-  <section class="afc-stats">
-    <div class="stat"><span class="label">{{localize "AFC.Character.defenseCombat"}}</span><span class="value">{{system.defense.combat}}</span></div>
-    <div class="stat"><span class="label">{{localize "AFC.Character.health"}}</span>
-      <span class="value"><input type="number" name="system.health.value" value="{{system.health.value}}"> / {{system.health.max}}</span></div>
-    <div class="stat"><span class="label">{{localize "AFC.Character.armor"}}</span><span class="value">{{system.armor.rating}} <small>(-{{system.armor.penalty}})</small></span></div>
-    <div class="stat"><span class="label">{{localize "AFC.Character.defenseIntrigue"}}</span><span class="value">{{system.defense.intrigue}}</span></div>
-    <div class="stat"><span class="label">{{localize "AFC.Character.composure"}}</span>
-      <span class="value"><input type="number" name="system.composure.value" value="{{system.composure.value}}"> / {{system.composure.max}}</span></div>
-    <div class="stat"><span class="label">{{localize "AFC.Character.destiny"}}</span>
-      <span class="value"><input type="number" name="system.destiny.value" value="{{system.destiny.value}}"> / <input type="number" name="system.destiny.max" value="{{system.destiny.max}}"></span></div>
-    <div class="stat"><span class="label">{{localize "AFC.Character.wounds"}}</span>
-      <span class="value"><input type="number" name="system.wounds.value" value="{{system.wounds.value}}"> / {{system.wounds.max}}</span></div>
-    <div class="stat"><span class="label">{{localize "AFC.Character.injuries"}}</span>
-      <span class="value"><input type="number" name="system.injuries.value" value="{{system.injuries.value}}"> / {{system.injuries.max}}</span></div>
-    <div class="stat"><span class="label">{{localize "AFC.Character.movement"}}</span><span class="value">{{system.movement}}</span></div>
+  <section class="afc-vitals">
+    <div class="vital">
+      <span class="label">{{localize "AFC.Character.health"}}</span>
+      <div class="bar health"><div style="width:{{healthPct}}%"></div></div>
+      <span class="value"><input type="number" name="system.health.value" value="{{system.health.value}}" min="0"> / {{system.health.max}}</span>
+    </div>
+    <div class="vital">
+      <span class="label">{{localize "AFC.Character.wounds"}}</span>
+      <span class="pips">{{#each track.wounds as |p|}}<a class="pip {{#if p.on}}on{{/if}}" data-action="setPip" data-path="system.wounds.value" data-n="{{p.n}}"></a>{{/each}}</span>
+      <span class="hint">{{#if system.wounds.value}}−{{system.wounds.value}}D{{else}}—{{/if}}</span>
+    </div>
+    <div class="vital">
+      <span class="label">{{localize "AFC.Character.injuries"}}</span>
+      <span class="pips">{{#each track.injuries as |p|}}<a class="pip {{#if p.on}}on{{/if}}" data-action="setPip" data-path="system.injuries.value" data-n="{{p.n}}"></a>{{/each}}</span>
+      <span class="hint">{{#if system.injuries.value}}−{{system.injuries.value}}{{else}}—{{/if}}</span>
+    </div>
+    <div class="vital big"><span class="label">{{localize "AFC.Character.defenseCombat"}}</span><span class="value">{{system.defense.combat}}</span></div>
+    <div class="vital big"><span class="label">{{localize "AFC.Character.armor"}}</span><span class="value">{{system.armor.rating}}</span>
+      {{#if system.armor.penalty}}<span class="hint">−{{system.armor.penalty}} {{localize "AFC.Character.armorPenalty"}}</span>{{/if}}</div>
+    <div class="vital big"><span class="label">{{localize "AFC.Character.movement"}}</span><span class="value">{{system.movement.value}} m</span>
+      <span class="hint">{{localize "AFC.Character.sprint"}} {{system.movement.sprint}} m</span></div>
   </section>
 
-  {{> "systems/asoiaf-free-company/templates/actor/parts/abilities.hbs"}}
+  <nav class="sheet-tabs tabs" data-group="primary">
+    {{#each tabs as |tab|}}
+    <a data-action="tab" data-group="primary" data-tab="{{tab.id}}" class="{{tab.cssClass}}">{{localize tab.label}}</a>
+    {{/each}}
+  </nav>
 
-  {{#each itemTypes as |type|}}
-  <section class="afc-items">
-    <h2>{{localize (concat "TYPES.Item." type)}}
-      {{#if @root.editable}}<button type="button" class="icon" data-action="createItem" data-type="{{type}}"><i class="fa-solid fa-plus"></i></button>{{/if}}
-    </h2>
-    <ul>
-      {{#each (lookup @root.items type) as |item|}}
-      <li data-item-id="{{item.id}}">
-        <img src="{{item.img}}" alt=""><a data-action="editItem">{{item.name}}</a>
-        {{#if (or (eq type "weapon") (eq type "armor"))}}
-        <button type="button" class="icon {{#if item.system.equipped}}active{{/if}}" data-action="toggleEquipped"
-                data-tooltip="{{localize "AFC.Item.equipped"}}"><i class="fa-solid fa-shield-halved"></i></button>
-        {{/if}}
-        {{#if @root.editable}}<button type="button" class="icon" data-action="deleteItem"><i class="fa-solid fa-trash"></i></button>{{/if}}
-      </li>
-      {{/each}}
-    </ul>
-  </section>
-  {{/each}}
+  <div class="tab-body">
+    <section class="tab {{tabs.abilities.cssClass}}" data-group="primary" data-tab="abilities">
+      {{> "systems/asoiaf-free-company/templates/actor/parts/abilities.hbs"}}
+      <p class="hint footer-hint">{{localize "AFC.Roll.QuickHintLong"}}</p>
+    </section>
 
-  <section class="afc-notes">
-    <h2>{{localize "AFC.Character.biography"}}</h2>
-    <prose-mirror name="system.biography" value="{{system.biography}}" toggled>{{{enrichedHtml}}}</prose-mirror>
-  </section>
+    <section class="tab {{tabs.combat.cssClass}}" data-group="primary" data-tab="combat">
+      {{#if weapons.length}}
+      <table class="afc-table weapons">
+        <thead><tr>
+          <th class="col-equip">{{localize "AFC.Table.equipped"}}</th>
+          <th>{{localize "AFC.Table.weapon"}}</th>
+          <th>{{localize "AFC.Table.test"}}</th>
+          <th class="center">{{localize "AFC.Table.damage"}}</th>
+          <th class="center">{{localize "AFC.Table.grip"}}</th>
+          <th></th>
+        </tr></thead>
+        <tbody>
+        {{#each weapons as |w|}}
+        <tr data-item-id="{{w.item.id}}" class="{{#unless w.item.system.equipped}}unequipped{{/unless}}">
+          <td class="col-equip"><input type="checkbox" data-action="toggleEquipped" {{checked w.item.system.equipped}} data-tooltip="{{localize "AFC.Item.equipped"}}"></td>
+          <td><div class="item-name"><img src="{{w.item.img}}" alt=""><div><a data-action="editItem">{{w.item.name}}</a>
+            {{#if w.qualities}}<span class="sub">{{w.qualities}}</span>{{/if}}</div></div></td>
+          <td>{{w.profile.abilityLabel}} <strong>{{w.profile.rank}}</strong>{{#if w.profile.bonus}} +{{w.profile.bonus}}B{{/if}}{{#if w.profile.penalty}} −{{w.profile.penalty}}D{{/if}}</td>
+          <td class="center"><span class="big-num">{{w.profile.damage}}</span></td>
+          <td class="center">
+            {{#if (or w.item.system.versatile w.item.system.twoHanded)}}
+            <span class="grip-switch">
+              <a class="{{#unless (eq w.item.system.grip "two")}}on{{/unless}}" data-action="setGrip" data-grip="one">{{localize "AFC.Weapon.oneHand"}}</a><a class="{{#if (eq w.item.system.grip "two")}}on{{/if}}" data-action="setGrip" data-grip="two">{{localize "AFC.Weapon.twoHands"}}</a>
+            </span>
+            {{else}}<span class="grip-fixed">—</span>{{/if}}
+          </td>
+          <td class="item-actions"><button type="button" class="attack" data-action="attack" data-tooltip="{{localize "AFC.Attack.Hint"}}"><i class="fa-solid fa-swords"></i> {{localize "AFC.Attack.Attack"}}</button></td>
+        </tr>
+        {{/each}}
+        </tbody>
+      </table>
+      {{else}}
+      <p class="hint">{{localize "AFC.Attack.NoWeapon"}}</p>
+      {{/if}}
+      {{#if editable}}<a class="add-item" data-action="createItem" data-type="weapon"><i class="fa-solid fa-plus"></i> {{localize "AFC.Table.addWeapon"}}</a>{{/if}}
+      <div class="combat-ref">
+        <span>{{localize "AFC.Character.defenseIntrigue"}} <strong>{{system.defense.intrigue}}</strong></span>
+        <span>{{localize "AFC.Character.composure"}} <strong>{{system.composure.value}} / {{system.composure.max}}</strong></span>
+      </div>
+    </section>
+
+    <section class="tab {{tabs.equipment.cssClass}}" data-group="primary" data-tab="equipment">
+      <h2>{{localize "TYPES.Item.armor"}}</h2>
+      <table class="afc-table">
+        <thead><tr>
+          <th class="col-equip">{{localize "AFC.Table.equipped"}}</th>
+          <th>{{localize "AFC.Table.armor"}}</th>
+          <th class="center">{{localize "AFC.Armor.rating"}}</th>
+          <th class="center">{{localize "AFC.Armor.penalty"}}</th>
+          <th class="center">{{localize "AFC.Armor.bulk"}}</th>
+          <th></th>
+        </tr></thead>
+        <tbody>
+        {{#each items.armor as |item|}}
+        <tr data-item-id="{{item.id}}" class="{{#unless item.system.equipped}}unequipped{{/unless}}">
+          <td class="col-equip"><input type="checkbox" data-action="toggleEquipped" {{checked item.system.equipped}}></td>
+          <td><div class="item-name"><img src="{{item.img}}" alt=""><a data-action="editItem">{{item.name}}</a></div></td>
+          <td class="center big-num">{{item.system.rating}}</td>
+          <td class="center">−{{item.system.penalty}}</td>
+          <td class="center">{{item.system.bulk}}</td>
+          <td class="item-actions">{{#if @root.editable}}<a class="icon" data-action="deleteItem" data-tooltip="{{localize "Delete"}}"><i class="fa-solid fa-trash"></i></a>{{/if}}</td>
+        </tr>
+        {{/each}}
+        </tbody>
+      </table>
+      {{#if editable}}<a class="add-item" data-action="createItem" data-type="armor"><i class="fa-solid fa-plus"></i> {{localize "AFC.Table.addArmor"}}</a>{{/if}}
+
+      <h2>{{localize "TYPES.Item.weapon"}}</h2>
+      <table class="afc-table">
+        <thead><tr>
+          <th class="col-equip">{{localize "AFC.Table.equipped"}}</th>
+          <th>{{localize "AFC.Table.weapon"}}</th>
+          <th class="center">{{localize "AFC.Weapon.defenseBonus"}}</th>
+          <th class="center">{{localize "AFC.Armor.bulk"}}</th>
+          <th></th>
+        </tr></thead>
+        <tbody>
+        {{#each items.weapon as |item|}}
+        <tr data-item-id="{{item.id}}" class="{{#unless item.system.equipped}}unequipped{{/unless}}">
+          <td class="col-equip"><input type="checkbox" data-action="toggleEquipped" {{checked item.system.equipped}}></td>
+          <td><div class="item-name"><img src="{{item.img}}" alt=""><a data-action="editItem">{{item.name}}</a></div></td>
+          <td class="center">{{#if item.system.defenseBonus}}+{{item.system.defenseBonus}}{{else}}—{{/if}}</td>
+          <td class="center">{{item.system.bulk}}</td>
+          <td class="item-actions">{{#if @root.editable}}<a class="icon" data-action="deleteItem" data-tooltip="{{localize "Delete"}}"><i class="fa-solid fa-trash"></i></a>{{/if}}</td>
+        </tr>
+        {{/each}}
+        </tbody>
+      </table>
+      <p class="hint">{{localize "AFC.Table.totalBulk"}} : {{system.armor.bulk}}</p>
+    </section>
+
+    <section class="tab {{tabs.qualities.cssClass}}" data-group="primary" data-tab="qualities">
+      <h2>{{localize "TYPES.Item.blood"}} {{#if editable}}<a class="icon" data-action="createItem" data-type="blood"><i class="fa-solid fa-plus"></i></a>{{/if}}</h2>
+      <ul class="item-list">
+        {{#each items.blood as |item|}}
+        <li data-item-id="{{item.id}}"><img src="{{item.img}}" alt=""><a data-action="editItem">{{item.name}}</a>
+          {{#if item.system.summary}}<span class="summary">{{item.system.summary}}</span>{{/if}}
+          {{#if @root.editable}}<a class="icon" data-action="deleteItem"><i class="fa-solid fa-trash"></i></a>{{/if}}</li>
+        {{/each}}
+      </ul>
+      <h2>{{localize "TYPES.Item.quality"}} {{#if editable}}<a class="icon" data-action="createItem" data-type="quality"><i class="fa-solid fa-plus"></i></a>{{/if}}</h2>
+      <ul class="item-list">
+        {{#each items.quality as |item|}}
+        <li data-item-id="{{item.id}}"><img src="{{item.img}}" alt=""><a data-action="editItem">{{item.name}}</a>
+          <span class="tag">{{localize (concat "AFC.Quality." item.system.kind)}}</span>
+          {{#if @root.editable}}<a class="icon" data-action="deleteItem"><i class="fa-solid fa-trash"></i></a>{{/if}}</li>
+        {{/each}}
+      </ul>
+    </section>
+
+    <section class="tab {{tabs.biography.cssClass}}" data-group="primary" data-tab="biography">
+      <prose-mirror name="system.biography" value="{{system.biography}}" toggled>{{{enrichedHtml}}}</prose-mirror>
+    </section>
+  </div>
 </div>
