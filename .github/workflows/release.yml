@@ -1,0 +1,37 @@
+# Publie le système à chaque release GitHub (tag vX.Y.Z) :
+# met à jour version et URLs dans system.json, construit le zip et l'attache à la release.
+name: Release
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Mettre à jour system.json
+        env:
+          TAG: ${{ github.event.release.tag_name }}
+          REPO: ${{ github.repository }}
+        run: |
+          VERSION="${TAG#v}"
+          BASE="https://github.com/${REPO}"
+          jq --arg v "$VERSION" --arg url "$BASE" \
+             --arg manifest "$BASE/releases/latest/download/system.json" \
+             --arg download "$BASE/releases/download/$TAG/asoiaf-free-company.zip" \
+             '.version=$v | .url=$url | .manifest=$manifest | .download=$download' \
+             system.json > system.tmp && mv system.tmp system.json
+
+      - name: Construire le zip
+        run: zip -r asoiaf-free-company.zip system.json asoiaf-free-company.mjs module templates lang styles README.md LICENSE
+
+      - name: Attacher à la release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "${{ github.event.release.tag_name }}" system.json asoiaf-free-company.zip --clobber

@@ -1,0 +1,58 @@
+<div class="afc-sheet">
+  <header class="afc-header">
+    <img class="portrait small" src="{{item.img}}" data-edit="img" alt="{{item.name}}">
+    <div class="identity">
+      <input class="name" type="text" name="name" value="{{item.name}}">
+      <span class="type">{{localize (concat "TYPES.Item." item.type)}}</span>
+    </div>
+  </header>
+
+  <section class="afc-fields grid-2">
+    {{#if (eq item.type "weapon")}}
+    <label>{{localize "AFC.Weapon.ability"}}<select name="system.ability">{{selectOptions abilities selected=system.ability localize=true}}</select></label>
+    <label>{{localize "AFC.Weapon.specialty"}}<input type="text" name="system.specialty" value="{{system.specialty}}"></label>
+    <label>{{localize "AFC.Weapon.damageAbility"}}<select name="system.damageAbility">{{selectOptions abilities selected=system.damageAbility localize=true}}</select></label>
+    <label>{{localize "AFC.Weapon.damageMod"}}<input type="number" name="system.damageMod" value="{{system.damageMod}}"></label>
+    <label>{{localize "AFC.Weapon.defenseBonus"}}<input type="number" name="system.defenseBonus" value="{{system.defenseBonus}}"></label>
+    <label>{{localize "AFC.Weapon.qualities"}}<input type="text" name="system.qualities" value="{{system.qualities}}"></label>
+    {{/if}}
+
+    {{#if (eq item.type "armor")}}
+    <label>{{localize "AFC.Armor.rating"}}<input type="number" name="system.rating" value="{{system.rating}}" min="0"></label>
+    <label>{{localize "AFC.Armor.penalty"}}<input type="number" name="system.penalty" value="{{system.penalty}}" min="0"></label>
+    <label>{{localize "AFC.Armor.bulk"}}<input type="number" name="system.bulk" value="{{system.bulk}}" min="0"></label>
+    {{/if}}
+
+    {{#if (eq item.type "quality")}}
+    <label>{{localize "AFC.Quality.kind"}}<select name="system.kind">{{selectOptions qualityKinds selected=system.kind localize=true}}</select></label>
+    <label>{{localize "AFC.Quality.requirements"}}<input type="text" name="system.requirements" value="{{system.requirements}}"></label>
+    {{/if}}
+
+    {{#if (eq item.type "blood")}}
+    <label>{{localize "AFC.Quality.requirements"}}<input type="text" name="system.requirements" value="{{system.requirements}}"></label>
+    <label>{{localize "AFC.Blood.summary"}}<input type="text" name="system.summary" value="{{system.summary}}"></label>
+    {{/if}}
+
+    {{#if (eq item.type "service")}}
+    <label>{{localize "AFC.Service.size"}}<select name="system.size">{{selectOptions serviceSizes selected=system.size localize=true}}</select></label>
+    <label>{{localize "AFC.Service.category"}}<input type="text" name="system.category" value="{{system.category}}"></label>
+    <label class="wide">{{localize "AFC.Service.effect"}}<input type="text" name="system.effect" value="{{system.effect}}"></label>
+    {{/if}}
+
+    {{#if (eq item.type "unit")}}
+    <label>{{localize "AFC.Unit.training"}}<select name="system.training">{{selectOptions unitTrainings selected=system.training localize=true}}</select></label>
+    <label>{{localize "AFC.Unit.classes"}}<input type="text" name="system.classes" value="{{system.classes}}"></label>
+    <label>{{localize "AFC.Unit.mightCost"}}<input type="number" name="system.mightCost" value="{{system.mightCost}}" min="0"></label>
+    <label>{{localize "AFC.Unit.disciplineMod"}}<input type="number" name="system.disciplineMod" value="{{system.disciplineMod}}"></label>
+    <label>{{localize "AFC.Unit.men"}}<input type="number" name="system.men" value="{{system.men}}" min="0"></label>
+    <label>{{localize "AFC.Unit.experience"}}<input type="number" name="system.experience" value="{{system.experience}}" min="0"></label>
+    <label class="wide">{{localize "AFC.Unit.keyAbilities"}}<input type="text" name="system.keyAbilities" value="{{system.keyAbilities}}"></label>
+    <p class="wide derived">{{localize "AFC.Unit.manpowerCost"}} : {{system.manpowerCost}} · {{localize "AFC.Unit.discipline"}} : {{system.discipline}}</p>
+    {{/if}}
+  </section>
+
+  <section class="afc-notes">
+    <h2>{{localize "AFC.Item.description"}}</h2>
+    <prose-mirror name="system.description" value="{{system.description}}" toggled>{{{enrichedDescription}}}</prose-mirror>
+  </section>
+</div>

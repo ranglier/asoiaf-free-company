@@ -1,0 +1,25 @@
+<div class="afc-sheet">
+  <header class="afc-header">
+    <img class="portrait" src="{{actor.img}}" data-edit="img" alt="{{actor.name}}">
+    <div class="identity">
+      <input class="name" type="text" name="name" value="{{actor.name}}">
+      <label>{{localize "AFC.Character.role"}}<input type="text" name="system.role" value="{{system.role}}"></label>
+      <label>{{localize "AFC.Npc.sourceUrl"}}<input type="url" name="system.sourceUrl" value="{{system.sourceUrl}}"></label>
+      {{#if system.sourceUrl}}<a href="{{system.sourceUrl}}" target="_blank" rel="noopener"><i class="fa-solid fa-up-right-from-square"></i> {{localize "AFC.Npc.openSource"}}</a>{{/if}}
+    </div>
+  </header>
+
+  <section class="afc-stats">
+    <div class="stat"><span class="label">{{localize "AFC.Character.defenseCombat"}}</span><span class="value">{{system.defense.combat}}</span></div>
+    <div class="stat"><span class="label">{{localize "AFC.Character.health"}}</span>
+      <span class="value"><input type="number" name="system.health.value" value="{{system.health.value}}"> / {{system.health.max}}</span></div>
+    <div class="stat"><span class="label">{{localize "AFC.Character.defenseIntrigue"}}</span><span class="value">{{system.defense.intrigue}}</span></div>
+  </section>
+
+  {{> "systems/asoiaf-free-company/templates/actor/parts/abilities.hbs"}}
+
+  <section class="afc-notes">
+    <h2>{{localize "AFC.Character.biography"}}</h2>
+    <prose-mirror name="system.biography" value="{{system.biography}}" toggled>{{{enrichedHtml}}}</prose-mirror>
+  </section>
+</div>

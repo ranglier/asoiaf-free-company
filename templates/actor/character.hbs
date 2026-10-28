@@ -1,0 +1,61 @@
+<div class="afc-sheet">
+  <header class="afc-header">
+    <img class="portrait" src="{{actor.img}}" data-edit="img" alt="{{actor.name}}">
+    <div class="identity">
+      <input class="name" type="text" name="name" value="{{actor.name}}" placeholder="{{localize "Name"}}">
+      <div class="grid-3">
+        <label>{{localize "AFC.Character.alias"}}<input type="text" name="system.alias" value="{{system.alias}}"></label>
+        <label>{{localize "AFC.Character.house"}}<input type="text" name="system.house" value="{{system.house}}"></label>
+        <label>{{localize "AFC.Character.role"}}<input type="text" name="system.role" value="{{system.role}}"></label>
+        <label>{{localize "AFC.Character.age"}}
+          <select name="system.age">{{selectOptions config.AGES selected=system.age localize=true}}</select></label>
+        <label>{{localize "AFC.Character.gender"}}<input type="text" name="system.gender" value="{{system.gender}}"></label>
+        <label>{{localize "AFC.Character.motto"}}<input type="text" name="system.motto" value="{{system.motto}}"></label>
+      </div>
+    </div>
+  </header>
+
+  <section class="afc-stats">
+    <div class="stat"><span class="label">{{localize "AFC.Character.defenseCombat"}}</span><span class="value">{{system.defense.combat}}</span></div>
+    <div class="stat"><span class="label">{{localize "AFC.Character.health"}}</span>
+      <span class="value"><input type="number" name="system.health.value" value="{{system.health.value}}"> / {{system.health.max}}</span></div>
+    <div class="stat"><span class="label">{{localize "AFC.Character.armor"}}</span><span class="value">{{system.armor.rating}} <small>(-{{system.armor.penalty}})</small></span></div>
+    <div class="stat"><span class="label">{{localize "AFC.Character.defenseIntrigue"}}</span><span class="value">{{system.defense.intrigue}}</span></div>
+    <div class="stat"><span class="label">{{localize "AFC.Character.composure"}}</span>
+      <span class="value"><input type="number" name="system.composure.value" value="{{system.composure.value}}"> / {{system.composure.max}}</span></div>
+    <div class="stat"><span class="label">{{localize "AFC.Character.destiny"}}</span>
+      <span class="value"><input type="number" name="system.destiny.value" value="{{system.destiny.value}}"> / <input type="number" name="system.destiny.max" value="{{system.destiny.max}}"></span></div>
+    <div class="stat"><span class="label">{{localize "AFC.Character.wounds"}}</span>
+      <span class="value"><input type="number" name="system.wounds.value" value="{{system.wounds.value}}"> / {{system.wounds.max}}</span></div>
+    <div class="stat"><span class="label">{{localize "AFC.Character.injuries"}}</span>
+      <span class="value"><input type="number" name="system.injuries.value" value="{{system.injuries.value}}"> / {{system.injuries.max}}</span></div>
+    <div class="stat"><span class="label">{{localize "AFC.Character.movement"}}</span><span class="value">{{system.movement}}</span></div>
+  </section>
+
+  {{> "systems/asoiaf-free-company/templates/actor/parts/abilities.hbs"}}
+
+  {{#each itemTypes as |type|}}
+  <section class="afc-items">
+    <h2>{{localize (concat "TYPES.Item." type)}}
+      {{#if @root.editable}}<button type="button" class="icon" data-action="createItem" data-type="{{type}}"><i class="fa-solid fa-plus"></i></button>{{/if}}
+    </h2>
+    <ul>
+      {{#each (lookup @root.items type) as |item|}}
+      <li data-item-id="{{item.id}}">
+        <img src="{{item.img}}" alt=""><a data-action="editItem">{{item.name}}</a>
+        {{#if (or (eq type "weapon") (eq type "armor"))}}
+        <button type="button" class="icon {{#if item.system.equipped}}active{{/if}}" data-action="toggleEquipped"
+                data-tooltip="{{localize "AFC.Item.equipped"}}"><i class="fa-solid fa-shield-halved"></i></button>
+        {{/if}}
+        {{#if @root.editable}}<button type="button" class="icon" data-action="deleteItem"><i class="fa-solid fa-trash"></i></button>{{/if}}
+      </li>
+      {{/each}}
+    </ul>
+  </section>
+  {{/each}}
+
+  <section class="afc-notes">
+    <h2>{{localize "AFC.Character.biography"}}</h2>
+    <prose-mirror name="system.biography" value="{{system.biography}}" toggled>{{{enrichedHtml}}}</prose-mirror>
+  </section>
+</div>

@@ -1,0 +1,44 @@
+{
+  "id": "asoiaf-free-company",
+  "title": "ASOIAF Free Company",
+  "description": "Système non officiel pour jouer dans l'univers du Trône de Fer avec une compagnie de mercenaires : personnages, Maisons et Compagnies, tests à réserve de d6.",
+  "version": "0.1.0",
+  "compatibility": {
+    "minimum": "14",
+    "verified": "14.369"
+  },
+  "authors": [
+    { "name": "Jules" }
+  ],
+  "esmodules": ["asoiaf-free-company.mjs"],
+  "styles": ["styles/asoiaf-free-company.css"],
+  "languages": [
+    { "lang": "fr", "name": "Français", "path": "lang/fr.json" },
+    { "lang": "en", "name": "English", "path": "lang/en.json" }
+  ],
+  "documentTypes": {
+    "Actor": {
+      "character": { "htmlFields": ["biography"] },
+      "npc": { "htmlFields": ["biography"] },
+      "house": { "htmlFields": ["history"] },
+      "company": { "htmlFields": ["history"] }
+    },
+    "Item": {
+      "weapon": { "htmlFields": ["description"] },
+      "armor": { "htmlFields": ["description"] },
+      "quality": { "htmlFields": ["description"] },
+      "blood": { "htmlFields": ["description"] },
+      "service": { "htmlFields": ["description"] },
+      "unit": { "htmlFields": ["description"] }
+    }
+  },
+  "grid": {
+    "type": 1,
+    "distance": 1,
+    "units": "m"
+  },
+  "primaryTokenAttribute": "health",
+  "url": "",
+  "manifest": "",
+  "download": ""
+}

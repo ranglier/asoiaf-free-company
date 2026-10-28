@@ -1,0 +1,232 @@
+{
+  "TYPES": {
+    "Actor": {
+      "character": "Personnage",
+      "npc": "PNJ",
+      "house": "Maison",
+      "company": "Compagnie"
+    },
+    "Item": {
+      "weapon": "Armes",
+      "armor": "Armures",
+      "quality": "Avantages et défauts",
+      "blood": "Sang",
+      "service": "Services",
+      "unit": "Unités"
+    }
+  },
+  "AFC": {
+    "Sheet": {
+      "character": "Fiche de personnage",
+      "npc": "Fiche de PNJ",
+      "house": "Fiche de Maison",
+      "company": "Fiche de Compagnie",
+      "item": "Fiche d'objet",
+      "Abilities": "Capacités",
+      "Specialty": "Spécialité",
+      "AddSpecialty": "Ajouter une spécialité",
+      "Resources": "Ressources",
+      "History": "Histoire"
+    },
+    "Ability": {
+      "agility": "Agilité",
+      "animalHandling": "Dressage",
+      "athletics": "Athlétisme",
+      "awareness": "Vigilance",
+      "cunning": "Ingéniosité",
+      "deception": "Duperie",
+      "endurance": "Endurance",
+      "fighting": "Combat au contact",
+      "healing": "Soins",
+      "knowledge": "Connaissance",
+      "language": "Langue",
+      "marksmanship": "Tir",
+      "persuasion": "Persuasion",
+      "status": "Statut",
+      "stealth": "Discrétion",
+      "survival": "Survie",
+      "thievery": "Larcin",
+      "warfare": "Art de la guerre",
+      "will": "Volonté"
+    },
+    "Age": {
+      "youth": "Jeune adulte",
+      "adult": "Adulte",
+      "middleAge": "Âge mûr"
+    },
+    "Character": {
+      "alias": "Pseudo",
+      "age": "Âge",
+      "gender": "Genre",
+      "house": "Maison",
+      "role": "Rôle",
+      "motto": "Devise",
+      "health": "Santé",
+      "composure": "Sang-froid",
+      "wounds": "Blessures",
+      "injuries": "Lésions",
+      "destiny": "Destinée",
+      "defenseCombat": "Défense de combat",
+      "defenseIntrigue": "Défense d'intrigue",
+      "armor": "Armure",
+      "movement": "Mouvement",
+      "biography": "Biographie"
+    },
+    "Npc": {
+      "sourceUrl": "Fiche source (Maze)",
+      "openSource": "Ouvrir la fiche source"
+    },
+    "House": {
+      "realm": "Royaume",
+      "seat": "Siège",
+      "liege": "Suzerain",
+      "head": "Chef de la Maison",
+      "motto": "Devise",
+      "founding": "Fondation",
+      "Create": "Création de Maison",
+      "CreateSoon": "La création de Maison arrive dans une prochaine version.",
+      "Resource": {
+        "defense": "Défense",
+        "influence": "Influence",
+        "lands": "Terres",
+        "law": "Loi",
+        "population": "Population",
+        "power": "Puissance",
+        "wealth": "Richesse"
+      }
+    },
+    "Company": {
+      "origin": "Origine des fondateurs",
+      "founding": "Ancienneté",
+      "leader": "Chef de la compagnie",
+      "motto": "Devise",
+      "cohesion": "Cohésion",
+      "supply": "Ravitaillement",
+      "monthlySupply": "Entretien : -{value} par mois",
+      "serviceSpace": "Espace des services",
+      "serviceUpkeep": "Entretien : {value} Richesse",
+      "Create": "Création de la Compagnie",
+      "CreateSoon": "La création de Compagnie arrive dans une prochaine version.",
+      "Resource": {
+        "renown": "Renommée",
+        "authority": "Autorité",
+        "manpower": "Effectif",
+        "might": "Puissance",
+        "wealth": "Richesse",
+        "organization": "Organisation"
+      },
+      "Origin": {
+        "merchants": "Marchands",
+        "nobles": "Nobles",
+        "commoners": "Roturiers",
+        "outlaws": "Hors-la-loi",
+        "soldiers": "Soldats",
+        "sailors": "Marins",
+        "zealots": "Fanatiques"
+      },
+      "Cohesion": {
+        "excellent": "Le moral est bon (+2 Discipline)",
+        "good": "Bonne tenue (+1 Discipline)",
+        "minor": "Problèmes mineurs",
+        "logistics": "Problèmes de logistique",
+        "critical": "Situation critique"
+      }
+    },
+    "Item": {
+      "New": "{type} (nouveau)",
+      "equipped": "Équipé",
+      "description": "Description"
+    },
+    "Weapon": {
+      "ability": "Capacité",
+      "specialty": "Spécialité",
+      "damageAbility": "Capacité de dégâts",
+      "damageMod": "Modificateur de dégâts",
+      "defenseBonus": "Bonus de défense",
+      "qualities": "Qualités"
+    },
+    "Armor": {
+      "rating": "Valeur d'armure",
+      "penalty": "Pénalité",
+      "bulk": "Encombrement"
+    },
+    "Quality": {
+      "kind": "Type",
+      "benefit": "Avantage",
+      "drawback": "Défaut",
+      "requirements": "Prérequis"
+    },
+    "Blood": {
+      "summary": "Résumé"
+    },
+    "Service": {
+      "size": "Taille",
+      "category": "Catégorie",
+      "effect": "Effet",
+      "Size": {
+        "small": "Petit",
+        "medium": "Moyen",
+        "large": "Grand"
+      }
+    },
+    "Unit": {
+      "training": "Entraînement",
+      "classes": "Classes (I, P, A, C, M, S)",
+      "mightCost": "Coût en Puissance",
+      "manpowerCost": "Coût en Effectif",
+      "disciplineMod": "Modificateur de discipline",
+      "discipline": "Discipline",
+      "men": "Hommes",
+      "experience": "Expérience",
+      "keyAbilities": "Compétences clés",
+      "Training": {
+        "support": "Soutien",
+        "green": "Bleu",
+        "trained": "Entraîné",
+        "veteran": "Vétéran",
+        "elite": "Élite"
+      },
+      "Class": {
+        "I": "À pied",
+        "P": "Anti-cavalerie",
+        "A": "À distance",
+        "C": "Monté",
+        "M": "Maritime",
+        "S": "Soutien"
+      }
+    },
+    "Difficulty": {
+      "automatic": "Élémentaire",
+      "easy": "Facile",
+      "routine": "Simple",
+      "challenging": "Délicat",
+      "formidable": "Corsé",
+      "hard": "Difficile",
+      "veryHard": "Très difficile",
+      "heroic": "Héroïque"
+    },
+    "Roll": {
+      "DialogTitle": "Test : {ability}",
+      "Roll": "Lancer",
+      "Rank": "Rang",
+      "Bonus": "Dés bonus",
+      "Penalty": "Dés de pénalité",
+      "Modifier": "Modificateur",
+      "Difficulty": "Difficulté",
+      "NoDifficulty": "Sans difficulté",
+      "BonusAbbr": "B",
+      "PenaltyAbbr": "P",
+      "Against": "contre",
+      "Success": {
+        "1": "Réussite",
+        "2": "Réussite (2 degrés)",
+        "3": "Réussite (3 degrés)",
+        "4": "Réussite (4 degrés)"
+      },
+      "Failure": {
+        "1": "Échec de peu",
+        "2": "Échec critique"
+      }
+    }
+  }
+}

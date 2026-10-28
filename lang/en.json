@@ -1,0 +1,232 @@
+{
+  "TYPES": {
+    "Actor": {
+      "character": "Character",
+      "npc": "NPC",
+      "house": "House",
+      "company": "Company"
+    },
+    "Item": {
+      "weapon": "Weapons",
+      "armor": "Armor",
+      "quality": "Qualities",
+      "blood": "Blood",
+      "service": "Services",
+      "unit": "Units"
+    }
+  },
+  "AFC": {
+    "Sheet": {
+      "character": "Character sheet",
+      "npc": "NPC sheet",
+      "house": "House sheet",
+      "company": "Company sheet",
+      "item": "Item sheet",
+      "Abilities": "Abilities",
+      "Specialty": "Specialty",
+      "AddSpecialty": "Add a specialty",
+      "Resources": "Resources",
+      "History": "History"
+    },
+    "Ability": {
+      "agility": "Agility",
+      "animalHandling": "Animal Handling",
+      "athletics": "Athletics",
+      "awareness": "Awareness",
+      "cunning": "Cunning",
+      "deception": "Deception",
+      "endurance": "Endurance",
+      "fighting": "Fighting",
+      "healing": "Healing",
+      "knowledge": "Knowledge",
+      "language": "Language",
+      "marksmanship": "Marksmanship",
+      "persuasion": "Persuasion",
+      "status": "Status",
+      "stealth": "Stealth",
+      "survival": "Survival",
+      "thievery": "Thievery",
+      "warfare": "Warfare",
+      "will": "Will"
+    },
+    "Age": {
+      "youth": "Youth",
+      "adult": "Adult",
+      "middleAge": "Middle age"
+    },
+    "Character": {
+      "alias": "Alias",
+      "age": "Age",
+      "gender": "Gender",
+      "house": "House",
+      "role": "Role",
+      "motto": "Motto",
+      "health": "Health",
+      "composure": "Composure",
+      "wounds": "Wounds",
+      "injuries": "Injuries",
+      "destiny": "Destiny",
+      "defenseCombat": "Combat defense",
+      "defenseIntrigue": "Intrigue defense",
+      "armor": "Armor",
+      "movement": "Movement",
+      "biography": "Biography"
+    },
+    "Npc": {
+      "sourceUrl": "Source sheet",
+      "openSource": "Open source sheet"
+    },
+    "House": {
+      "realm": "Realm",
+      "seat": "Seat",
+      "liege": "Liege",
+      "head": "Head of house",
+      "motto": "Motto",
+      "founding": "Founding",
+      "Create": "Create House",
+      "CreateSoon": "House creation is coming in a future version.",
+      "Resource": {
+        "defense": "Defense",
+        "influence": "Influence",
+        "lands": "Lands",
+        "law": "Law",
+        "population": "Population",
+        "power": "Power",
+        "wealth": "Wealth"
+      }
+    },
+    "Company": {
+      "origin": "Founders' origin",
+      "founding": "Age of the company",
+      "leader": "Company leader",
+      "motto": "Motto",
+      "cohesion": "Cohesion",
+      "supply": "Supply",
+      "monthlySupply": "Upkeep: -{value} per month",
+      "serviceSpace": "Service space",
+      "serviceUpkeep": "Upkeep: {value} Wealth",
+      "Create": "Create Company",
+      "CreateSoon": "Company creation is coming in a future version.",
+      "Resource": {
+        "renown": "Renown",
+        "authority": "Authority",
+        "manpower": "Manpower",
+        "might": "Might",
+        "wealth": "Wealth",
+        "organization": "Organization"
+      },
+      "Origin": {
+        "merchants": "Merchants",
+        "nobles": "Nobles",
+        "commoners": "Commoners",
+        "outlaws": "Outlaws",
+        "soldiers": "Soldiers",
+        "sailors": "Sailors",
+        "zealots": "Zealots"
+      },
+      "Cohesion": {
+        "excellent": "High morale (+2 Discipline)",
+        "good": "Steady (+1 Discipline)",
+        "minor": "Minor problems",
+        "logistics": "Logistics problems",
+        "critical": "Critical situation"
+      }
+    },
+    "Item": {
+      "New": "New {type}",
+      "equipped": "Equipped",
+      "description": "Description"
+    },
+    "Weapon": {
+      "ability": "Ability",
+      "specialty": "Specialty",
+      "damageAbility": "Damage ability",
+      "damageMod": "Damage modifier",
+      "defenseBonus": "Defense bonus",
+      "qualities": "Qualities"
+    },
+    "Armor": {
+      "rating": "Armor rating",
+      "penalty": "Penalty",
+      "bulk": "Bulk"
+    },
+    "Quality": {
+      "kind": "Kind",
+      "benefit": "Benefit",
+      "drawback": "Drawback",
+      "requirements": "Requirements"
+    },
+    "Blood": {
+      "summary": "Summary"
+    },
+    "Service": {
+      "size": "Size",
+      "category": "Category",
+      "effect": "Effect",
+      "Size": {
+        "small": "Small",
+        "medium": "Medium",
+        "large": "Large"
+      }
+    },
+    "Unit": {
+      "training": "Training",
+      "classes": "Classes (I, P, A, C, M, S)",
+      "mightCost": "Might cost",
+      "manpowerCost": "Manpower cost",
+      "disciplineMod": "Discipline modifier",
+      "discipline": "Discipline",
+      "men": "Men",
+      "experience": "Experience",
+      "keyAbilities": "Key abilities",
+      "Training": {
+        "support": "Support",
+        "green": "Green",
+        "trained": "Trained",
+        "veteran": "Veteran",
+        "elite": "Elite"
+      },
+      "Class": {
+        "I": "Infantry",
+        "P": "Anti-cavalry",
+        "A": "Ranged",
+        "C": "Mounted",
+        "M": "Naval",
+        "S": "Support"
+      }
+    },
+    "Difficulty": {
+      "automatic": "Automatic",
+      "easy": "Easy",
+      "routine": "Routine",
+      "challenging": "Challenging",
+      "formidable": "Formidable",
+      "hard": "Hard",
+      "veryHard": "Very hard",
+      "heroic": "Heroic"
+    },
+    "Roll": {
+      "DialogTitle": "Test: {ability}",
+      "Roll": "Roll",
+      "Rank": "Rank",
+      "Bonus": "Bonus dice",
+      "Penalty": "Penalty dice",
+      "Modifier": "Modifier",
+      "Difficulty": "Difficulty",
+      "NoDifficulty": "No difficulty",
+      "BonusAbbr": "B",
+      "PenaltyAbbr": "P",
+      "Against": "vs",
+      "Success": {
+        "1": "Success",
+        "2": "Success (2 degrees)",
+        "3": "Success (3 degrees)",
+        "4": "Success (4 degrees)"
+      },
+      "Failure": {
+        "1": "Marginal failure",
+        "2": "Critical failure"
+      }
+    }
+  }
+}

@@ -1,0 +1,35 @@
+<div class="afc-sheet">
+  <header class="afc-header">
+    <img class="portrait" src="{{actor.img}}" data-edit="img" alt="{{actor.name}}">
+    <div class="identity">
+      <input class="name" type="text" name="name" value="{{actor.name}}">
+      <div class="grid-3">
+        <label>{{localize "AFC.House.realm"}}<input type="text" name="system.realm" value="{{system.realm}}"></label>
+        <label>{{localize "AFC.House.seat"}}<input type="text" name="system.seat" value="{{system.seat}}"></label>
+        <label>{{localize "AFC.House.liege"}}<input type="text" name="system.liege" value="{{system.liege}}"></label>
+        <label>{{localize "AFC.House.head"}}<input type="text" name="system.head" value="{{system.head}}"></label>
+        <label>{{localize "AFC.House.motto"}}<input type="text" name="system.motto" value="{{system.motto}}"></label>
+        <label>{{localize "AFC.House.founding"}}<input type="text" name="system.founding" value="{{system.founding}}"></label>
+      </div>
+    </div>
+  </header>
+
+  {{#if editable}}
+  <button type="button" class="afc-create" data-action="createHouse"><i class="fa-solid fa-dice"></i> {{localize "AFC.House.Create"}}</button>
+  {{/if}}
+
+  <section class="afc-resources">
+    <h2>{{localize "AFC.Sheet.Resources"}}</h2>
+    <div class="resource-grid">
+      {{#each resources as |r|}}
+      <label class="resource">{{localize (concat "AFC.House.Resource." r.key)}}
+        <input type="number" name="system.resources.{{r.key}}.value" value="{{r.value}}" min="0"></label>
+      {{/each}}
+    </div>
+  </section>
+
+  <section class="afc-notes">
+    <h2>{{localize "AFC.Sheet.History"}}</h2>
+    <prose-mirror name="system.history" value="{{system.history}}" toggled>{{{enrichedHtml}}}</prose-mirror>
+  </section>
+</div>

@@ -1,0 +1,22 @@
+<div class="afc-test-dialog">
+  <p>{{localize "AFC.Roll.Rank"}} : <strong>{{ability.rank}}</strong></p>
+  {{#if ability.specialties.length}}
+  <label>{{localize "AFC.Sheet.Specialty"}}
+    <select name="specialty">
+      <option value="">—</option>
+      {{#each ability.specialties as |sp idx|}}<option value="{{idx}}">{{sp.name}} (+{{sp.bonus}}{{localize "AFC.Roll.BonusAbbr"}})</option>{{/each}}
+    </select>
+  </label>
+  {{/if}}
+  <label>{{localize "AFC.Roll.Bonus"}}<input type="number" name="bonus" value="0" min="0"></label>
+  <label>{{localize "AFC.Roll.Penalty"}}<input type="number" name="penalty" value="0" min="0"></label>
+  <label>{{localize "AFC.Roll.Modifier"}}<input type="number" name="modifier" value="0"></label>
+  <label>{{localize "AFC.Roll.Difficulty"}}
+    <select name="difficulty">
+      <option value="">{{localize "AFC.Roll.NoDifficulty"}}</option>
+      {{#each difficulties as |d|}}
+      <option value="{{d.value}}" {{#if d.selected}}selected{{/if}}>{{localize d.label}} ({{d.value}})</option>
+      {{/each}}
+    </select>
+  </label>
+</div>

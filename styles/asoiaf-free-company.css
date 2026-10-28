@@ -1,0 +1,62 @@
+/* ASOIAF Free Company : styles de base (mise en forme provisoire, le design viendra ensuite). */
+
+.afc.sheet .window-content { padding: 0.5rem; }
+.afc-sheet { display: flex; flex-direction: column; gap: 0.75rem; }
+.afc-sheet h2 { display: flex; align-items: center; gap: 0.5rem; margin: 0 0 0.25rem; font-size: 1.1em; border-bottom: 1px solid var(--color-border, #999); }
+.afc-sheet label { display: flex; flex-direction: column; font-size: 0.85em; gap: 2px; }
+.afc-sheet button.icon { flex: 0 0 auto; width: auto; padding: 0 0.35rem; line-height: 1.5; }
+.afc-sheet button.icon.active { color: var(--color-text-hyperlink, #c9593f); }
+
+.afc-header { display: flex; gap: 0.75rem; }
+.afc-header .portrait { width: 100px; height: 100px; object-fit: cover; border: none; cursor: pointer; }
+.afc-header .portrait.small { width: 64px; height: 64px; }
+.afc-header .identity { flex: 1; display: flex; flex-direction: column; gap: 0.35rem; }
+.afc-header .name { font-size: 1.6em; height: auto; }
+
+.grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.4rem 0.75rem; }
+.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.4rem 0.75rem; }
+.grid-2 .wide { grid-column: 1 / -1; }
+
+.afc-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
+.afc-stats .stat { display: flex; flex-direction: column; align-items: center; padding: 0.35rem; border: 1px solid var(--color-border, #999); border-radius: 4px; }
+.afc-stats .label { font-size: 0.8em; text-transform: uppercase; opacity: 0.8; }
+.afc-stats .value { font-size: 1.4em; font-weight: bold; display: flex; align-items: center; gap: 0.25rem; }
+.afc-stats .value input { width: 3em; text-align: center; }
+.afc-stats .hint { font-size: 0.8em; opacity: 0.8; }
+
+.afc-abilities .ability-list { list-style: none; margin: 0; padding: 0; columns: 2; column-gap: 1rem; }
+.afc-abilities .ability { break-inside: avoid; margin-bottom: 0.2rem; }
+.afc-abilities .ability-row { display: flex; align-items: center; gap: 0.35rem; }
+.afc-abilities .ability-roll { flex: 1; text-align: left; justify-content: flex-start; }
+.afc-abilities .rank { width: 3em; text-align: center; font-weight: bold; }
+.afc-abilities .specialties { list-style: none; margin: 0 0 0 1.5rem; padding: 0; }
+.afc-abilities .specialties li { display: flex; align-items: center; gap: 0.25rem; }
+.afc-abilities .specialties .bonus { width: 2.5em; text-align: center; }
+
+.afc-resources .resource-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 0.5rem; }
+.afc-resources .resource input { font-size: 1.3em; text-align: center; }
+
+.afc-items ul { list-style: none; margin: 0; padding: 0; }
+.afc-items li { display: flex; align-items: center; gap: 0.4rem; padding: 2px 0; }
+.afc-items li img { width: 24px; height: 24px; border: none; }
+.afc-items li a { flex: 1; }
+.afc-items .tag { font-size: 0.8em; padding: 0 0.3rem; border: 1px solid var(--color-border, #999); border-radius: 3px; }
+
+.afc-create { align-self: flex-start; }
+.afc-notes prose-mirror { min-height: 150px; }
+
+/* Carte de chat des tests */
+.afc-test-card header { display: flex; justify-content: space-between; align-items: baseline; }
+.afc-test-card h3 { margin: 0; border: none; }
+.afc-test-card .pool { font-size: 0.85em; opacity: 0.8; }
+.afc-test-card .dice { display: flex; flex-wrap: wrap; gap: 4px; list-style: none; margin: 0.4rem 0; padding: 0; }
+.afc-test-card .die { width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; border: 1px solid currentColor; border-radius: 4px; font-weight: bold; }
+.afc-test-card .die.d6 { background: rgba(201, 89, 63, 0.2); }
+.afc-test-card .die.dropped { opacity: 0.35; text-decoration: line-through; }
+.afc-test-card .total { font-size: 2em; font-weight: bold; text-align: center; }
+.afc-test-card .outcome { text-align: center; font-weight: bold; display: flex; flex-direction: column; }
+.afc-test-card .outcome small { font-weight: normal; opacity: 0.8; }
+.afc-test-card.success .outcome { color: #2e7d32; }
+.afc-test-card.failure .outcome { color: #b71c1c; }
+
+.afc-test-dialog { display: flex; flex-direction: column; gap: 0.4rem; }

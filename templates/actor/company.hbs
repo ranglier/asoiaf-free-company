@@ -1,0 +1,79 @@
+<div class="afc-sheet">
+  <header class="afc-header">
+    <img class="portrait" src="{{actor.img}}" data-edit="img" alt="{{actor.name}}">
+    <div class="identity">
+      <input class="name" type="text" name="name" value="{{actor.name}}">
+      <div class="grid-3">
+        <label>{{localize "AFC.Company.origin"}}
+          <select name="system.origin"><option value=""></option>{{selectOptions origins selected=system.origin localize=true}}</select></label>
+        <label>{{localize "AFC.Company.founding"}}<input type="text" name="system.founding" value="{{system.founding}}"></label>
+        <label>{{localize "AFC.Company.leader"}}
+          <select name="system.leader"><option value=""></option>{{selectOptions leaderOptions selected=system.leader}}</select></label>
+        <label>{{localize "AFC.Company.motto"}}<input type="text" name="system.motto" value="{{system.motto}}"></label>
+      </div>
+    </div>
+  </header>
+
+  {{#if editable}}
+  <button type="button" class="afc-create" data-action="createCompany"><i class="fa-solid fa-dice"></i> {{localize "AFC.Company.Create"}}</button>
+  {{/if}}
+
+  <section class="afc-resources">
+    <h2>{{localize "AFC.Sheet.Resources"}}</h2>
+    <div class="resource-grid">
+      {{#each resources as |r|}}
+      <label class="resource">{{localize (concat "AFC.Company.Resource." r.key)}}
+        <input type="number" name="system.resources.{{r.key}}.value" value="{{r.value}}" min="0"></label>
+      {{/each}}
+    </div>
+  </section>
+
+  <section class="afc-stats">
+    <div class="stat"><span class="label">{{localize "AFC.Company.cohesion"}}</span>
+      <span class="value"><input type="number" name="system.cohesion" value="{{system.cohesion}}"> / {{system.cohesionState.max}}
+        <small>({{system.cohesionState.pct}} %)</small></span>
+      <span class="hint">{{localize system.cohesionState.label}}</span></div>
+    <div class="stat"><span class="label">{{localize "AFC.Company.supply"}}</span>
+      <span class="value"><input type="number" name="system.supply" value="{{system.supply}}"></span>
+      <span class="hint">{{localize "AFC.Company.monthlySupply" value=system.monthlySupply}}</span></div>
+    <div class="stat"><span class="label">{{localize "AFC.Company.serviceSpace"}}</span>
+      <span class="value">{{system.services.spaceUsed}} / {{system.services.spaceMax}}</span>
+      <span class="hint">{{localize "AFC.Company.serviceUpkeep" value=system.services.upkeep}}</span></div>
+  </section>
+
+  <section class="afc-items">
+    <h2>{{localize "TYPES.Item.service"}}
+      {{#if editable}}<button type="button" class="icon" data-action="createItem" data-type="service"><i class="fa-solid fa-plus"></i></button>{{/if}}
+    </h2>
+    <ul>
+      {{#each items.service as |item|}}
+      <li data-item-id="{{item.id}}">
+        <img src="{{item.img}}" alt=""><a data-action="editItem">{{item.name}}</a>
+        <span class="tag">{{localize (concat "AFC.Service.Size." item.system.size)}}</span>
+        {{#if @root.editable}}<button type="button" class="icon" data-action="deleteItem"><i class="fa-solid fa-trash"></i></button>{{/if}}
+      </li>
+      {{/each}}
+    </ul>
+  </section>
+
+  <section class="afc-items">
+    <h2>{{localize "TYPES.Item.unit"}}
+      {{#if editable}}<button type="button" class="icon" data-action="createItem" data-type="unit"><i class="fa-solid fa-plus"></i></button>{{/if}}
+    </h2>
+    <ul>
+      {{#each units as |u|}}
+      <li data-item-id="{{u.item.id}}">
+        <img src="{{u.item.img}}" alt=""><a data-action="editItem">{{u.item.name}}</a>
+        <span class="tag">{{localize u.training}}</span>
+        <span class="tag">{{localize "AFC.Unit.discipline"}} {{u.item.system.discipline}}</span>
+        {{#if @root.editable}}<button type="button" class="icon" data-action="deleteItem"><i class="fa-solid fa-trash"></i></button>{{/if}}
+      </li>
+      {{/each}}
+    </ul>
+  </section>
+
+  <section class="afc-notes">
+    <h2>{{localize "AFC.Sheet.History"}}</h2>
+    <prose-mirror name="system.history" value="{{system.history}}" toggled>{{{enrichedHtml}}}</prose-mirror>
+  </section>
+</div>
