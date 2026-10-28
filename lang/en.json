@@ -7,15 +7,28 @@
       "company": "Company"
     },
     "Item": {
-      "weapon": "Weapons",
+      "weapon": "Weapon",
       "armor": "Armor",
-      "quality": "Qualities",
+      "quality": "Quality",
       "blood": "Blood",
-      "service": "Services",
-      "unit": "Units"
+      "service": "Service",
+      "unit": "Unit",
+      "holding": "Holding"
     }
   },
   "AFC": {
+    "AbilityGroup": {
+      "combat": "Combat",
+      "society": "Society",
+      "knowledge": "Knowledge",
+      "terrain": "Terrain"
+    },
+    "Plural": {
+      "weapon": "Weapons",
+      "armor": "Armor",
+      "quality": "Qualities",
+      "blood": "Blood"
+    },
     "Sheet": {
       "character": "Character sheet",
       "npc": "NPC sheet",
@@ -35,7 +48,13 @@
       "combat": "Combat",
       "equipment": "Equipment",
       "qualities": "Blood and qualities",
-      "biography": "Biography"
+      "biography": "Biography",
+      "services": "Services",
+      "units": "Units",
+      "history": "History",
+      "holdings": "Holdings",
+      "household": "Household",
+      "members": "Members"
     },
     "Table": {
       "equipped": "Equipped",
@@ -46,7 +65,57 @@
       "grip": "Grip",
       "addWeapon": "Add a weapon",
       "addArmor": "Add armor",
-      "totalBulk": "Total bulk"
+      "totalBulk": "Total bulk",
+      "service": "Service",
+      "space": "Space",
+      "upkeep": "Upkeep",
+      "noService": "No service.",
+      "addService": "Add a service",
+      "unit": "Unit",
+      "manpowerShort": "Manpower",
+      "mightShort": "Might",
+      "xp": "XP",
+      "noUnit": "No unit.",
+      "total": "Total",
+      "addUnit": "Add a unit",
+      "addHolding": "Add a holding"
+    },
+    "Holding": {
+      "resource": "Invested resource",
+      "cost": "Cost",
+      "effect": "Effect",
+      "requirement": "Requirement",
+      "buildTime": "Build time",
+      "building": "Under construction"
+    },
+    "Household": {
+      "role": "Role",
+      "name": "Name",
+      "actor": "Sheet",
+      "empty": "No member.",
+      "add": "Add a member",
+      "lord": "Lord",
+      "lady": "Lady",
+      "heir": "Heir",
+      "maester": "Maester",
+      "septon": "Septon",
+      "masterAtArms": "Master-at-arms",
+      "steward": "Steward",
+      "castellan": "Castellan",
+      "knight": "Sworn knight",
+      "other": "Other"
+    },
+    "Realm": {
+      "crownlands": "The Crownlands",
+      "dorne": "Dorne",
+      "ironIslands": "The Iron Islands",
+      "north": "The North",
+      "riverlands": "The Riverlands",
+      "vale": "The Vale of Arryn",
+      "reach": "The Reach",
+      "stormlands": "The Stormlands",
+      "westerlands": "The Westerlands",
+      "other": "Other (Essos...)"
     },
     "Settings": {
       "defaultDifficulty": {
@@ -151,7 +220,8 @@
     },
     "Npc": {
       "sourceUrl": "Source sheet",
-      "openSource": "Open source sheet"
+      "openSource": "Open source sheet",
+      "otherAbilities": "Other abilities (rank 2):"
     },
     "House": {
       "realm": "Realm",
@@ -160,6 +230,16 @@
       "head": "Head of house",
       "motto": "Motto",
       "founding": "Founding",
+      "arms": "Arms",
+      "glory": "Glory",
+      "gloryHint": "1 point: +1B on a test, or +1 to a house resource",
+      "invested": "Invested",
+      "available": "Available",
+      "events": "Historical events",
+      "event": "Event",
+      "eventNote": "Effects and story",
+      "noEvent": "No event.",
+      "addEvent": "Add an event",
       "Create": "Create House",
       "CreateSoon": "House creation is coming in a future version.",
       "Resource": {
@@ -182,6 +262,7 @@
       "monthlySupply": "Upkeep: -{value} per month",
       "serviceSpace": "Service space",
       "serviceUpkeep": "Upkeep: {value} Wealth",
+      "ledBy": "led by",
       "Create": "Create Company",
       "CreateSoon": "Company creation is coming in a future version.",
       "Resource": {
@@ -219,6 +300,7 @@
       "specialty": "Specialty",
       "specialtyHint": "Long Blades, Bows...",
       "training": "Training (bonus dice required)",
+      "trainingShort": "Training",
       "damageAbility": "Damage ability",
       "damageMod": "Damage modifier",
       "defenseBonus": "Defensive bonus",

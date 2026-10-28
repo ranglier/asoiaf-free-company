@@ -2,7 +2,7 @@ import { ABILITIES, AGES, DEFAULT_RANK, SPECIALTY_NAMES } from "../config.mjs";
 
 const { fields } = foundry.data;
 
-/** Schéma d'une capacité : rang + spécialités (dés bonus). */
+/** Schéma d'une compétence : rang + spécialités (dés de bonus). */
 export function abilitySchema() {
   return new fields.SchemaField({
     rank: new fields.NumberField({ required: true, integer: true, min: 1, max: 7, initial: DEFAULT_RANK }),

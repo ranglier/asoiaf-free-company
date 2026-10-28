@@ -1,4 +1,4 @@
-import { ABILITIES, ATTACK_ABILITIES, SERVICE_SIZES, UNIT_CLASSES, UNIT_TRAININGS } from "../config.mjs";
+import { ABILITIES, ATTACK_ABILITIES, HOLDING_RESOURCES, SERVICE_SIZES, UNIT_CLASSES, UNIT_TRAININGS } from "../config.mjs";
 
 const { fields } = foundry.data;
 
@@ -75,7 +75,22 @@ export class ServiceData extends foundry.abstract.TypeDataModel {
   }
 }
 
-/** Unité militaire d'une Compagnie. */
+/** Possession d'une Maison : investissement dans une ressource (château, héritier, domaine, vassal, mestre...). */
+export class HoldingData extends foundry.abstract.TypeDataModel {
+  static defineSchema() {
+    return {
+      resource: new fields.StringField({ initial: "wealth", choices: HOLDING_RESOURCES }),
+      cost: int(0, { min: 0 }),
+      effect: new fields.StringField({ blank: true }),
+      requirement: new fields.StringField({ blank: true }),
+      buildTime: new fields.StringField({ blank: true }),
+      building: new fields.BooleanField({ initial: false }),
+      description: description()
+    };
+  }
+}
+
+/** Unité militaire d'une Compagnie ou d'une Maison. */
 export class UnitData extends foundry.abstract.TypeDataModel {
   static defineSchema() {
     return {

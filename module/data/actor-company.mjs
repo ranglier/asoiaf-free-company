@@ -17,6 +17,12 @@ export default class CompanyData extends foundry.abstract.TypeDataModel {
       resources: new fields.SchemaField(Object.fromEntries(COMPANY_RESOURCES.map(k => [k, resource()]))),
       supply: new fields.NumberField({ required: true, integer: true, min: 0, initial: 0 }),
       cohesion: new fields.NumberField({ required: true, integer: true, min: 0, initial: 0 }),
+      // Membres : rôle (texte libre), nom, et lien éventuel vers un acteur du monde.
+      members: new fields.ArrayField(new fields.SchemaField({
+        role: new fields.StringField({ blank: true }),
+        name: new fields.StringField({ blank: true }),
+        actor: new fields.StringField({ blank: true })
+      })),
       history: new fields.HTMLField({ blank: true })
     };
   }

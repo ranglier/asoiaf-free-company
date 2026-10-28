@@ -6,7 +6,7 @@ import CharacterData from "./module/data/actor-character.mjs";
 import NpcData from "./module/data/actor-npc.mjs";
 import HouseData from "./module/data/actor-house.mjs";
 import CompanyData from "./module/data/actor-company.mjs";
-import { ArmorData, BloodData, QualityData, ServiceData, UnitData, WeaponData } from "./module/data/items.mjs";
+import { ArmorData, BloodData, HoldingData, QualityData, ServiceData, UnitData, WeaponData } from "./module/data/items.mjs";
 import { CharacterSheet, CompanySheet, HouseSheet, NpcSheet } from "./module/sheets/actor-sheets.mjs";
 import { AFCItemSheet } from "./module/sheets/item-sheet.mjs";
 import { evaluateTest, rollAbilityTest, rollTest } from "./module/dice/test-roll.mjs";
@@ -30,6 +30,7 @@ Hooks.once("init", () => {
     quality: QualityData,
     blood: BloodData,
     service: ServiceData,
+    holding: HoldingData,
     unit: UnitData
   });
 
@@ -43,7 +44,8 @@ Hooks.once("init", () => {
   DocumentSheetConfig.registerSheet(Item, AFC.SYSTEM_ID, AFCItemSheet, { makeDefault: true, label: "AFC.Sheet.item" });
 
   return foundry.applications.handlebars.loadTemplates([
-    `systems/${AFC.SYSTEM_ID}/templates/actor/parts/abilities.hbs`
+    ...["abilities", "vitals", "tabs-nav", "weapons", "armor", "qualities", "mode-toggle", "resources", "members"]
+      .map(p => `systems/${AFC.SYSTEM_ID}/templates/actor/parts/${p}.hbs`)
   ]);
 });
 

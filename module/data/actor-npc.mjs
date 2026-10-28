@@ -2,7 +2,7 @@ import { abilitiesSchema, prepareCombatValues } from "./actor-character.mjs";
 
 const { fields } = foundry.data;
 
-/** PNJ allégé : capacités et santé, avec un lien vers la fiche source (Maze). */
+/** PNJ allégé : compétences et santé, avec un lien vers la fiche source (Maze). */
 export default class NpcData extends foundry.abstract.TypeDataModel {
   static defineSchema() {
     return {

@@ -1,0 +1,28 @@
+      <table class="afc-table">
+        <thead><tr>
+          <th>{{localize "AFC.Household.role"}}</th>
+          <th>{{localize "AFC.Household.name"}}</th>
+          <th>{{localize "AFC.Household.actor"}}</th>
+          <th></th>
+        </tr></thead>
+        <tbody>
+        {{#each members as |m|}}
+        <tr>
+          {{#if @root.editMode}}
+          <td><input type="text" name="system.{{@root.memberList}}.{{m.index}}.role" value="{{m.role}}"></td>
+          <td><input type="text" name="system.{{@root.memberList}}.{{m.index}}.name" value="{{m.name}}"></td>
+          <td><select name="system.{{@root.memberList}}.{{m.index}}.actor"><option value=""></option>{{selectOptions @root.actorOptions selected=m.actor}}</select></td>
+          <td class="item-actions"><a class="icon" data-action="removeRow" data-list="{{@root.memberList}}" data-index="{{m.index}}"><i class="fa-solid fa-trash"></i></a></td>
+          {{else}}
+          <td class="role">{{m.role}}</td>
+          <td>{{#if m.name}}{{m.name}}{{else}}{{m.linked.name}}{{/if}}</td>
+          <td>{{#if m.linked}}<a class="linked-actor" data-action="openActor" data-actor-id="{{m.linked.id}}"><img src="{{m.linked.img}}" alt=""> {{m.linked.name}}</a>{{else}}—{{/if}}</td>
+          <td></td>
+          {{/if}}
+        </tr>
+        {{else}}
+        <tr><td colspan="4" class="hint">{{localize "AFC.Household.empty"}}</td></tr>
+        {{/each}}
+        </tbody>
+      </table>
+      {{#if editMode}}<a class="add-item" data-action="addRow" data-list="{{memberList}}"><i class="fa-solid fa-plus"></i> {{localize "AFC.Household.add"}}</a>{{/if}}

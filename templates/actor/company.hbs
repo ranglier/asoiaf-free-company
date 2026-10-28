@@ -1,79 +1,134 @@
-<div class="afc-sheet">
+<div class="afc-sheet parchment {{#if editMode}}edit-mode{{else}}play-mode{{/if}}">
   <header class="afc-header">
-    <img class="portrait" src="{{actor.img}}" data-edit="img" alt="{{actor.name}}">
+    <img class="portrait" src="{{actor.img}}" data-action="editImage" data-edit="img" alt="{{actor.name}}">
     <div class="identity">
+      {{#if editMode}}
       <input class="name" type="text" name="name" value="{{actor.name}}">
-      <div class="grid-3">
-        <label>{{localize "AFC.Company.origin"}}
-          <select name="system.origin"><option value=""></option>{{selectOptions origins selected=system.origin localize=true}}</select></label>
+      <div class="grid-2">
+        <label>{{localize "AFC.Company.origin"}}<select name="system.origin"><option value=""></option>{{selectOptions origins selected=system.origin localize=true}}</select></label>
         <label>{{localize "AFC.Company.founding"}}<input type="text" name="system.founding" value="{{system.founding}}"></label>
-        <label>{{localize "AFC.Company.leader"}}
-          <select name="system.leader"><option value=""></option>{{selectOptions leaderOptions selected=system.leader}}</select></label>
+        <label>{{localize "AFC.Company.leader"}}<select name="system.leader"><option value=""></option>{{selectOptions leaderOptions selected=system.leader}}</select></label>
         <label>{{localize "AFC.Company.motto"}}<input type="text" name="system.motto" value="{{system.motto}}"></label>
       </div>
+      {{else}}
+      <h1 class="name">{{actor.name}}</h1>
+      {{#if system.motto}}<p class="motto">« {{system.motto}} »</p>{{/if}}
+      <p class="subtitle">
+        {{#if originLabel}}{{localize originLabel}}{{/if}}{{#if system.founding}} · {{system.founding}}{{/if}}{{#if leader}} · {{localize "AFC.Company.ledBy"}} {{leader.name}}{{/if}}
+      </p>
+      {{/if}}
+    </div>
+    <div class="header-side">
+      {{> "systems/asoiaf-free-company/templates/actor/parts/mode-toggle.hbs"}}
     </div>
   </header>
 
-  {{#if editable}}
-  <button type="button" class="afc-create" data-action="createCompany"><i class="fa-solid fa-dice"></i> {{localize "AFC.Company.Create"}}</button>
-  {{/if}}
-
-  <section class="afc-resources">
+  <div class="section-title">
     <h2>{{localize "AFC.Sheet.Resources"}}</h2>
-    <div class="resource-grid">
-      {{#each resources as |r|}}
-      <label class="resource">{{localize (concat "AFC.Company.Resource." r.key)}}
-        <input type="number" name="system.resources.{{r.key}}.value" value="{{r.value}}" min="0"></label>
-      {{/each}}
+    {{#if editable}}<button type="button" class="afc-create" data-action="createCompany"><i class="fa-solid fa-dice"></i> {{localize "AFC.Company.Create"}}</button>{{/if}}
+  </div>
+  {{> "systems/asoiaf-free-company/templates/actor/parts/resources.hbs"}}
+
+  <section class="afc-vitals company-status">
+    <div class="vital">
+      <span class="label">{{localize "AFC.Company.cohesion"}}</span>
+      <div class="bar"><div style="width:{{cohesionPct}}%"></div></div>
+      <span class="value"><input type="number" name="system.cohesion" value="{{system.cohesion}}" min="0"> / {{system.cohesionState.max}}</span>
+      <span class="hint">{{system.cohesionState.pct}} % · {{localize system.cohesionState.label}}</span>
+    </div>
+    <div class="vital">
+      <span class="label">{{localize "AFC.Company.supply"}}</span>
+      <span class="value"><input type="number" name="system.supply" value="{{system.supply}}" min="0"></span>
+      <span class="hint">{{localize "AFC.Company.monthlySupply" value=system.monthlySupply}}</span>
+    </div>
+    <div class="vital">
+      <span class="label">{{localize "AFC.Company.serviceSpace"}}</span>
+      <div class="bar"><div style="width:{{spacePct}}%"></div></div>
+      <span class="value">{{system.services.spaceUsed}} / {{system.services.spaceMax}}</span>
+      <span class="hint">{{localize "AFC.Company.serviceUpkeep" value=system.services.upkeep}}</span>
     </div>
   </section>
 
-  <section class="afc-stats">
-    <div class="stat"><span class="label">{{localize "AFC.Company.cohesion"}}</span>
-      <span class="value"><input type="number" name="system.cohesion" value="{{system.cohesion}}"> / {{system.cohesionState.max}}
-        <small>({{system.cohesionState.pct}} %)</small></span>
-      <span class="hint">{{localize system.cohesionState.label}}</span></div>
-    <div class="stat"><span class="label">{{localize "AFC.Company.supply"}}</span>
-      <span class="value"><input type="number" name="system.supply" value="{{system.supply}}"></span>
-      <span class="hint">{{localize "AFC.Company.monthlySupply" value=system.monthlySupply}}</span></div>
-    <div class="stat"><span class="label">{{localize "AFC.Company.serviceSpace"}}</span>
-      <span class="value">{{system.services.spaceUsed}} / {{system.services.spaceMax}}</span>
-      <span class="hint">{{localize "AFC.Company.serviceUpkeep" value=system.services.upkeep}}</span></div>
-  </section>
+  {{> "systems/asoiaf-free-company/templates/actor/parts/tabs-nav.hbs"}}
 
-  <section class="afc-items">
-    <h2>{{localize "TYPES.Item.service"}}
-      {{#if editable}}<button type="button" class="icon" data-action="createItem" data-type="service"><i class="fa-solid fa-plus"></i></button>{{/if}}
-    </h2>
-    <ul>
-      {{#each items.service as |item|}}
-      <li data-item-id="{{item.id}}">
-        <img src="{{item.img}}" alt=""><a data-action="editItem">{{item.name}}</a>
-        <span class="tag">{{localize (concat "AFC.Service.Size." item.system.size)}}</span>
-        {{#if @root.editable}}<button type="button" class="icon" data-action="deleteItem"><i class="fa-solid fa-trash"></i></button>{{/if}}
-      </li>
-      {{/each}}
-    </ul>
-  </section>
+  <div class="tab-body">
+    <section class="tab {{tabs.services.cssClass}}" data-group="primary" data-tab="services">
+      <table class="afc-table">
+        <thead><tr>
+          <th>{{localize "AFC.Table.service"}}</th>
+          <th class="center">{{localize "AFC.Service.size"}}</th>
+          <th class="center">{{localize "AFC.Table.space"}}</th>
+          <th class="center">{{localize "AFC.Table.upkeep"}}</th>
+          <th>{{localize "AFC.Service.effect"}}</th>
+          <th></th>
+        </tr></thead>
+        <tbody>
+        {{#each services as |s|}}
+        <tr data-item-id="{{s.item.id}}">
+          <td><div class="item-name"><img src="{{s.item.img}}" alt=""><div><a data-action="editItem">{{s.item.name}}</a>
+            {{#if s.item.system.category}}<span class="sub">{{s.item.system.category}}</span>{{/if}}</div></div></td>
+          <td class="center">{{localize s.size.label}}</td>
+          <td class="center">{{s.size.space}}</td>
+          <td class="center">{{s.size.upkeep}}</td>
+          <td class="effect">{{s.item.system.effect}}</td>
+          <td class="item-actions">{{#if @root.editable}}<a class="icon" data-action="deleteItem" data-tooltip="{{localize "Delete"}}"><i class="fa-solid fa-trash"></i></a>{{/if}}</td>
+        </tr>
+        {{else}}
+        <tr><td colspan="6" class="hint">{{localize "AFC.Table.noService"}}</td></tr>
+        {{/each}}
+        </tbody>
+      </table>
+      {{#if editable}}<a class="add-item" data-action="createItem" data-type="service"><i class="fa-solid fa-plus"></i> {{localize "AFC.Table.addService"}}</a>{{/if}}
+    </section>
 
-  <section class="afc-items">
-    <h2>{{localize "TYPES.Item.unit"}}
-      {{#if editable}}<button type="button" class="icon" data-action="createItem" data-type="unit"><i class="fa-solid fa-plus"></i></button>{{/if}}
-    </h2>
-    <ul>
-      {{#each units as |u|}}
-      <li data-item-id="{{u.item.id}}">
-        <img src="{{u.item.img}}" alt=""><a data-action="editItem">{{u.item.name}}</a>
-        <span class="tag">{{localize u.training}}</span>
-        <span class="tag">{{localize "AFC.Unit.discipline"}} {{u.item.system.discipline}}</span>
-        {{#if @root.editable}}<button type="button" class="icon" data-action="deleteItem"><i class="fa-solid fa-trash"></i></button>{{/if}}
-      </li>
-      {{/each}}
-    </ul>
-  </section>
+    <section class="tab {{tabs.units.cssClass}}" data-group="primary" data-tab="units">
+      <table class="afc-table">
+        <thead><tr>
+          <th>{{localize "AFC.Table.unit"}}</th>
+          <th>{{localize "AFC.Unit.training"}}</th>
+          <th class="center">{{localize "AFC.Unit.discipline"}}</th>
+          <th class="center">{{localize "AFC.Unit.men"}}</th>
+          <th class="center">{{localize "AFC.Table.manpowerShort"}}</th>
+          <th class="center">{{localize "AFC.Table.mightShort"}}</th>
+          <th class="center">{{localize "AFC.Table.xp"}}</th>
+          <th></th>
+        </tr></thead>
+        <tbody>
+        {{#each units as |u|}}
+        <tr data-item-id="{{u.item.id}}">
+          <td><div class="item-name"><img src="{{u.item.img}}" alt=""><div><a data-action="editItem">{{u.item.name}}</a>
+            <span class="sub">{{u.classes}}{{#if u.item.system.keyAbilities}} · {{u.item.system.keyAbilities}}{{/if}}</span></div></div></td>
+          <td>{{localize u.training}}</td>
+          <td class="center big-num">{{u.item.system.discipline}}</td>
+          <td class="center">{{u.item.system.men}}</td>
+          <td class="center">{{u.item.system.manpowerCost}}</td>
+          <td class="center">{{u.item.system.mightCost}}</td>
+          <td class="center">{{u.item.system.experience}}</td>
+          <td class="item-actions">{{#if @root.editable}}<a class="icon" data-action="deleteItem" data-tooltip="{{localize "Delete"}}"><i class="fa-solid fa-trash"></i></a>{{/if}}</td>
+        </tr>
+        {{else}}
+        <tr><td colspan="8" class="hint">{{localize "AFC.Table.noUnit"}}</td></tr>
+        {{/each}}
+        </tbody>
+        {{#if units.length}}
+        <tfoot><tr>
+          <td colspan="3">{{localize "AFC.Table.total"}}</td>
+          <td class="center">{{unitTotals.men}}</td>
+          <td class="center">{{unitTotals.manpower}}</td>
+          <td class="center">{{unitTotals.might}}</td>
+          <td colspan="2"></td>
+        </tr></tfoot>
+        {{/if}}
+      </table>
+      {{#if editable}}<a class="add-item" data-action="createItem" data-type="unit"><i class="fa-solid fa-plus"></i> {{localize "AFC.Table.addUnit"}}</a>{{/if}}
+    </section>
 
-  <section class="afc-notes">
-    <h2>{{localize "AFC.Sheet.History"}}</h2>
-    <prose-mirror name="system.history" value="{{system.history}}" toggled>{{{enrichedHtml}}}</prose-mirror>
-  </section>
+    <section class="tab {{tabs.members.cssClass}}" data-group="primary" data-tab="members">
+      {{> "systems/asoiaf-free-company/templates/actor/parts/members.hbs"}}
+    </section>
+
+    <section class="tab {{tabs.history.cssClass}}" data-group="primary" data-tab="history">
+      <prose-mirror name="system.history" value="{{system.history}}" toggled>{{{enrichedHtml}}}</prose-mirror>
+    </section>
+  </div>
 </div>

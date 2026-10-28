@@ -1,0 +1,22 @@
+  <section class="afc-vitals">
+    <div class="vital">
+      <span class="label">{{localize "AFC.Character.health"}}</span>
+      <div class="bar health"><div style="width:{{healthPct}}%"></div></div>
+      <span class="value"><input type="number" name="system.health.value" value="{{system.health.value}}" min="0"> / {{system.health.max}}</span>
+    </div>
+    <div class="vital">
+      <span class="label">{{localize "AFC.Character.wounds"}}</span>
+      <span class="pips">{{#each track.wounds as |p|}}<a class="pip {{#if p.on}}on{{/if}}" data-action="setPip" data-path="system.wounds.value" data-n="{{p.n}}"></a>{{/each}}</span>
+      <span class="hint">{{#if system.wounds.value}}−{{system.wounds.value}}D{{else}}—{{/if}}</span>
+    </div>
+    <div class="vital">
+      <span class="label">{{localize "AFC.Character.injuries"}}</span>
+      <span class="pips">{{#each track.injuries as |p|}}<a class="pip {{#if p.on}}on{{/if}}" data-action="setPip" data-path="system.injuries.value" data-n="{{p.n}}"></a>{{/each}}</span>
+      <span class="hint">{{#if system.injuries.value}}−{{system.injuries.value}}{{else}}—{{/if}}</span>
+    </div>
+    <div class="vital big"><span class="label">{{localize "AFC.Character.defenseCombat"}}</span><span class="value">{{system.defense.combat}}</span></div>
+    <div class="vital big"><span class="label">{{localize "AFC.Character.armor"}}</span><span class="value">{{system.armor.rating}}</span>
+      {{#if system.armor.penalty}}<span class="hint">−{{system.armor.penalty}} {{localize "AFC.Character.armorPenalty"}}</span>{{/if}}</div>
+    <div class="vital big"><span class="label">{{localize "AFC.Character.movement"}}</span><span class="value">{{system.movement.value}} m</span>
+      <span class="hint">{{localize "AFC.Character.sprint"}} {{system.movement.sprint}} m</span></div>
+  </section>

@@ -8,7 +8,7 @@ const renderTemplate = (...args) => foundry.applications.handlebars.renderTempla
  * Profil d'attaque d'une arme pour un acteur : dés, dés bonus, malus et dégâts de base.
  * - spécialité de l'arme = dés bonus, moins la Formation (le manque devient des dés de malus) ;
  * - arme à deux mains tenue à une main : -2D ;
- * - dégâts de base = rang de la capacité de dégâts + modificateur (minimum 1),
+ * - dégâts de base = rang de la compétence de dégâts + modificateur (minimum 1),
  *   +1 si Polyvalente à deux mains, +1 par dé bonus en Force si Puissante.
  */
 export function weaponProfile(actor, weapon) {
@@ -16,7 +16,8 @@ export function weaponProfile(actor, weapon) {
   const a = actor.system.abilities;
   const ability = a[w.ability];
   const twoHands = w.grip === "two" || w.twoHanded;
-  let bonus = (w.specialty ? specialtyBonus(ability, w.specialty) : 0) - w.training;
+  const specBonus = w.specialty ? specialtyBonus(ability, w.specialty) : 0;
+  let bonus = specBonus - w.training;
   let penalty = bonus < 0 ? -bonus : 0;
   bonus = Math.max(0, bonus);
   if (w.twoHanded && w.grip !== "two") penalty += 2;
@@ -28,7 +29,10 @@ export function weaponProfile(actor, weapon) {
   return {
     abilityKey: w.ability,
     abilityLabel: game.i18n.localize(ABILITIES[w.ability].label),
-    rank: ability.rank, bonus, penalty, damage
+    rank: ability.rank, bonus, penalty, damage,
+    // Détail pour l'affichage : dés de la spécialité, dés retirés par la Formation, malus à une main.
+    specialty: w.specialty, specBonus, training: w.training,
+    oneHandPenalty: w.twoHanded && w.grip !== "two" ? 2 : 0
   };
 }
 
@@ -43,7 +47,7 @@ export function weaponQualities(weapon) {
   if (w.defenseBonus) list.push(`${game.i18n.localize("AFC.Weapon.Short.defensive")} +${w.defenseBonus}`);
   // Texte libre, sans répéter les qualités déjà listées.
   const known = new Set(list.map(q => q.split(" ")[0].toLowerCase()));
-  for (const q of w.qualities.split(",").map(q => q.trim()).filter(Boolean)) {
+  for (const q of (w.qualities ?? "").split(",").map(q => q.trim()).filter(Boolean)) {
     if (!known.has(q.split(" ")[0].toLowerCase())) list.push(q);
   }
   return list.join(", ");
@@ -102,6 +106,9 @@ export async function rollAttack(actor, weapon, { quick = false } = {}) {
   let modifier = opts.modifier;
   let damageBase = profile.damage;
   const notes = [];
+  if (profile.specialty) notes.push(`${profile.specialty} +${profile.specBonus}B`);
+  if (profile.training) notes.push(`${game.i18n.localize("AFC.Weapon.trainingShort")} −${profile.training}B`);
+  if (profile.oneHandPenalty) notes.push(`${game.i18n.localize("AFC.Weapon.oneHand")} −${profile.oneHandPenalty}D`);
   for (const key of opts.options) {
     const o = ATTACK_OPTIONS[key];
     if (o.dice > 0) rank += o.dice;

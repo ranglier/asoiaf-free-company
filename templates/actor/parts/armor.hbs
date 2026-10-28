@@ -1,0 +1,23 @@
+      <table class="afc-table">
+        <thead><tr>
+          <th class="col-equip">{{localize "AFC.Table.equipped"}}</th>
+          <th>{{localize "AFC.Table.armor"}}</th>
+          <th class="center">{{localize "AFC.Armor.rating"}}</th>
+          <th class="center">{{localize "AFC.Armor.penalty"}}</th>
+          <th class="center">{{localize "AFC.Armor.bulk"}}</th>
+          <th></th>
+        </tr></thead>
+        <tbody>
+        {{#each items.armor as |item|}}
+        <tr data-item-id="{{item.id}}" class="{{#unless item.system.equipped}}unequipped{{/unless}}">
+          <td class="col-equip"><input type="checkbox" data-action="toggleEquipped" {{checked item.system.equipped}}></td>
+          <td><div class="item-name"><img src="{{item.img}}" alt=""><a data-action="editItem">{{item.name}}</a></div></td>
+          <td class="center big-num">{{item.system.rating}}</td>
+          <td class="center">−{{item.system.penalty}}</td>
+          <td class="center">{{item.system.bulk}}</td>
+          <td class="item-actions">{{#if @root.editable}}<a class="icon" data-action="deleteItem" data-tooltip="{{localize "Delete"}}"><i class="fa-solid fa-trash"></i></a>{{/if}}</td>
+        </tr>
+        {{/each}}
+        </tbody>
+      </table>
+      {{#if editable}}<a class="add-item" data-action="createItem" data-type="armor"><i class="fa-solid fa-plus"></i> {{localize "AFC.Table.addArmor"}}</a>{{/if}}

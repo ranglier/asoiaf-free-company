@@ -1,6 +1,6 @@
 <div class="afc-sheet">
   <header class="afc-header">
-    <img class="portrait small" src="{{item.img}}" data-edit="img" alt="{{item.name}}">
+    <img class="portrait small" src="{{item.img}}" data-action="editImage" data-edit="img" alt="{{item.name}}">
     <div class="identity">
       <input class="name" type="text" name="name" value="{{item.name}}">
       <span class="type">{{localize (concat "TYPES.Item." item.type)}}</span>
@@ -43,6 +43,15 @@
     <label>{{localize "AFC.Service.size"}}<select name="system.size">{{selectOptions serviceSizes selected=system.size localize=true}}</select></label>
     <label>{{localize "AFC.Service.category"}}<input type="text" name="system.category" value="{{system.category}}"></label>
     <label class="wide">{{localize "AFC.Service.effect"}}<input type="text" name="system.effect" value="{{system.effect}}"></label>
+    {{/if}}
+
+    {{#if (eq item.type "holding")}}
+    <label>{{localize "AFC.Holding.resource"}}<select name="system.resource">{{selectOptions holdingResources selected=system.resource localize=true}}</select></label>
+    <label>{{localize "AFC.Holding.cost"}}<input type="number" name="system.cost" value="{{system.cost}}" min="0"></label>
+    <label class="wide">{{localize "AFC.Holding.effect"}}<input type="text" name="system.effect" value="{{system.effect}}"></label>
+    <label>{{localize "AFC.Holding.requirement"}}<input type="text" name="system.requirement" value="{{system.requirement}}"></label>
+    <label>{{localize "AFC.Holding.buildTime"}}<input type="text" name="system.buildTime" value="{{system.buildTime}}"></label>
+    <label class="checkbox"><input type="checkbox" name="system.building" {{checked system.building}}> {{localize "AFC.Holding.building"}}</label>
     {{/if}}
 
     {{#if (eq item.type "unit")}}

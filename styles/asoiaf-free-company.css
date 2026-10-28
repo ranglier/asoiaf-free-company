@@ -97,29 +97,28 @@
 .afc .tab-body { flex: 1; overflow-y: auto; padding-right: 0.3rem; }
 .afc .tab-body .tab:not(.active) { display: none; }
 
-/* Capacités en tuiles */
-/* Ordre alphabétique lu en colonnes (de haut en bas, puis colonne suivante). */
-.afc-abilities { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); grid-template-rows: repeat(5, auto); grid-auto-flow: column; gap: 0.45rem; }
-.afc-abilities .ability { background: var(--afc-paper-light); border: 1px solid var(--afc-line); border-radius: 5px; padding: 0.4rem 0.55rem; display: flex; flex-direction: column; gap: 5px; }
-.edit-mode .afc-abilities { grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-rows: repeat(7, auto); }
-.npc .afc-abilities { grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-rows: repeat(7, auto); }
-.afc-abilities .ability.default { opacity: 0.62; }
-.afc-abilities .ability.default:hover { opacity: 1; }
-.afc-abilities .ability-head { display: flex; align-items: center; gap: 0.3rem; }
-.afc-abilities .ability-name { flex: 1; font-family: var(--afc-font-label); font-size: 18px; cursor: pointer; }
-.afc-abilities .ability-name i { font-size: 14px; color: var(--afc-ink-soft); }
-.afc-abilities .rank-value { font-size: 28px; line-height: 1; font-weight: 600; }
-.afc-abilities input.rank { width: 2.6em; text-align: center; }
-.afc-abilities .specialties { display: flex; flex-wrap: wrap; gap: 3px; }
-.afc-abilities .chip { font-size: 16px; background: var(--afc-wax); color: var(--afc-wax-text); border-radius: 3px; padding: 0 0.35rem; cursor: pointer; }
-.afc-abilities .chip:hover { color: #fff; filter: brightness(1.15); }
-.afc-abilities .specialty-edit { display: flex; align-items: center; gap: 3px; width: 100%; }
-.afc-abilities .specialty-edit input[type=text] { flex: 1; min-width: 0; }
-.afc-abilities .specialty-edit .bonus { width: 2.4em; text-align: center; }
+/* Compétences : groupes thématiques en registre */
+.afc-ability-groups { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.6rem; align-items: start; }
+.afc-ability-groups .ability-group { background: var(--afc-paper-light); border: 1px solid var(--afc-line); border-radius: 6px; padding: 0.35rem 0.6rem 0.4rem; }
+.afc-ability-groups h3 { margin: 0 0 0.2rem; font-family: var(--afc-font-title); font-weight: 500; font-size: 22px; color: var(--afc-wax); border-bottom: 1px solid var(--afc-border); }
+.afc-ability-groups .ability-row { display: flex; align-items: center; gap: 0.4rem; padding: 0.22rem 0.1rem; border-bottom: 1px dotted var(--afc-line); min-height: 2em; }
+.afc-ability-groups .ability-row:last-child { border-bottom: none; }
+.afc-ability-groups .ability-row.default { color: var(--afc-ink-soft); }
+.afc-ability-groups .ability-row.default .rank-value { opacity: 0.6; }
+.afc-ability-groups .ability-name { flex: none; font-family: var(--afc-font-label); font-size: 18px; cursor: pointer; white-space: nowrap; }
+.afc-ability-groups .ability-name:hover { color: var(--afc-wax); }
+.afc-ability-groups .specialties { flex: 1; display: flex; flex-wrap: wrap; gap: 3px; justify-content: flex-end; min-width: 0; }
+.afc-ability-groups .chip { font-size: 15px; background: var(--afc-wax); color: var(--afc-wax-text); border-radius: 3px; padding: 0 0.35rem; cursor: pointer; white-space: nowrap; }
+.afc-ability-groups .chip:hover { color: #fff; filter: brightness(1.15); }
+.afc-ability-groups .rank-value { flex: none; width: 1.4em; text-align: right; font-family: var(--font-primary, "Signika", sans-serif); font-size: 22px; font-weight: 600; line-height: 1; }
+.afc-ability-groups input.rank { flex: none; width: 2.6em; text-align: center; }
+.afc-ability-groups .specialty-edit { display: flex; align-items: center; gap: 3px; width: 100%; }
+.afc-ability-groups .specialty-edit input[type=text] { flex: 1; min-width: 0; }
+.afc-ability-groups .specialty-edit .bonus { width: 2.4em; text-align: center; }
 .afc .footer-hint { margin-top: 0.6rem; }
 
 /* Combat */
-.afc table.afc-table thead tr, .afc table.afc-table tbody tr { background: transparent; }
+.afc table.afc-table thead tr, .afc table.afc-table tbody tr, .afc table.afc-table tfoot tr, .afc table.afc-table tfoot { background: transparent; }
 .afc table.afc-table thead { background: transparent; text-shadow: none; }
 .afc table.afc-table { width: 100%; border-collapse: collapse; background: var(--afc-paper-light); border: 1px solid var(--afc-line); margin: 0.3rem 0; }
 .afc table.afc-table th { font-family: var(--afc-font-label); font-weight: normal; font-size: 15px; color: var(--afc-ink-soft); text-align: left; padding: 0.3rem 0.4rem; border-bottom: 2px solid var(--afc-border); background: transparent; }
@@ -173,6 +172,40 @@
 .afc .afc-header .type { font-family: var(--afc-font-label); color: var(--afc-ink-soft); }
 .afc .afc-fields .derived { font-style: italic; }
 
+/* ---------- PNJ, Maison, Compagnie ---------- */
+.afc .source-link { font-family: var(--afc-font-label); font-size: 16px; color: var(--afc-wax); }
+.afc .other-abilities { display: flex; flex-wrap: wrap; gap: 0.2rem 0.8rem; margin: 0.6rem 0 0; font-size: 17px; }
+.afc .other-abilities .label { font-family: var(--afc-font-label); color: var(--afc-ink-soft); font-size: 15px; }
+.afc .other-abilities a { cursor: pointer; border-bottom: 1px dotted var(--afc-line); }
+.afc .grid-3 .span-3 { grid-column: 1 / -1; }
+.afc .section-title { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
+.afc .section-title h2 { flex: 1; }
+.afc .window-content button.afc-create { width: auto; flex: none; font-size: 16px; padding: 0.15rem 0.7rem; }
+
+.afc .afc-facts { display: flex; flex-wrap: wrap; gap: 0.3rem 1.4rem; margin: 0; padding: 0.3rem 0.2rem; border-bottom: 1px solid var(--afc-line); }
+.afc .afc-facts dt { font-family: var(--afc-font-label); font-size: 14px; color: var(--afc-ink-soft); }
+.afc .afc-facts dd { margin: 0; font-size: 19px; font-weight: 600; color: var(--afc-ink); }
+
+.afc .afc-resource-tiles { display: grid; grid-template-columns: repeat(var(--n, 6), minmax(0, 1fr)); gap: 0.45rem; margin-bottom: 0.4rem; }
+.afc .resource-tile { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 0.45rem 0.3rem; background: var(--afc-paper-light); border: 1px solid var(--afc-line); border-radius: 6px; }
+.afc .resource-tile i { font-size: 20px; color: var(--afc-wax); }
+.afc .resource-tile .label { font-family: var(--afc-font-label); font-size: 15px; color: var(--afc-ink-soft); text-align: center; }
+.afc .resource-tile .value { font-size: 32px; font-weight: 600; line-height: 1.1; }
+.afc .resource-tile input { width: 3.2em; font-size: 24px; text-align: center; height: 1.5em; }
+
+.afc .company-status { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.afc table.afc-table td.effect { font-size: 16px; font-style: italic; }
+.afc table.afc-table tfoot td { font-family: var(--afc-font-label); font-size: 16px; border-top: 2px solid var(--afc-border); padding: 0.3rem 0.4rem; }
+.afc .tab-body > h2:first-child, .afc .tab-body > .section-title:first-child h2 { margin-top: 0.2rem; }
+
+/* ---------- Fiches d'objet ---------- */
+.afc.item .afc-header .name { font-family: var(--afc-font-title); font-size: 30px; height: auto; }
+.afc.item .afc-header .type { font-family: var(--afc-font-label); font-size: 16px; color: var(--afc-wax); }
+.afc.item .afc-fields { padding: 0.4rem 0; }
+.afc.item .afc-fields label { font-size: 15px; }
+.afc.item .afc-fields input, .afc.item .afc-fields select { font-size: 17px; }
+.afc.item .afc-fields .derived { font-size: 17px; }
+
 /* ---------- Dialogues ---------- */
 .afc-test-dialog { display: flex; flex-direction: column; gap: 0.45rem; }
 .afc-test-dialog .rank { margin: 0; font-size: 17px; }
@@ -222,3 +255,24 @@
 .afc-card footer .qualities { width: 100%; font-style: italic; }
 .afc-card .hint { margin: 0; font-size: 13px; font-style: italic; color: var(--afc-ink-soft); }
 .afc-card.damage p { margin: 0.1rem 0; }
+
+/* ---------- Maison : possessions, foyer, gloire ---------- */
+.afc .resource-tile .available { font-size: 14px; color: var(--afc-ink-soft); }
+.afc .resource-tile .available.over, .afc .budget.over strong { color: var(--afc-wax); font-weight: 600; }
+.afc .holding-group { margin-bottom: 0.5rem; }
+.afc .holding-group h2 i { color: var(--afc-wax); font-size: 17px; }
+.afc .budget { font-size: 15px; color: var(--afc-ink-soft); white-space: nowrap; }
+.afc .budget strong { font-size: 18px; color: var(--afc-ink); }
+.afc .add-row { display: flex; gap: 1.5rem; }
+.afc table.afc-table td.role { font-family: var(--afc-font-label); font-size: 17px; }
+.afc .linked-actor { display: inline-flex; align-items: center; gap: 0.35rem; cursor: pointer; }
+.afc .linked-actor img { width: 28px; height: 28px; border: none; border-radius: 50%; }
+.afc .afc-header .glory { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
+.afc .afc-header .glory .label { font-family: var(--afc-font-label); font-size: 15px; }
+.afc .afc-header .glory input { width: 3.2em; text-align: center; font-size: 20px; }
+
+/* Mode édition : les spécialités passent sur leur propre ligne, sous la compétence. */
+.edit-mode .afc-ability-groups .ability-row { flex-wrap: wrap; }
+.edit-mode .afc-ability-groups .ability-name { flex: 1; }
+.edit-mode .afc-ability-groups .specialties { order: 3; flex-basis: 100%; flex-direction: column; padding-left: 0.8rem; }
+.edit-mode .afc-ability-groups .specialties:empty { display: none; }

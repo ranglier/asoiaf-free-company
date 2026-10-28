@@ -1,25 +1,46 @@
-<div class="afc-sheet">
+<div class="afc-sheet parchment {{#if editMode}}edit-mode{{else}}play-mode{{/if}}">
   <header class="afc-header">
-    <img class="portrait" src="{{actor.img}}" data-edit="img" alt="{{actor.name}}">
+    <img class="portrait" src="{{actor.img}}" data-action="editImage" data-edit="img" alt="{{actor.name}}">
     <div class="identity">
+      {{#if editMode}}
       <input class="name" type="text" name="name" value="{{actor.name}}">
-      <label>{{localize "AFC.Character.role"}}<input type="text" name="system.role" value="{{system.role}}"></label>
-      <label>{{localize "AFC.Npc.sourceUrl"}}<input type="url" name="system.sourceUrl" value="{{system.sourceUrl}}"></label>
-      {{#if system.sourceUrl}}<a href="{{system.sourceUrl}}" target="_blank" rel="noopener"><i class="fa-solid fa-up-right-from-square"></i> {{localize "AFC.Npc.openSource"}}</a>{{/if}}
+      <div class="grid-2">
+        <label>{{localize "AFC.Character.role"}}<input type="text" name="system.role" value="{{system.role}}"></label>
+        <label>{{localize "AFC.Npc.sourceUrl"}}<input type="url" name="system.sourceUrl" value="{{system.sourceUrl}}" placeholder="https://"></label>
+      </div>
+      {{else}}
+      <h1 class="name">{{actor.name}}</h1>
+      <p class="subtitle">{{#each items.blood as |b|}}{{b.name}} · {{/each}}{{#if system.role}}{{system.role}}{{else}}{{localize "TYPES.Actor.npc"}}{{/if}}</p>
+      {{#if system.sourceUrl}}<a class="source-link" href="{{system.sourceUrl}}" target="_blank" rel="noopener"><i class="fa-solid fa-book-open"></i> {{localize "AFC.Npc.openSource"}}</a>{{/if}}
+      {{/if}}
+    </div>
+    <div class="header-side">
+      {{> "systems/asoiaf-free-company/templates/actor/parts/mode-toggle.hbs"}}
     </div>
   </header>
 
-  <section class="afc-stats">
-    <div class="stat"><span class="label">{{localize "AFC.Character.defenseCombat"}}</span><span class="value">{{system.defense.combat}}</span></div>
-    <div class="stat"><span class="label">{{localize "AFC.Character.health"}}</span>
-      <span class="value"><input type="number" name="system.health.value" value="{{system.health.value}}"> / {{system.health.max}}</span></div>
-    <div class="stat"><span class="label">{{localize "AFC.Character.defenseIntrigue"}}</span><span class="value">{{system.defense.intrigue}}</span></div>
-  </section>
+  {{> "systems/asoiaf-free-company/templates/actor/parts/vitals.hbs"}}
 
-  {{> "systems/asoiaf-free-company/templates/actor/parts/abilities.hbs"}}
+  {{> "systems/asoiaf-free-company/templates/actor/parts/tabs-nav.hbs"}}
 
-  <section class="afc-notes">
-    <h2>{{localize "AFC.Character.biography"}}</h2>
-    <prose-mirror name="system.biography" value="{{system.biography}}" toggled>{{{enrichedHtml}}}</prose-mirror>
-  </section>
+  <div class="tab-body">
+    <section class="tab {{tabs.abilities.cssClass}}" data-group="primary" data-tab="abilities">
+      {{> "systems/asoiaf-free-company/templates/actor/parts/abilities.hbs"}}
+    </section>
+
+    <section class="tab {{tabs.combat.cssClass}}" data-group="primary" data-tab="combat">
+      <h2>{{localize "AFC.Plural.weapon"}}</h2>
+      {{> "systems/asoiaf-free-company/templates/actor/parts/weapons.hbs"}}
+      <h2>{{localize "AFC.Plural.armor"}}</h2>
+      {{> "systems/asoiaf-free-company/templates/actor/parts/armor.hbs"}}
+    </section>
+
+    <section class="tab {{tabs.qualities.cssClass}}" data-group="primary" data-tab="qualities">
+      {{> "systems/asoiaf-free-company/templates/actor/parts/qualities.hbs"}}
+    </section>
+
+    <section class="tab {{tabs.biography.cssClass}}" data-group="primary" data-tab="biography">
+      <prose-mirror name="system.biography" value="{{system.biography}}" toggled>{{{enrichedHtml}}}</prose-mirror>
+    </section>
+  </div>
 </div>

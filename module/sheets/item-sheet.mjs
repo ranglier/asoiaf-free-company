@@ -27,6 +27,7 @@ export class AFCItemSheet extends HandlebarsApplicationMixin(ItemSheetV2) {
       editable: this.isEditable,
       abilities: localized(CONFIG_AFC.ABILITIES),
       attackAbilities: Object.fromEntries(CONFIG_AFC.ATTACK_ABILITIES.map(k => [k, CONFIG_AFC.ABILITIES[k].label])),
+      holdingResources: Object.fromEntries(CONFIG_AFC.HOLDING_RESOURCES.map(k => [k, `AFC.House.Resource.${k}`])),
       serviceSizes: localized(CONFIG_AFC.SERVICE_SIZES),
       unitTrainings: localized(CONFIG_AFC.UNIT_TRAININGS),
       qualityKinds: { benefit: "AFC.Quality.benefit", drawback: "AFC.Quality.drawback" },

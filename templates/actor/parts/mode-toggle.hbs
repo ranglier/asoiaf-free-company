@@ -1,0 +1,5 @@
+      {{#if editable}}
+      <a class="mode-toggle" data-action="toggleEdit" data-tooltip="{{#if editMode}}{{localize "AFC.Sheet.PlayMode"}}{{else}}{{localize "AFC.Sheet.EditMode"}}{{/if}}">
+        <i class="fa-solid {{#if editMode}}fa-lock-open{{else}}fa-lock{{/if}}"></i>
+      </a>
+      {{/if}}

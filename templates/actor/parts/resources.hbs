@@ -1,0 +1,14 @@
+<div class="afc-resource-tiles" style="--n: {{resources.length}};">
+  {{#each resources as |r|}}
+  <div class="resource-tile">
+    <i class="fa-solid {{r.icon}}"></i>
+    <span class="label">{{localize r.label}}</span>
+    {{#if @root.resourcesEditable}}
+    <input type="number" name="system.resources.{{r.key}}.value" value="{{r.value}}" min="0">
+    {{else}}
+    <span class="value">{{r.value}}</span>
+    {{/if}}
+    {{#if r.hasBudget}}<span class="available {{#if (lt r.available 0)}}over{{/if}}">{{localize "AFC.House.available"}} {{r.available}}</span>{{/if}}
+  </div>
+  {{/each}}
+</div>

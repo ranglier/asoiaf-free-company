@@ -3,7 +3,7 @@
  */
 export const SYSTEM_ID = "asoiaf-free-company";
 
-/** Capacités, dans l'ordre d'affichage. `abbr` reprend les abréviations des règles maison. */
+/** Compétences, dans l'ordre d'affichage. `abbr` reprend les abréviations des règles maison. */
 export const ABILITIES = {
   agility: { label: "AFC.Ability.agility", abbr: "AGI" },
   animalHandling: { label: "AFC.Ability.animalHandling", abbr: "DRESS" },
@@ -26,10 +26,18 @@ export const ABILITIES = {
   will: { label: "AFC.Ability.will", abbr: "VOL" }
 };
 
-/** Rang par défaut d'une capacité. */
+/** Groupes thématiques des compétences sur les fiches (regroupement maison, pas celui du livre). */
+export const ABILITY_GROUPS = {
+  combat: { label: "AFC.AbilityGroup.combat", abilities: ["agility", "athletics", "fighting", "endurance", "marksmanship", "warfare"] },
+  society: { label: "AFC.AbilityGroup.society", abilities: ["deception", "persuasion", "status", "will"] },
+  knowledge: { label: "AFC.AbilityGroup.knowledge", abilities: ["knowledge", "cunning", "language", "healing"] },
+  terrain: { label: "AFC.AbilityGroup.terrain", abilities: ["stealth", "animalHandling", "thievery", "survival", "awareness"] }
+};
+
+/** Rang par défaut d'une compétence. */
 export const DEFAULT_RANK = 2;
 
-/** Capacités utilisables pour attaquer. */
+/** Compétences utilisables pour attaquer. */
 export const ATTACK_ABILITIES = ["fighting", "marksmanship"];
 
 /** Spécialités reconnues par nom (fr et en) pour les calculs automatiques. */
@@ -75,6 +83,24 @@ export const AGES = {
 
 /** Ressources d'une Maison (règles d'origine). */
 export const HOUSE_RESOURCES = ["defense", "influence", "lands", "law", "population", "power", "wealth"];
+
+/** Ressources dans lesquelles on investit des possessions (Loi et Population n'en ont pas). */
+export const HOLDING_RESOURCES = ["defense", "influence", "lands", "power", "wealth"];
+
+/** Royaumes de Westeros (+ autre, pour Essos). */
+export const REALMS = {
+  crownlands: "AFC.Realm.crownlands",
+  dorne: "AFC.Realm.dorne",
+  ironIslands: "AFC.Realm.ironIslands",
+  north: "AFC.Realm.north",
+  riverlands: "AFC.Realm.riverlands",
+  vale: "AFC.Realm.vale",
+  reach: "AFC.Realm.reach",
+  stormlands: "AFC.Realm.stormlands",
+  westerlands: "AFC.Realm.westerlands",
+  other: "AFC.Realm.other"
+};
+
 
 /** Ressources d'une Compagnie (règles maison). */
 export const COMPANY_RESOURCES = ["renown", "authority", "manpower", "might", "wealth", "organization"];

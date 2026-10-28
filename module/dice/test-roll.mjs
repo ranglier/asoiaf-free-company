@@ -65,7 +65,7 @@ export function difficultyOptions(selected) {
 }
 
 /**
- * Test d'une capacité.
+ * Test d'une compétence.
  * - quick : pas de dialogue, difficulté fixée par le MJ ;
  * - specialty : index de la spécialité à appliquer.
  */

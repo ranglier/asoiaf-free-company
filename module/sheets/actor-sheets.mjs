@@ -30,7 +30,10 @@ class AFCActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       toggleEdit: AFCActorSheet.#onToggleEdit,
       setPip: AFCActorSheet.#onSetPip,
       attack: AFCActorSheet.#onAttack,
-      setGrip: AFCActorSheet.#onSetGrip
+      setGrip: AFCActorSheet.#onSetGrip,
+      addRow: AFCActorSheet.#onAddRow,
+      removeRow: AFCActorSheet.#onRemoveRow,
+      openActor: AFCActorSheet.#onOpenActor
     }
   };
 
@@ -52,22 +55,44 @@ class AFCActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       enrichedHtml: await TextEditor.enrichHTML(actor.system[htmlField] ?? "", { relativeTo: actor, secrets: actor.isOwner }),
       items: Object.groupBy(actor.items.contents.sort((a, b) => a.sort - b.sort), i => i.type)
     });
-    if (actor.system.abilities) {
-      // Capacités triées par ordre alphabétique dans la langue de l'utilisateur.
-      context.abilities = Object.entries(CONFIG_AFC.ABILITIES).map(([key, def]) => {
-        const ab = actor.system.abilities[key];
-        return { key, ...def, name: game.i18n.localize(def.label), ...ab, pips: pips(ab.rank, 7),
-          isDefault: ab.rank === CONFIG_AFC.DEFAULT_RANK && !ab.specialties.length };
-      }).sort((a, b) => a.name.localeCompare(b.name, game.i18n.lang));
-    }
+    if (actor.system.abilities) this._prepareCombatant(context);
+    if (this.constructor.TABS.primary) context.tabs = this._prepareTabs("primary");
     return context;
   }
 
-  /** Les spécialités arrivent du formulaire sous forme d'objet indexé : on les remet en tableau. */
+  /** Contexte commun aux PJ et PNJ : compétences, pistes de santé, armes. */
+  _prepareCombatant(context) {
+    const actor = this.document;
+    const s = actor.system;
+    // Compétences par groupe thématique, triées par ordre alphabétique dans chaque groupe.
+    context.abilityGroups = Object.entries(CONFIG_AFC.ABILITY_GROUPS).map(([key, group]) => ({
+      key, label: group.label,
+      abilities: group.abilities.map(k => {
+        const ab = s.abilities[k];
+        return { key: k, name: game.i18n.localize(CONFIG_AFC.ABILITIES[k].label), ...ab,
+          isDefault: ab.rank === CONFIG_AFC.DEFAULT_RANK && !ab.specialties.length };
+      }).sort((a, b) => a.name.localeCompare(b.name, game.i18n.lang))
+    }));
+
+    context.track = {
+      wounds: pips(s.wounds.value, s.wounds.max),
+      injuries: pips(s.injuries.value, s.injuries.max)
+    };
+    context.healthPct = s.health.max ? Math.round(100 * s.health.value / s.health.max) : 0;
+    context.weapons = (context.items.weapon ?? []).map(item => ({
+      item, profile: weaponProfile(actor, item), qualities: weaponQualities(item)
+    }));
+  }
+
+  /** Les listes (spécialités, événements, foyer) arrivent du formulaire en objets indexés : on les remet en tableaux. */
   _processFormData(event, form, formData) {
     const data = super._processFormData(event, form, formData);
     for (const ability of Object.values(data.system?.abilities ?? {})) {
       if (ability.specialties && !Array.isArray(ability.specialties)) ability.specialties = Object.values(ability.specialties);
+    }
+    for (const key of ["events", "household", "members"]) {
+      const list = data.system?.[key];
+      if (list && !Array.isArray(list)) data.system[key] = Object.values(list);
     }
     return data;
   }
@@ -133,65 +158,131 @@ class AFCActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     return item && rollAttack(this.document, item, { quick: !event.shiftKey });
   }
 
+  /** Lignes vides ajoutées aux listes du système. */
+  static ROW_DEFAULTS = {
+    events: { name: "", note: "" },
+    household: { role: "", name: "", actor: "" },
+    members: { role: "", name: "", actor: "" }
+  };
+
+  /** Liste de personnes (foyer, membres) pour le gabarit : acteur lié, index de ligne. */
+  _prepareMembers(context, key) {
+    context.actorOptions = Object.fromEntries(game.actors.filter(a => ["character", "npc"].includes(a.type)).map(a => [a.id, a.name]));
+    context.memberList = key;
+    return this.document.system[key].map((m, index) => ({
+      ...m, index, linked: m.actor ? game.actors.get(m.actor) : null
+    }));
+  }
+
+  static async #onAddRow(event, target) {
+    const key = target.dataset.list;
+    const list = [...this.document.system.toObject()[key], { ...AFCActorSheet.ROW_DEFAULTS[key] }];
+    return this.document.update({ [`system.${key}`]: list });
+  }
+
+  static async #onRemoveRow(event, target) {
+    const key = target.dataset.list;
+    const list = this.document.system.toObject()[key];
+    list.splice(Number(target.dataset.index), 1);
+    return this.document.update({ [`system.${key}`]: list });
+  }
+
+  static #onOpenActor(event, target) {
+    return game.actors.get(target.dataset.actorId)?.sheet.render(true);
+  }
+
   static async #onSetGrip(event, target) {
     const item = this.document.items.get(target.closest("[data-item-id]").dataset.itemId);
     return item?.update({ "system.grip": target.dataset.grip });
   }
 }
 
+/** Onglets communs aux PJ et PNJ. */
+const COMBATANT_TABS = (extra = []) => ({
+  primary: {
+    tabs: [
+      { id: "abilities", label: "AFC.Tab.abilities" },
+      { id: "combat", label: "AFC.Tab.combat" },
+      ...extra,
+      { id: "qualities", label: "AFC.Tab.qualities" },
+      { id: "biography", label: "AFC.Tab.biography" }
+    ],
+    initial: "abilities"
+  }
+});
+
 export class CharacterSheet extends AFCActorSheet {
   static DEFAULT_OPTIONS = { classes: ["character"], position: { width: 820, height: 860 } };
   static PARTS = { sheet: { template: `${TPL}/character.hbs`, scrollable: [".tab-body"] } };
+  static TABS = COMBATANT_TABS([{ id: "equipment", label: "AFC.Tab.equipment" }]);
+
+  async _prepareContext(options) {
+    const context = await super._prepareContext(options);
+    const s = this.document.system;
+    context.track.destiny = pips(s.destiny.value, Math.max(s.destiny.max, s.destiny.value));
+    return context;
+  }
+}
+
+export class NpcSheet extends AFCActorSheet {
+  static DEFAULT_OPTIONS = { classes: ["npc"], position: { width: 780, height: 780 } };
+  static PARTS = { sheet: { template: `${TPL}/npc.hbs`, scrollable: [".tab-body"] } };
+  static TABS = COMBATANT_TABS();
+}
+
+/** Icônes des ressources (Font Awesome). */
+const RESOURCE_ICONS = {
+  defense: "fa-chess-rook", influence: "fa-crown", lands: "fa-mountain-sun", law: "fa-scale-balanced",
+  population: "fa-people-group", power: "fa-chess-knight", wealth: "fa-coins",
+  renown: "fa-crown", authority: "fa-gavel", manpower: "fa-people-group", might: "fa-swords",
+  organization: "fa-scroll"
+};
+
+/** Liste des ressources pour les tuiles : clé, valeur, libellé, icône. */
+function resourceTiles(resources, keys, prefix) {
+  return keys.map(key => ({
+    key, value: resources[key].value, label: `${prefix}.${key}`, icon: RESOURCE_ICONS[key],
+    // Ressources d'une Maison où l'on investit : afficher le disponible.
+    available: resources[key].available,
+    hasBudget: CONFIG_AFC.HOLDING_RESOURCES.includes(key) && resources[key].available !== undefined
+  }));
+}
+
+export class HouseSheet extends AFCActorSheet {
+  static DEFAULT_OPTIONS = {
+    classes: ["house"],
+    position: { width: 860, height: 860 },
+    actions: { createHouse: HouseSheet.#onCreateHouse }
+  };
+  static PARTS = { sheet: { template: `${TPL}/house.hbs`, scrollable: [".tab-body"] } };
   static TABS = {
     primary: {
       tabs: [
-        { id: "abilities", label: "AFC.Tab.abilities" },
-        { id: "combat", label: "AFC.Tab.combat" },
-        { id: "equipment", label: "AFC.Tab.equipment" },
-        { id: "qualities", label: "AFC.Tab.qualities" },
-        { id: "biography", label: "AFC.Tab.biography" }
+        { id: "holdings", label: "AFC.Tab.holdings" },
+        { id: "household", label: "AFC.Tab.household" },
+        { id: "history", label: "AFC.Tab.history" }
       ],
-      initial: "abilities"
+      initial: "holdings"
     }
   };
 
   async _prepareContext(options) {
     const context = await super._prepareContext(options);
     const s = this.document.system;
-    context.tabs = this._prepareTabs("primary");
-    context.track = {
-      wounds: pips(s.wounds.value, s.wounds.max),
-      injuries: pips(s.injuries.value, s.injuries.max),
-      destiny: pips(s.destiny.value, Math.max(s.destiny.max, s.destiny.value))
-    };
-    context.healthPct = s.health.max ? Math.round(100 * s.health.value / s.health.max) : 0;
-    context.composurePct = s.composure.max ? Math.round(100 * s.composure.value / s.composure.max) : 0;
-    context.weapons = (context.items.weapon ?? []).map(item => ({
-      item, profile: weaponProfile(this.document, item), qualities: weaponQualities(item)
+    context.resources = resourceTiles(s.resources, CONFIG_AFC.HOUSE_RESOURCES, "AFC.House.Resource");
+    context.resourcesEditable = context.editMode;
+    context.realmLabel = CONFIG_AFC.REALMS[s.realm];
+    // Possessions regroupées par ressource ; les unités vont avec la Puissance.
+    const holdings = context.items.holding ?? [];
+    context.holdingGroups = CONFIG_AFC.HOLDING_RESOURCES.map(key => ({
+      key, icon: RESOURCE_ICONS[key], label: `AFC.House.Resource.${key}`,
+      resource: s.resources[key],
+      holdings: holdings.filter(h => h.system.resource === key),
+      units: key === "power" ? (context.items.unit ?? []).map(item => ({
+        item, training: CONFIG_AFC.UNIT_TRAININGS[item.system.training]?.label
+      })) : null
     }));
-    context.initial = (this.document.name || "?").charAt(0).toUpperCase();
-    return context;
-  }
-}
-
-export class NpcSheet extends AFCActorSheet {
-  static DEFAULT_OPTIONS = { classes: ["npc"], position: { width: 640, height: 700 } };
-  static PARTS = { sheet: { template: `${TPL}/npc.hbs`, scrollable: [""] } };
-  editMode = true;
-}
-
-export class HouseSheet extends AFCActorSheet {
-  static DEFAULT_OPTIONS = {
-    classes: ["house"],
-    position: { width: 640, height: 720 },
-    actions: { createHouse: HouseSheet.#onCreateHouse }
-  };
-  static PARTS = { sheet: { template: `${TPL}/house.hbs`, scrollable: [""] } };
-  editMode = true;
-
-  async _prepareContext(options) {
-    const context = await super._prepareContext(options);
-    context.resources = CONFIG_AFC.HOUSE_RESOURCES.map(key => ({ key, value: this.document.system.resources[key].value }));
+    context.members = this._prepareMembers(context, "household");
     return context;
   }
 
@@ -203,21 +294,44 @@ export class HouseSheet extends AFCActorSheet {
 export class CompanySheet extends AFCActorSheet {
   static DEFAULT_OPTIONS = {
     classes: ["company"],
-    position: { width: 760, height: 820 },
+    position: { width: 860, height: 860 },
     actions: { createCompany: CompanySheet.#onCreateCompany }
   };
-  static PARTS = { sheet: { template: `${TPL}/company.hbs`, scrollable: [""] } };
-  editMode = true;
+  static PARTS = { sheet: { template: `${TPL}/company.hbs`, scrollable: [".tab-body"] } };
+  static TABS = {
+    primary: {
+      tabs: [
+        { id: "services", label: "AFC.Tab.services" },
+        { id: "units", label: "AFC.Tab.units" },
+        { id: "members", label: "AFC.Tab.members" },
+        { id: "history", label: "AFC.Tab.history" }
+      ],
+      initial: "services"
+    }
+  };
 
   async _prepareContext(options) {
     const context = await super._prepareContext(options);
-    const system = this.document.system;
-    context.resources = CONFIG_AFC.COMPANY_RESOURCES.map(key => ({ key, value: system.resources[key].value }));
+    const s = this.document.system;
+    context.resources = resourceTiles(s.resources, CONFIG_AFC.COMPANY_RESOURCES, "AFC.Company.Resource");
+    // Les ressources de la Compagnie bougent souvent en jeu : modifiables dans les deux modes.
+    context.resourcesEditable = context.editable;
     context.origins = Object.fromEntries(Object.entries(CONFIG_AFC.COMPANY_ORIGINS).map(([k, v]) => [k, v.label]));
+    context.originLabel = CONFIG_AFC.COMPANY_ORIGINS[s.origin]?.label;
     context.leaderOptions = Object.fromEntries(game.actors.filter(a => a.type === "character").map(a => [a.id, a.name]));
-    context.units = (context.items.unit ?? []).map(u => ({
-      item: u, training: CONFIG_AFC.UNIT_TRAININGS[u.system.training]?.label
+    context.leader = s.leader ? game.actors.get(s.leader) : null;
+    context.cohesionPct = Math.min(100, s.cohesionState.pct);
+    context.spacePct = s.services.spaceMax ? Math.min(100, Math.round(100 * s.services.spaceUsed / s.services.spaceMax)) : 0;
+    context.services = (context.items.service ?? []).map(item => ({ item, size: CONFIG_AFC.SERVICE_SIZES[item.system.size] }));
+    context.units = (context.items.unit ?? []).map(item => ({
+      item, training: CONFIG_AFC.UNIT_TRAININGS[item.system.training]?.label,
+      classes: item.system.classList.map(c => game.i18n.localize(CONFIG_AFC.UNIT_CLASSES[c])).join(", ")
     }));
+    context.unitTotals = context.units.reduce((t, u) => ({
+      men: t.men + u.item.system.men, manpower: t.manpower + u.item.system.manpowerCost, might: t.might + u.item.system.mightCost
+    }), { men: 0, manpower: 0, might: 0 });
+    context.initial = (this.document.name || "?").charAt(0).toUpperCase();
+    context.members = this._prepareMembers(context, "members");
     return context;
   }
 

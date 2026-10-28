@@ -1,35 +1,141 @@
-<div class="afc-sheet">
+<div class="afc-sheet parchment {{#if editMode}}edit-mode{{else}}play-mode{{/if}}">
   <header class="afc-header">
-    <img class="portrait" src="{{actor.img}}" data-edit="img" alt="{{actor.name}}">
+    <img class="portrait" src="{{actor.img}}" data-action="editImage" data-edit="img" alt="{{actor.name}}">
     <div class="identity">
+      {{#if editMode}}
       <input class="name" type="text" name="name" value="{{actor.name}}">
       <div class="grid-3">
-        <label>{{localize "AFC.House.realm"}}<input type="text" name="system.realm" value="{{system.realm}}"></label>
+        <label>{{localize "AFC.House.realm"}}<select name="system.realm"><option value=""></option>{{selectOptions config.REALMS selected=system.realm localize=true}}</select></label>
         <label>{{localize "AFC.House.seat"}}<input type="text" name="system.seat" value="{{system.seat}}"></label>
         <label>{{localize "AFC.House.liege"}}<input type="text" name="system.liege" value="{{system.liege}}"></label>
         <label>{{localize "AFC.House.head"}}<input type="text" name="system.head" value="{{system.head}}"></label>
-        <label>{{localize "AFC.House.motto"}}<input type="text" name="system.motto" value="{{system.motto}}"></label>
         <label>{{localize "AFC.House.founding"}}<input type="text" name="system.founding" value="{{system.founding}}"></label>
+        <label>{{localize "AFC.House.motto"}}<input type="text" name="system.motto" value="{{system.motto}}"></label>
+        <label class="span-3">{{localize "AFC.House.arms"}}<input type="text" name="system.arms" value="{{system.arms}}"></label>
       </div>
+      {{else}}
+      <h1 class="name">{{actor.name}}</h1>
+      {{#if system.motto}}<p class="motto">« {{system.motto}} »</p>{{/if}}
+      {{#if system.arms}}<p class="subtitle">{{system.arms}}</p>{{/if}}
+      {{/if}}
+    </div>
+    <div class="header-side">
+      <div class="glory">
+        <span class="label">{{localize "AFC.House.glory"}}</span>
+        <input type="number" name="system.glory" value="{{system.glory}}" min="0" data-tooltip="{{localize "AFC.House.gloryHint"}}">
+      </div>
+      {{> "systems/asoiaf-free-company/templates/actor/parts/mode-toggle.hbs"}}
     </div>
   </header>
 
-  {{#if editable}}
-  <button type="button" class="afc-create" data-action="createHouse"><i class="fa-solid fa-dice"></i> {{localize "AFC.House.Create"}}</button>
-  {{/if}}
+  {{#unless editMode}}
+  <dl class="afc-facts">
+    {{#if realmLabel}}<div><dt>{{localize "AFC.House.realm"}}</dt><dd>{{localize realmLabel}}</dd></div>{{/if}}
+    {{#if system.seat}}<div><dt>{{localize "AFC.House.seat"}}</dt><dd>{{system.seat}}</dd></div>{{/if}}
+    {{#if system.liege}}<div><dt>{{localize "AFC.House.liege"}}</dt><dd>{{system.liege}}</dd></div>{{/if}}
+    {{#if system.head}}<div><dt>{{localize "AFC.House.head"}}</dt><dd>{{system.head}}</dd></div>{{/if}}
+    {{#if system.founding}}<div><dt>{{localize "AFC.House.founding"}}</dt><dd>{{system.founding}}</dd></div>{{/if}}
+  </dl>
+  {{/unless}}
 
-  <section class="afc-resources">
+  <div class="section-title">
     <h2>{{localize "AFC.Sheet.Resources"}}</h2>
-    <div class="resource-grid">
-      {{#each resources as |r|}}
-      <label class="resource">{{localize (concat "AFC.House.Resource." r.key)}}
-        <input type="number" name="system.resources.{{r.key}}.value" value="{{r.value}}" min="0"></label>
-      {{/each}}
-    </div>
-  </section>
+    {{#if editable}}<button type="button" class="afc-create" data-action="createHouse"><i class="fa-solid fa-dice"></i> {{localize "AFC.House.Create"}}</button>{{/if}}
+  </div>
+  {{> "systems/asoiaf-free-company/templates/actor/parts/resources.hbs"}}
 
-  <section class="afc-notes">
-    <h2>{{localize "AFC.Sheet.History"}}</h2>
-    <prose-mirror name="system.history" value="{{system.history}}" toggled>{{{enrichedHtml}}}</prose-mirror>
-  </section>
+  {{> "systems/asoiaf-free-company/templates/actor/parts/tabs-nav.hbs"}}
+
+  <div class="tab-body">
+    <section class="tab {{tabs.holdings.cssClass}}" data-group="primary" data-tab="holdings">
+      {{#each holdingGroups as |g|}}
+      <div class="holding-group">
+        <div class="section-title">
+          <h2><i class="fa-solid {{g.icon}}"></i> {{localize g.label}}</h2>
+          <span class="budget {{#if (lt g.resource.available 0)}}over{{/if}}">{{localize "AFC.House.invested"}} {{g.resource.invested}} / {{g.resource.value}} · {{localize "AFC.House.available"}} <strong>{{g.resource.available}}</strong></span>
+        </div>
+        {{#if g.holdings.length}}
+        <table class="afc-table">
+          <thead><tr>
+            <th>{{localize "TYPES.Item.holding"}}</th>
+            <th class="center">{{localize "AFC.Holding.cost"}}</th>
+            <th>{{localize "AFC.Holding.effect"}}</th>
+            <th></th>
+          </tr></thead>
+          <tbody>
+          {{#each g.holdings as |h|}}
+          <tr data-item-id="{{h.id}}" class="{{#if h.system.building}}unequipped{{/if}}">
+            <td><div class="item-name"><img src="{{h.img}}" alt=""><div><a data-action="editItem">{{h.name}}</a>
+              {{#if h.system.building}}<span class="sub">{{localize "AFC.Holding.building"}}{{#if h.system.buildTime}} ({{h.system.buildTime}}){{/if}}</span>{{/if}}</div></div></td>
+            <td class="center big-num">{{h.system.cost}}</td>
+            <td class="effect">{{h.system.effect}}</td>
+            <td class="item-actions">{{#if @root.editable}}<a class="icon" data-action="deleteItem" data-tooltip="{{localize "Delete"}}"><i class="fa-solid fa-trash"></i></a>{{/if}}</td>
+          </tr>
+          {{/each}}
+          </tbody>
+        </table>
+        {{/if}}
+        {{#if g.units}}
+        {{#if g.units.length}}
+        <table class="afc-table">
+          <thead><tr>
+            <th>{{localize "AFC.Table.unit"}}</th>
+            <th>{{localize "AFC.Unit.training"}}</th>
+            <th class="center">{{localize "AFC.Unit.discipline"}}</th>
+            <th class="center">{{localize "AFC.Holding.cost"}}</th>
+            <th></th>
+          </tr></thead>
+          <tbody>
+          {{#each g.units as |u|}}
+          <tr data-item-id="{{u.item.id}}">
+            <td><div class="item-name"><img src="{{u.item.img}}" alt=""><a data-action="editItem">{{u.item.name}}</a></div></td>
+            <td>{{localize u.training}}</td>
+            <td class="center">{{u.item.system.discipline}}</td>
+            <td class="center big-num">{{u.item.system.mightCost}}</td>
+            <td class="item-actions">{{#if @root.editable}}<a class="icon" data-action="deleteItem" data-tooltip="{{localize "Delete"}}"><i class="fa-solid fa-trash"></i></a>{{/if}}</td>
+          </tr>
+          {{/each}}
+          </tbody>
+        </table>
+        {{/if}}
+        {{/if}}
+      </div>
+      {{/each}}
+      {{#if editable}}
+      <p class="add-row">
+        <a class="add-item" data-action="createItem" data-type="holding"><i class="fa-solid fa-plus"></i> {{localize "AFC.Table.addHolding"}}</a>
+        <a class="add-item" data-action="createItem" data-type="unit"><i class="fa-solid fa-plus"></i> {{localize "AFC.Table.addUnit"}}</a>
+      </p>
+      {{/if}}
+    </section>
+
+    <section class="tab {{tabs.household.cssClass}}" data-group="primary" data-tab="household">
+      {{> "systems/asoiaf-free-company/templates/actor/parts/members.hbs"}}
+    </section>
+
+    <section class="tab {{tabs.history.cssClass}}" data-group="primary" data-tab="history">
+      <h2>{{localize "AFC.House.events"}}</h2>
+      <table class="afc-table">
+        <thead><tr><th>{{localize "AFC.House.event"}}</th><th>{{localize "AFC.House.eventNote"}}</th><th></th></tr></thead>
+        <tbody>
+        {{#each system.events as |ev idx|}}
+        <tr>
+          {{#if @root.editMode}}
+          <td><input type="text" name="system.events.{{idx}}.name" value="{{ev.name}}"></td>
+          <td><input type="text" name="system.events.{{idx}}.note" value="{{ev.note}}"></td>
+          <td class="item-actions"><a class="icon" data-action="removeRow" data-list="events" data-index="{{idx}}"><i class="fa-solid fa-trash"></i></a></td>
+          {{else}}
+          <td class="role">{{ev.name}}</td><td class="effect">{{ev.note}}</td><td></td>
+          {{/if}}
+        </tr>
+        {{else}}
+        <tr><td colspan="3" class="hint">{{localize "AFC.House.noEvent"}}</td></tr>
+        {{/each}}
+        </tbody>
+      </table>
+      {{#if editMode}}<a class="add-item" data-action="addRow" data-list="events"><i class="fa-solid fa-plus"></i> {{localize "AFC.House.addEvent"}}</a>{{/if}}
+      <h2>{{localize "AFC.Sheet.History"}}</h2>
+      <prose-mirror name="system.history" value="{{system.history}}" toggled>{{{enrichedHtml}}}</prose-mirror>
+    </section>
+  </div>
 </div>

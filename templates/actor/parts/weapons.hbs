@@ -1,0 +1,35 @@
+      {{#if weapons.length}}
+      <table class="afc-table weapons">
+        <thead><tr>
+          <th class="col-equip">{{localize "AFC.Table.equipped"}}</th>
+          <th>{{localize "AFC.Table.weapon"}}</th>
+          <th>{{localize "AFC.Table.test"}}</th>
+          <th class="center">{{localize "AFC.Table.damage"}}</th>
+          <th class="center">{{localize "AFC.Table.grip"}}</th>
+          <th></th>
+        </tr></thead>
+        <tbody>
+        {{#each weapons as |w|}}
+        <tr data-item-id="{{w.item.id}}" class="{{#unless w.item.system.equipped}}unequipped{{/unless}}">
+          <td class="col-equip"><input type="checkbox" data-action="toggleEquipped" {{checked w.item.system.equipped}} data-tooltip="{{localize "AFC.Item.equipped"}}"></td>
+          <td><div class="item-name"><img src="{{w.item.img}}" alt=""><div><a data-action="editItem">{{w.item.name}}</a>
+            {{#if w.qualities}}<span class="sub">{{w.qualities}}</span>{{/if}}</div></div></td>
+          <td>{{w.profile.abilityLabel}} <strong>{{w.profile.rank}}</strong>{{#if w.profile.bonus}} +{{w.profile.bonus}}B{{/if}}{{#if w.profile.penalty}} −{{w.profile.penalty}}D{{/if}}
+            {{#if (or w.profile.specialty w.profile.training w.profile.oneHandPenalty)}}<span class="sub">{{#if w.profile.specialty}}{{w.profile.specialty}} {{w.profile.specBonus}}B{{/if}}{{#if w.profile.training}} · {{localize "AFC.Weapon.trainingShort"}} −{{w.profile.training}}B{{/if}}{{#if w.profile.oneHandPenalty}} · {{localize "AFC.Weapon.oneHand"}} −{{w.profile.oneHandPenalty}}D{{/if}}</span>{{/if}}</td>
+          <td class="center"><span class="big-num">{{w.profile.damage}}</span></td>
+          <td class="center">
+            {{#if (or w.item.system.versatile w.item.system.twoHanded)}}
+            <span class="grip-switch">
+              <a class="{{#unless (eq w.item.system.grip "two")}}on{{/unless}}" data-action="setGrip" data-grip="one">{{localize "AFC.Weapon.oneHand"}}</a><a class="{{#if (eq w.item.system.grip "two")}}on{{/if}}" data-action="setGrip" data-grip="two">{{localize "AFC.Weapon.twoHands"}}</a>
+            </span>
+            {{else}}<span class="grip-fixed">—</span>{{/if}}
+          </td>
+          <td class="item-actions"><button type="button" class="attack" data-action="attack" data-tooltip="{{localize "AFC.Attack.Hint"}}"><i class="fa-solid fa-swords"></i> {{localize "AFC.Attack.Attack"}}</button></td>
+        </tr>
+        {{/each}}
+        </tbody>
+      </table>
+      {{else}}
+      <p class="hint">{{localize "AFC.Attack.NoWeapon"}}</p>
+      {{/if}}
+      {{#if editable}}<a class="add-item" data-action="createItem" data-type="weapon"><i class="fa-solid fa-plus"></i> {{localize "AFC.Table.addWeapon"}}</a>{{/if}}

@@ -7,22 +7,35 @@
       "company": "Compagnie"
     },
     "Item": {
-      "weapon": "Armes",
-      "armor": "Armures",
-      "quality": "Avantages et défauts",
+      "weapon": "Arme",
+      "armor": "Armure",
+      "quality": "Avantage ou défaut",
       "blood": "Sang",
-      "service": "Services",
-      "unit": "Unités"
+      "service": "Service",
+      "unit": "Unité",
+      "holding": "Possession"
     }
   },
   "AFC": {
+    "AbilityGroup": {
+      "combat": "Combat",
+      "society": "Société",
+      "knowledge": "Savoir",
+      "terrain": "Terrain"
+    },
+    "Plural": {
+      "weapon": "Armes",
+      "armor": "Armures",
+      "quality": "Avantages et défauts",
+      "blood": "Sang"
+    },
     "Sheet": {
       "character": "Fiche de personnage",
       "npc": "Fiche de PNJ",
       "house": "Fiche de Maison",
       "company": "Fiche de Compagnie",
       "item": "Fiche d'objet",
-      "Abilities": "Capacités",
+      "Abilities": "Compétences",
       "Specialty": "Spécialité",
       "AddSpecialty": "Ajouter une spécialité",
       "Resources": "Ressources",
@@ -31,11 +44,17 @@
       "EditMode": "Passer en mode édition"
     },
     "Tab": {
-      "abilities": "Capacités",
+      "abilities": "Compétences",
       "combat": "Combat",
       "equipment": "Équipement",
       "qualities": "Sang et avantages",
-      "biography": "Biographie"
+      "biography": "Biographie",
+      "services": "Services",
+      "units": "Unités",
+      "history": "Histoire",
+      "holdings": "Possessions",
+      "household": "Foyer",
+      "members": "Membres"
     },
     "Table": {
       "equipped": "Équipé",
@@ -46,12 +65,62 @@
       "grip": "Prise",
       "addWeapon": "Ajouter une arme",
       "addArmor": "Ajouter une armure",
-      "totalBulk": "Encombrement total"
+      "totalBulk": "Encombrement total",
+      "service": "Service",
+      "space": "Espace",
+      "upkeep": "Entretien",
+      "noService": "Aucun service.",
+      "addService": "Ajouter un service",
+      "unit": "Unité",
+      "manpowerShort": "Effectif",
+      "mightShort": "Puissance",
+      "xp": "Exp.",
+      "noUnit": "Aucune unité.",
+      "total": "Total",
+      "addUnit": "Ajouter une unité",
+      "addHolding": "Ajouter une possession"
+    },
+    "Holding": {
+      "resource": "Ressource investie",
+      "cost": "Coût",
+      "effect": "Effet",
+      "requirement": "Prérequis",
+      "buildTime": "Temps de construction",
+      "building": "En construction"
+    },
+    "Household": {
+      "role": "Rôle",
+      "name": "Nom",
+      "actor": "Fiche",
+      "empty": "Aucun membre.",
+      "add": "Ajouter un membre",
+      "lord": "Seigneur",
+      "lady": "Dame",
+      "heir": "Héritier",
+      "maester": "Mestre",
+      "septon": "Septon",
+      "masterAtArms": "Maître d'armes",
+      "steward": "Intendant",
+      "castellan": "Castellan",
+      "knight": "Chevalier vassal",
+      "other": "Autre"
+    },
+    "Realm": {
+      "crownlands": "Terres de la Couronne",
+      "dorne": "Dorne",
+      "ironIslands": "Îles de Fer",
+      "north": "Le Nord",
+      "riverlands": "Le Conflans",
+      "vale": "Le Val d'Arryn",
+      "reach": "Le Bief",
+      "stormlands": "Terres de l'Orage",
+      "westerlands": "Terres de l'Ouest",
+      "other": "Autre (Essos...)"
     },
     "Settings": {
       "defaultDifficulty": {
         "name": "Difficulté des tests rapides",
-        "hint": "Difficulté utilisée quand un joueur clique sur une capacité sans ouvrir le dialogue. Le MJ la change selon la scène."
+        "hint": "Difficulté utilisée quand un joueur clique sur une compétence sans ouvrir le dialogue. Le MJ la change selon la scène."
       }
     },
     "Attack": {
@@ -111,7 +180,7 @@
       "cunning": "Ingéniosité",
       "deception": "Duperie",
       "endurance": "Endurance",
-      "fighting": "Combat au contact",
+      "fighting": "Corps à corps",
       "healing": "Soins",
       "knowledge": "Connaissance",
       "language": "Langue",
@@ -121,7 +190,7 @@
       "stealth": "Discrétion",
       "survival": "Survie",
       "thievery": "Larcin",
-      "warfare": "Art de la guerre",
+      "warfare": "Art militaire",
       "will": "Volonté"
     },
     "Age": {
@@ -151,7 +220,8 @@
     },
     "Npc": {
       "sourceUrl": "Fiche source (Maze)",
-      "openSource": "Ouvrir la fiche source"
+      "openSource": "Ouvrir la fiche source",
+      "otherAbilities": "Autres compétences (rang 2) :"
     },
     "House": {
       "realm": "Royaume",
@@ -160,6 +230,16 @@
       "head": "Chef de la Maison",
       "motto": "Devise",
       "founding": "Fondation",
+      "arms": "Armoiries",
+      "glory": "Gloire",
+      "gloryHint": "1 point : +1B sur un test, ou +1 à une ressource de la Maison",
+      "invested": "Investi",
+      "available": "Disponible",
+      "events": "Événements historiques",
+      "event": "Événement",
+      "eventNote": "Effets et récit",
+      "noEvent": "Aucun événement.",
+      "addEvent": "Ajouter un événement",
       "Create": "Création de Maison",
       "CreateSoon": "La création de Maison arrive dans une prochaine version.",
       "Resource": {
@@ -182,6 +262,7 @@
       "monthlySupply": "Entretien : -{value} par mois",
       "serviceSpace": "Espace des services",
       "serviceUpkeep": "Entretien : {value} Richesse",
+      "ledBy": "menée par",
       "Create": "Création de la Compagnie",
       "CreateSoon": "La création de Compagnie arrive dans une prochaine version.",
       "Resource": {
@@ -215,15 +296,16 @@
       "description": "Description"
     },
     "Weapon": {
-      "ability": "Capacité",
+      "ability": "Compétence",
       "specialty": "Spécialité",
       "specialtyHint": "Lames longues, Arcs...",
-      "training": "Formation (dés bonus requis)",
-      "damageAbility": "Capacité de dégâts",
+      "training": "Formation (dés de bonus requis)",
+      "trainingShort": "Formation",
+      "damageAbility": "Compétence de dégâts",
       "damageMod": "Modificateur de dégâts",
       "defenseBonus": "Bonus défensif",
       "piercing": "Perforante",
-      "powerful": "Puissante (+1 dégât par B en Force)",
+      "powerful": "Puissante (+1 dégât par dé de bonus en Force)",
       "versatile": "Polyvalente (+1 dégât à deux mains)",
       "twoHanded": "Deux mains (−2D à une main)",
       "grip": "Prise : une ou deux mains",
@@ -241,7 +323,7 @@
     },
     "Armor": {
       "rating": "Valeur d'armure",
-      "penalty": "Pénalité",
+      "penalty": "Malus d'armure",
       "bulk": "Encombrement"
     },
     "Quality": {
@@ -303,8 +385,8 @@
       "DialogTitle": "Test : {ability}",
       "Roll": "Lancer",
       "Rank": "Rang",
-      "Bonus": "Dés bonus",
-      "Penalty": "Dés de pénalité",
+      "Bonus": "Dés de bonus",
+      "Penalty": "Dés de malus",
       "Modifier": "Modificateur",
       "Difficulty": "Difficulté",
       "NoDifficulty": "Sans difficulté",
@@ -313,7 +395,7 @@
       "QuickHint": "Clic : test rapide. Maj + clic : dialogue.",
       "DegreesSingular": "{n} degré",
       "DegreesPlural": "{n} degrés",
-      "QuickHintLong": "Clic sur une capacité ou une spécialité : test rapide contre la difficulté fixée par le MJ. Maj + clic : dialogue complet.",
+      "QuickHintLong": "Clic sur une compétence ou une spécialité : test rapide contre la difficulté fixée par le MJ. Maj + clic : dialogue complet.",
       "ApplyAuto": "Malus automatiques",
       "Auto": {
         "wounds": "Blessures −{n}D",

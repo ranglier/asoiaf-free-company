@@ -1,35 +1,33 @@
-<div class="afc-abilities">
-  {{#each abilities as |ab|}}
-  <div class="ability {{#if ab.isDefault}}default{{/if}}" data-ability="{{ab.key}}">
-    <div class="ability-head">
+<div class="afc-ability-groups">
+  {{#each abilityGroups as |group|}}
+  <section class="ability-group">
+    <h3>{{localize group.label}}</h3>
+    {{#each group.abilities as |ab|}}
+    <div class="ability-row {{#if ab.isDefault}}default{{/if}}" data-ability="{{ab.key}}">
       <a class="ability-name" data-action="rollAbility" data-ability="{{ab.key}}"
-         data-tooltip="{{localize "AFC.Roll.QuickHint"}}"><i class="fa-solid fa-dice-d6"></i> {{localize ab.label}}</a>
+         data-tooltip="{{localize "AFC.Roll.QuickHint"}}">{{ab.name}}</a>
+      <span class="specialties">
+        {{#each ab.specialties as |sp idx|}}
+        {{#if @root.editMode}}
+        <span class="specialty-edit">
+          <input type="text" name="system.abilities.{{ab.key}}.specialties.{{idx}}.name" value="{{sp.name}}" placeholder="{{localize "AFC.Sheet.Specialty"}}">
+          <input class="bonus" type="number" name="system.abilities.{{ab.key}}.specialties.{{idx}}.bonus" value="{{sp.bonus}}" min="0" max="7">B
+          <a class="icon" data-action="removeSpecialty" data-ability="{{ab.key}}" data-index="{{idx}}"><i class="fa-solid fa-xmark"></i></a>
+        </span>
+        {{else}}
+        <a class="chip" data-action="rollSpecialty" data-ability="{{ab.key}}" data-index="{{idx}}"
+           data-tooltip="{{localize "AFC.Roll.QuickHint"}}">{{sp.name}} {{sp.bonus}}B</a>
+        {{/if}}
+        {{/each}}
+      </span>
       {{#if @root.editMode}}
-      <input class="rank" type="number" name="system.abilities.{{ab.key}}.rank" value="{{ab.rank}}" min="1" max="7">
       <a class="icon" data-action="addSpecialty" data-ability="{{ab.key}}" data-tooltip="{{localize "AFC.Sheet.AddSpecialty"}}"><i class="fa-solid fa-plus"></i></a>
+      <input class="rank" type="number" name="system.abilities.{{ab.key}}.rank" value="{{ab.rank}}" min="1" max="7">
       {{else}}
       <span class="rank-value">{{ab.rank}}</span>
       {{/if}}
     </div>
-    {{#unless @root.editMode}}
-    <div class="pips">{{#each ab.pips as |p|}}<span class="pip {{#if p.on}}on{{/if}}"></span>{{/each}}</div>
-    {{/unless}}
-    {{#if ab.specialties.length}}
-    <div class="specialties">
-      {{#each ab.specialties as |sp idx|}}
-      {{#if @root.editMode}}
-      <span class="specialty-edit">
-        <input type="text" name="system.abilities.{{ab.key}}.specialties.{{idx}}.name" value="{{sp.name}}" placeholder="{{localize "AFC.Sheet.Specialty"}}">
-        <input class="bonus" type="number" name="system.abilities.{{ab.key}}.specialties.{{idx}}.bonus" value="{{sp.bonus}}" min="0" max="7">B
-        <a class="icon" data-action="removeSpecialty" data-ability="{{ab.key}}" data-index="{{idx}}"><i class="fa-solid fa-xmark"></i></a>
-      </span>
-      {{else}}
-      <a class="chip" data-action="rollSpecialty" data-ability="{{ab.key}}" data-index="{{idx}}"
-         data-tooltip="{{localize "AFC.Roll.QuickHint"}}">{{sp.name}} {{sp.bonus}}B</a>
-      {{/if}}
-      {{/each}}
-    </div>
-    {{/if}}
-  </div>
+    {{/each}}
+  </section>
   {{/each}}
 </div>

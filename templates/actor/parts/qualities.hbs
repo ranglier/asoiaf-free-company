@@ -1,0 +1,16 @@
+      <h2>{{localize "AFC.Plural.blood"}} {{#if editable}}<a class="icon" data-action="createItem" data-type="blood"><i class="fa-solid fa-plus"></i></a>{{/if}}</h2>
+      <ul class="item-list">
+        {{#each items.blood as |item|}}
+        <li data-item-id="{{item.id}}"><img src="{{item.img}}" alt=""><a data-action="editItem">{{item.name}}</a>
+          {{#if item.system.summary}}<span class="summary">{{item.system.summary}}</span>{{/if}}
+          {{#if @root.editable}}<a class="icon" data-action="deleteItem"><i class="fa-solid fa-trash"></i></a>{{/if}}</li>
+        {{/each}}
+      </ul>
+      <h2>{{localize "AFC.Plural.quality"}} {{#if editable}}<a class="icon" data-action="createItem" data-type="quality"><i class="fa-solid fa-plus"></i></a>{{/if}}</h2>
+      <ul class="item-list">
+        {{#each items.quality as |item|}}
+        <li data-item-id="{{item.id}}"><img src="{{item.img}}" alt=""><a data-action="editItem">{{item.name}}</a>
+          <span class="tag">{{localize (concat "AFC.Quality." item.system.kind)}}</span>
+          {{#if @root.editable}}<a class="icon" data-action="deleteItem"><i class="fa-solid fa-trash"></i></a>{{/if}}</li>
+        {{/each}}
+      </ul>
