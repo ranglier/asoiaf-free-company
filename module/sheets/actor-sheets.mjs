@@ -323,6 +323,9 @@ export class CompanySheet extends AFCActorSheet {
     context.resources = resourceTiles(s.resources, CONFIG_AFC.COMPANY_RESOURCES, "AFC.Company.Resource");
     // Les ressources de la Compagnie bougent souvent en jeu : modifiables dans les deux modes.
     context.resourcesEditable = context.editable;
+    // Organisation : rappel de la valeur effective (avec les bonus des services).
+    const org = context.resources.find(r => r.key === "organization");
+    if (org && s.organization.bonus) org.hint = game.i18n.format("AFC.Company.orgEffective", { n: s.organization.effective });
     context.origins = Object.fromEntries(Object.entries(CONFIG_AFC.COMPANY_ORIGINS).map(([k, v]) => [k, v.label]));
     context.originLabel = CONFIG_AFC.COMPANY_ORIGINS[s.origin]?.label;
     context.leaderOptions = Object.fromEntries(game.actors.filter(a => a.type === "character").map(a => [a.id, a.name]));

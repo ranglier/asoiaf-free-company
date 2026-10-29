@@ -70,6 +70,8 @@ export class ServiceData extends foundry.abstract.TypeDataModel {
       size: new fields.StringField({ initial: "small", choices: Object.keys(SERVICE_SIZES) }),
       category: new fields.StringField({ blank: true }),
       effect: new fields.StringField({ blank: true }),
+      // Bonus permanent à l'Organisation effective (n'agrandit pas l'espace des services).
+      organization: int(0),
       description: description()
     };
   }

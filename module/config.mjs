@@ -210,11 +210,11 @@ export const COMPANY_EVENTS = {
   18: companyEvent("windfall", ["+2d6", "+1d6", "+1d6", "+1d6", "+2d6", "+2d6"])
 };
 
-/** Taille des services : coût en espace, prix et entretien en Richesse. */
+/** Taille des services : coût en espace, prix d'achat en Richesse, entretien mensuel en Ravitaillement. */
 export const SERVICE_SIZES = {
-  small: { label: "AFC.Service.Size.small", space: 1, cost: 3, upkeep: 1 },
-  medium: { label: "AFC.Service.Size.medium", space: 2, cost: 6, upkeep: 2 },
-  large: { label: "AFC.Service.Size.large", space: 3, cost: 9, upkeep: 3 }
+  small: { label: "AFC.Service.Size.small", space: 1, cost: 3, supply: 5 },
+  medium: { label: "AFC.Service.Size.medium", space: 2, cost: 6, supply: 10 },
+  large: { label: "AFC.Service.Size.large", space: 3, cost: 9, supply: 15 }
 };
 
 /** Entraînement des unités : coût en Effectif, discipline (difficulté) et expérience. */

@@ -16,7 +16,7 @@
         <tr class="{{#unless x.fits}}unequipped{{/unless}}">
           <td><strong class="role">{{x.name}}</strong><span class="sub">{{x.effect}}</span></td>
           <td class="center">{{localize x.sizeLabel}}</td>
-          <td class="center" data-tooltip="{{localize "AFC.CompanyCatalog.CostHint"}}">{{x.size.space}} · {{x.size.cost}} ({{x.size.upkeep}})</td>
+          <td class="center" data-tooltip="{{localize "AFC.CompanyCatalog.CostHint"}}">{{x.size.space}} · {{x.size.cost}} ({{x.size.supply}}){{#if x.organization}} · <strong>+{{x.organization}} Org.</strong>{{/if}}</td>
           <td class="item-actions"><button type="button" class="attack" data-action="addService" data-key="{{x.key}}"><i class="fa-solid fa-plus"></i> {{localize "AFC.Catalog.Add"}}</button></td>
         </tr>
         {{/each}}

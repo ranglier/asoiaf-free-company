@@ -8,6 +8,7 @@
     {{else}}
     <span class="value">{{r.value}}</span>
     {{/if}}
+    {{#if r.hint}}<span class="available">{{r.hint}}</span>{{/if}}
     {{#if r.hasBudget}}<span class="available {{#if (lt r.available 0)}}over{{/if}}">{{localize "AFC.House.available"}} {{r.available}}</span>{{/if}}
   </div>
   {{/each}}

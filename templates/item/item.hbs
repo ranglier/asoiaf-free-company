@@ -43,6 +43,7 @@
     <label>{{localize "AFC.Service.size"}}<select name="system.size">{{selectOptions serviceSizes selected=system.size localize=true}}</select></label>
     <label>{{localize "AFC.Service.category"}}<input type="text" name="system.category" value="{{system.category}}"></label>
     <label class="wide">{{localize "AFC.Service.effect"}}<input type="text" name="system.effect" value="{{system.effect}}"></label>
+    <label>{{localize "AFC.Service.organization"}}<input type="number" name="system.organization" value="{{system.organization}}"></label>
     {{/if}}
 
     {{#if (eq item.type "holding")}}

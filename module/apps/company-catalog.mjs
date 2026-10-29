@@ -128,7 +128,10 @@ export class CompanyCatalog extends HandlebarsApplicationMixin(ApplicationV2) {
     const name = loc(`AFC.CompanyCatalog.${x.key}.name`);
     await this.actor.createEmbeddedDocuments("Item", [{
       name, type: "service",
-      system: { size: x.size, category: loc(`AFC.CompanyCatalog.Category.${x.category}`), effect: loc(`AFC.CompanyCatalog.${x.key}.effect`) },
+      system: {
+        size: x.size, category: loc(`AFC.CompanyCatalog.Category.${x.category}`),
+        effect: loc(`AFC.CompanyCatalog.${x.key}.effect`), organization: x.organization ?? 0
+      },
       flags: { [SYSTEM_ID]: { catalog: { key: x.key, category: x.category } } }
     }]);
     ui.notifications.info(game.i18n.format("AFC.Catalog.Added", { name, actor: this.actor.name }));

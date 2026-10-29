@@ -37,17 +37,19 @@ export default class CompanyData extends foundry.abstract.TypeDataModel {
     const services = this.parent.items.filter(i => i.type === "service");
     const leader = this.leader ? game.actors?.get(this.leader) : null;
     const leaderCunning = leader?.system.abilities?.cunning?.rank ?? 0;
-    const orgTens = Math.floor(r.organization.value / 10);
+    // Organisation de base (saisie) : donne l'espace des services. Organisation effective : base + bonus des services.
+    const orgBonus = services.reduce((s, i) => s + (i.system.organization ?? 0), 0);
+    this.organization = { base: r.organization.value, bonus: orgBonus, effective: r.organization.value + orgBonus };
 
     this.services = {
       count: services.length,
       spaceUsed: services.reduce((s, i) => s + (SERVICE_SIZES[i.system.size]?.space ?? 0), 0),
-      spaceMax: orgTens * 3 + leaderCunning,
-      upkeep: services.reduce((s, i) => s + (SERVICE_SIZES[i.system.size]?.upkeep ?? 0), 0)
+      spaceMax: Math.floor(r.organization.value / 10) * 3 + leaderCunning,
+      supply: services.reduce((s, i) => s + (SERVICE_SIZES[i.system.size]?.supply ?? 0), 0)
     };
 
-    // Entretien mensuel du ravitaillement (règle en test).
-    this.monthlySupply = Math.max(0, Math.floor(r.manpower.value / 2) + 5 * services.length - orgTens * 5);
+    // Entretien mensuel du ravitaillement : Effectif / 2 + entretien des services − 5 par tranche de 10 d'Organisation effective.
+    this.monthlySupply = Math.max(0, Math.floor(r.manpower.value / 2) + this.services.supply - Math.floor(this.organization.effective / 10) * 5);
 
     const cohesionMax = r.authority.value * 3;
     const pct = cohesionMax ? Math.round((this.cohesion / cohesionMax) * 100) : 0;

@@ -45,7 +45,7 @@
       <span class="label">{{localize "AFC.Company.serviceSpace"}}</span>
       <div class="bar"><div style="width:{{spacePct}}%"></div></div>
       <span class="value">{{system.services.spaceUsed}} / {{system.services.spaceMax}}</span>
-      <span class="hint">{{localize "AFC.Company.serviceUpkeep" value=system.services.upkeep}}</span>
+      <span class="hint">{{localize "AFC.Company.serviceSupply" value=system.services.supply}}</span>
     </div>
   </section>
 
@@ -58,7 +58,7 @@
           <th>{{localize "AFC.Table.service"}}</th>
           <th class="center">{{localize "AFC.Service.size"}}</th>
           <th class="center">{{localize "AFC.Table.space"}}</th>
-          <th class="center">{{localize "AFC.Table.upkeep"}}</th>
+          <th class="center">{{localize "AFC.Table.supplyShort"}}</th>
           <th>{{localize "AFC.Service.effect"}}</th>
           <th></th>
         </tr></thead>
@@ -69,7 +69,7 @@
             {{#if s.item.system.category}}<span class="sub">{{s.item.system.category}}</span>{{/if}}</div></div></td>
           <td class="center">{{localize s.size.label}}</td>
           <td class="center">{{s.size.space}}</td>
-          <td class="center">{{s.size.upkeep}}</td>
+          <td class="center">{{s.size.supply}}</td>
           <td class="effect">{{s.item.system.effect}}</td>
           <td class="item-actions">{{#if @root.editable}}<a class="icon" data-action="deleteItem" data-tooltip="{{localize "Delete"}}"><i class="fa-solid fa-trash"></i></a>{{/if}}</td>
         </tr>
