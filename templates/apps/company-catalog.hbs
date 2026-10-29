@@ -1,0 +1,53 @@
+<div class="afc-sheet parchment">
+  {{> "systems/asoiaf-free-company/templates/actor/parts/tabs-nav.hbs"}}
+
+  <div class="tab-body">
+    <section class="tab {{tabs.services.cssClass}}" data-group="primary" data-tab="services">
+      <p class="hint">{{localize "AFC.CompanyCatalog.ServicesHint"}}</p>
+      <div class="section-title">
+        <h2>{{localize "AFC.Company.serviceSpace"}}</h2>
+        <span class="budget {{#if (lt space.left 0)}}over{{/if}}">{{space.used}} / {{space.max}} · {{localize "AFC.House.available"}} <strong>{{space.left}}</strong> · {{localize "AFC.Company.Resource.wealth"}} {{wealth}}</span>
+      </div>
+      {{#each categories as |c|}}
+      <h3 class="catalog-category">{{localize c.label}}{{#if c.taken}} <small>({{localize "AFC.CompanyCatalog.CategoryTaken"}})</small>{{/if}}</h3>
+      <table class="afc-table">
+        <tbody>
+        {{#each c.services as |x|}}
+        <tr class="{{#unless x.fits}}unequipped{{/unless}}">
+          <td><strong class="role">{{x.name}}</strong><span class="sub">{{x.effect}}</span></td>
+          <td class="center">{{localize x.sizeLabel}}</td>
+          <td class="center" data-tooltip="{{localize "AFC.CompanyCatalog.CostHint"}}">{{x.size.space}} · {{x.size.cost}} ({{x.size.upkeep}})</td>
+          <td class="item-actions"><button type="button" class="attack" data-action="addService" data-key="{{x.key}}"><i class="fa-solid fa-plus"></i> {{localize "AFC.Catalog.Add"}}</button></td>
+        </tr>
+        {{/each}}
+        </tbody>
+      </table>
+      {{/each}}
+    </section>
+
+    <section class="tab {{tabs.unit.cssClass}} builder" data-group="primary" data-tab="unit">
+      <p class="hint">{{localize "AFC.CompanyCatalog.UnitHint"}}</p>
+      <div class="grid-2">
+        <label>{{localize "AFC.Unit.training"}}
+          <select name="training">{{#each trainings as |t|}}<option value="{{t.key}}">{{t.label}} ({{localize "AFC.Table.manpowerShort"}} {{t.manpower}})</option>{{/each}}</select>
+        </label>
+        <label>{{localize "AFC.Catalog.UnitTypeLabel"}}
+          <select name="unitType">{{#each unitTypes as |t|}}<option value="{{t.key}}">{{t.label}} ({{localize "AFC.Table.mightShort"}} {{t.cost}})</option>{{/each}}</select>
+        </label>
+      </div>
+      <div class="builder-result">
+        <span>{{localize "AFC.Table.manpowerShort"}} <strong data-unit-manpower></strong> / {{manpower}} · {{localize "AFC.Table.mightShort"}} <strong data-unit-might></strong> / {{might}} · {{localize "AFC.Unit.discipline"}} <strong data-unit-discipline></strong></span>
+        <span class="hint" data-unit-notes></span>
+        <button type="button" class="attack" data-action="addUnit"><i class="fa-solid fa-plus"></i> {{localize "AFC.Catalog.AddUnit"}}</button>
+      </div>
+      <table class="afc-table">
+        <thead><tr><th>{{localize "AFC.Catalog.UnitTypeLabel"}}</th><th class="center">{{localize "AFC.Table.mightShort"}}</th><th class="center">{{localize "AFC.Unit.discipline"}}</th><th>{{localize "AFC.Unit.keyAbilities"}}</th></tr></thead>
+        <tbody>
+        {{#each unitTypes as |t|}}
+        <tr><td class="role">{{t.label}} <small>({{t.classes}}{{#if t.men}}, {{t.men}}{{/if}})</small></td><td class="center">{{t.cost}}</td><td class="center">{{numberFormat t.discipline sign=true}}</td><td class="effect">{{t.abilityNames}}</td></tr>
+        {{/each}}
+        </tbody>
+      </table>
+    </section>
+  </div>
+</div>

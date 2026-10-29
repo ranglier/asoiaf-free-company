@@ -3,6 +3,7 @@ import { rollAbilityTest } from "../dice/test-roll.mjs";
 import { rollAttack, weaponProfile, weaponQualities } from "../dice/attack.mjs";
 import { runCreation } from "../creation.mjs";
 import { HoldingCatalog } from "../apps/holding-catalog.mjs";
+import { CompanyCatalog } from "../apps/company-catalog.mjs";
 
 const { HandlebarsApplicationMixin } = foundry.applications.api;
 const { ActorSheetV2 } = foundry.applications.sheets;
@@ -301,7 +302,7 @@ export class CompanySheet extends AFCActorSheet {
   static DEFAULT_OPTIONS = {
     classes: ["company"],
     position: { width: 860, height: 860 },
-    actions: { createCompany: CompanySheet.#onCreateCompany }
+    actions: { createCompany: CompanySheet.#onCreateCompany, openCatalog: CompanySheet.#onOpenCatalog }
   };
   static PARTS = { sheet: { template: `${TPL}/company.hbs`, scrollable: [".tab-body"] } };
   static TABS = {
@@ -343,5 +344,9 @@ export class CompanySheet extends AFCActorSheet {
 
   static #onCreateCompany() {
     return runCreation(this.document);
+  }
+
+  static #onOpenCatalog() {
+    return new CompanyCatalog(this.document).render(true);
   }
 }

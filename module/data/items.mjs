@@ -108,7 +108,8 @@ export class UnitData extends foundry.abstract.TypeDataModel {
   prepareDerivedData() {
     const t = UNIT_TRAININGS[this.training];
     this.manpowerCost = t?.manpower ?? 0;
-    this.discipline = (t?.discipline ?? 0) + this.disciplineMod;
+    // La discipline ne descend jamais sous Élémentaire (0).
+    this.discipline = Math.max(0, (t?.discipline ?? 0) + this.disciplineMod);
     this.classList = this.classes.split(/[ ,]+/).filter(c => c in UNIT_CLASSES);
   }
 }

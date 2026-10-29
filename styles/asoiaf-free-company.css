@@ -302,3 +302,5 @@
 .afc-catalog .builder-result button { align-self: flex-start; }
 .afc-catalog table.afc-table td { font-size: 16px; }
 .afc .add-item.catalog { color: var(--afc-wax); }
+.afc-catalog h3.catalog-category { margin: 0.6rem 0 0.1rem; font-family: var(--afc-font-label); font-size: 17px; color: var(--afc-wax); border: none; }
+.afc-catalog h3.catalog-category small { color: var(--afc-ink-soft); font-size: 14px; }

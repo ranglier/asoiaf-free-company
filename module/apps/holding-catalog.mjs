@@ -124,7 +124,7 @@ export class HoldingCatalog extends HandlebarsApplicationMixin(ApplicationV2) {
     return {
       training, typeKey, type, notes,
       cost: HOUSE_UNIT_TRAINING_COSTS[training] + type.cost,
-      discipline: UNIT_TRAININGS[training].discipline + type.discipline
+      discipline: Math.max(0, UNIT_TRAININGS[training].discipline + type.discipline)
     };
   }
 
@@ -141,7 +141,7 @@ export class HoldingCatalog extends HandlebarsApplicationMixin(ApplicationV2) {
         buildTime: h.buildTime ? `${h.buildTime} ${loc("AFC.Catalog.Months")}` : ""
       }
     }]);
-    ui.notifications.info(game.i18n.format("AFC.Catalog.Added", { name: loc(`AFC.Catalog.${h.key}.name`) }));
+    ui.notifications.info(game.i18n.format("AFC.Catalog.Added", { name: loc(`AFC.Catalog.${h.key}.name`), actor: this.actor.name }));
     return this.render();
   }
 
@@ -151,7 +151,7 @@ export class HoldingCatalog extends HandlebarsApplicationMixin(ApplicationV2) {
       name: d.name, type: "holding",
       system: { resource: "lands", cost: d.cost, effect: loc("AFC.Catalog.DomainEffect") }
     }]);
-    ui.notifications.info(game.i18n.format("AFC.Catalog.Added", { name: d.name }));
+    ui.notifications.info(game.i18n.format("AFC.Catalog.Added", { name: d.name, actor: this.actor.name }));
     return this.render();
   }
 
@@ -168,7 +168,7 @@ export class HoldingCatalog extends HandlebarsApplicationMixin(ApplicationV2) {
         description: u.notes.length ? `<p>${u.notes.join("</p><p>")}</p>` : ""
       }
     }]);
-    ui.notifications.info(game.i18n.format("AFC.Catalog.Added", { name }));
+    ui.notifications.info(game.i18n.format("AFC.Catalog.Added", { name, actor: this.actor.name }));
     return this.render();
   }
 }

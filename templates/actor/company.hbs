@@ -78,6 +78,7 @@
         {{/each}}
         </tbody>
       </table>
+      {{#if editable}}<a class="add-item catalog" data-action="openCatalog"><i class="fa-solid fa-book-open"></i> {{localize "AFC.CompanyCatalog.Open"}}</a>{{/if}}
       {{#if editable}}<a class="add-item" data-action="createItem" data-type="service"><i class="fa-solid fa-plus"></i> {{localize "AFC.Table.addService"}}</a>{{/if}}
     </section>
 
@@ -120,6 +121,7 @@
         </tr></tfoot>
         {{/if}}
       </table>
+      {{#if editable}}<a class="add-item catalog" data-action="openCatalog"><i class="fa-solid fa-book-open"></i> {{localize "AFC.CompanyCatalog.Open"}}</a>{{/if}}
       {{#if editable}}<a class="add-item" data-action="createItem" data-type="unit"><i class="fa-solid fa-plus"></i> {{localize "AFC.Table.addUnit"}}</a>{{/if}}
     </section>
 

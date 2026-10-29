@@ -86,3 +86,69 @@ export const HOUSE_UNIT_TYPES = {
 
 /** Mercenaires : Richesse retirée par unité selon l'entraînement. */
 export const MERCENARY_WEALTH = { green: 1, trained: 3, veteran: 6, elite: 9 };
+
+/* ---------- Compagnie (règles maison) ---------- */
+
+/**
+ * Services de gestion et patrimoine. Une Compagnie ne prend qu'un service par catégorie,
+ * sauf les diplomates. Libellés et effets : `AFC.CompanyCatalog.<clé>.name` / `.effect`.
+ */
+export const COMPANY_SERVICES = [
+  { key: "blacksmith", size: "small", category: "forge" },
+  { key: "masterSmith", size: "medium", category: "forge" },
+  { key: "armorersGuild", size: "large", category: "forge" },
+  { key: "carpenter", size: "small", category: "carpentry" },
+  { key: "carpenterCrew", size: "medium", category: "carpentry" },
+  { key: "woodworkersGuild", size: "large", category: "carpentry" },
+  { key: "horseMasters", size: "large", category: "horses" },
+  { key: "healers", size: "small", category: "healing" },
+  { key: "fieldHospital", size: "large", category: "healing" },
+  { key: "foreman", size: "small", category: "staff" },
+  { key: "aidesDeCamp", size: "medium", category: "staff" },
+  { key: "stewards", size: "large", category: "staff" },
+  { key: "sutlers", size: "medium", category: "kitchen" },
+  { key: "fieldCook", size: "large", category: "kitchen" },
+  { key: "provost", size: "medium", category: "discipline" },
+  { key: "disciplineOfficers", size: "large", category: "discipline" },
+  { key: "drillSergeants", size: "medium", category: "training" },
+  { key: "mastersAtArms", size: "large", category: "training" },
+  { key: "priest", size: "small", category: "faith" },
+  { key: "chaplains", size: "medium", category: "faith" },
+  { key: "congregation", size: "large", category: "faith" },
+  { key: "negotiator", size: "small", category: "diplomacy" },
+  { key: "spokesman", size: "medium", category: "diplomacy" },
+  { key: "logisticsSmall", size: "small", category: "logistics" },
+  { key: "logisticsMedium", size: "medium", category: "logistics" },
+  { key: "logisticsLarge", size: "large", category: "logistics" },
+  { key: "maps", size: "small", category: "navigation" },
+  { key: "guide", size: "medium", category: "navigation" }
+];
+
+/** Catégories sans limite d'un service. */
+export const UNLIMITED_SERVICE_CATEGORIES = ["diplomacy"];
+
+/**
+ * Types d'unités de la Compagnie : coût en Puissance, modificateur de discipline,
+ * compétences clés, classes (I, P, A, C, M, S) et hommes par unité.
+ */
+export const COMPANY_UNIT_TYPES = {
+  volunteers: { cost: 0, discipline: 4, abilities: ["agility", "marksmanship", "awareness"], classes: "I" },
+  lightInfantry: { cost: 1, discipline: 2, abilities: ["athletics", "fighting", "endurance"], classes: "I" },
+  heavyInfantry: { cost: 2, discipline: 1, abilities: ["athletics", "fighting", "endurance"], classes: "I" },
+  personalGuard: { cost: 4, discipline: -4, abilities: ["athletics", "fighting", "endurance"], classes: "I" },
+  hedgeKnights: { cost: 5, discipline: -6, abilities: ["athletics", "fighting", "endurance"], classes: "I" },
+  raiders: { cost: 1, discipline: 3, abilities: ["athletics", "fighting", "endurance"], classes: "I" },
+  scouts: { cost: 1, discipline: 3, abilities: ["endurance", "stealth", "awareness"], classes: "I" },
+  sailors: { cost: 2, discipline: 0, abilities: ["agility", "fighting", "awareness"], classes: "I M" },
+  garrison: { cost: 1, discipline: 0, abilities: ["fighting", "endurance", "awareness"], classes: "I" },
+  pikemen: { cost: 2, discipline: 1, abilities: ["athletics", "fighting", "endurance"], classes: "P" },
+  specialists: { cost: 3, discipline: 3, abilities: ["athletics", "stealth", "marksmanship"], classes: "I" },
+  archers: { cost: 2, discipline: 3, abilities: ["agility", "marksmanship", "awareness"], classes: "A" },
+  crossbowmen: { cost: 3, discipline: 1, abilities: ["agility", "marksmanship", "awareness"], classes: "A" },
+  lightCavalry: { cost: 2, discipline: -2, abilities: ["agility", "fighting", "animalHandling"], classes: "C", men: 30, mounted: true },
+  heavyCavalry: { cost: 3, discipline: -4, abilities: ["agility", "fighting", "animalHandling"], classes: "C", men: 20, mounted: true },
+  support: { cost: 0, discipline: 4, abilities: [], classes: "S" },
+  lightShips: { cost: 4, discipline: 0, abilities: ["fighting", "marksmanship", "awareness"], classes: "M", men: 5 },
+  heavyShips: { cost: 6, discipline: 0, abilities: ["fighting", "marksmanship", "awareness"], classes: "M", men: 5 },
+  special: { cost: 4, discipline: 0, abilities: [], classes: "I" }
+};
