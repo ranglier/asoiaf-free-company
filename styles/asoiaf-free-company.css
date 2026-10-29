@@ -359,3 +359,10 @@
 .afc .afc-heraldry .heraldry-edit { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.3rem 0.6rem; border: 1px solid var(--afc-line); border-radius: 4px; padding: 0.3rem 0.6rem 0.5rem; margin: 0.4rem 0; }
 .afc .afc-heraldry .heraldry-edit legend { font-family: var(--afc-font-label); padding: 0 0.3rem; }
 .afc .afc-heraldry .heraldry-edit select:disabled, .afc .afc-heraldry .heraldry-edit input:disabled { opacity: 0.45; }
+
+/* Fenêtre détachée : l'application occupe toute la fenêtre du navigateur (classe posée par le système). */
+body.detached .application.afc.afc-fill {
+  left: 0 !important; top: 0 !important; width: 100vw !important; height: 100vh !important;
+  max-width: none !important; max-height: none !important; border-radius: 0;
+}
+body.detached .application.afc.afc-fill.afc-dialog .window-content { max-height: none; flex: 1 1 auto; }

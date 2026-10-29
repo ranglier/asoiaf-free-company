@@ -51,3 +51,14 @@ Hooks.once("init", () => {
 });
 
 Hooks.on("renderChatMessageHTML", onRenderChatMessage);
+
+/**
+ * Fenêtre détachée (bouton « Détacher ») : Foundry garde la taille fixe de l'application, même si
+ * la fenêtre du navigateur est agrandie. Nos fenêtres (fiches, dialogues, catalogues) occupent
+ * alors tout l'espace : classe afc-fill, appliquée seulement dans une fenêtre détachée (voir CSS).
+ */
+Hooks.on("openDetachedWindow", (id, win) => {
+  const fit = () => win.document.getElementById(id)?.classList.toggle("afc-fill", win.document.getElementById(id).classList.contains("afc"));
+  new win.MutationObserver(fit).observe(win.document.body, { childList: true });
+  win.addEventListener("resize", fit);
+});
