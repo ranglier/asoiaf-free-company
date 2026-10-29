@@ -344,6 +344,8 @@ export class CompanySheet extends AFCActorSheet {
     }), { count: 0, men: 0, manpower: 0, might: 0 });
     context.initial = (this.document.name || "?").charAt(0).toUpperCase();
     context.members = this._prepareMembers(context, "members");
+    // Bouton de création : caché une fois la Compagnie créée, sauf pour le MJ en mode édition (pour refaire).
+    context.showCreate = context.editable && (!s.created || (context.editMode && game.user.isGM));
     return context;
   }
 

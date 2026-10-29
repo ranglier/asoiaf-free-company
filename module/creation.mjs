@@ -176,7 +176,8 @@ export async function runCreation(actor) {
     [`system.${tables.originField}`]: step1.origin || actor.system[tables.originField],
     "system.founding": summary.founding ?? actor.system.founding,
     "system.resources": Object.fromEntries(tables.resources.map(k => [k, { value: current[k] }])),
-    "system.events": summary.events.map(e => ({ name: e.name, note: e.text }))
+    "system.events": summary.events.map(e => ({ name: e.name, note: e.text })),
+    ...(actor.type === "company" ? { "system.created": true } : {})
   });
   return ChatMessage.create({
     speaker: ChatMessage.getSpeaker({ actor }),

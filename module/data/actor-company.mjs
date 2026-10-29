@@ -27,6 +27,8 @@ export default class CompanyData extends foundry.abstract.TypeDataModel {
         months: new fields.NumberField({ required: true, integer: true, min: 0, initial: 0 }),
         terms: new fields.StringField({ blank: true })
       }),
+      // Création guidée déjà faite : le bouton de création disparaît.
+      created: new fields.BooleanField({ initial: false }),
       month: new fields.NumberField({ required: true, integer: true, min: 0, initial: 0 }),
       unpaidMonths: new fields.NumberField({ required: true, integer: true, min: 0, initial: 0 }),
       // Membres : rôle (texte libre), nom, et lien éventuel vers un acteur du monde.
@@ -42,6 +44,12 @@ export default class CompanyData extends foundry.abstract.TypeDataModel {
       })),
       history: new fields.HTMLField({ blank: true })
     };
+  }
+
+  /** Compagnies créées avant ce champ : considérées comme créées si elles ont un historique. */
+  static migrateData(source) {
+    if (source.created === undefined && source.events?.length) source.created = true;
+    return super.migrateData(source);
   }
 
   prepareDerivedData() {

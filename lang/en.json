@@ -489,7 +489,7 @@
       "supply": "Supply",
       "monthlySupply": "Upkeep: -{value} per month",
       "serviceSpace": "Service space",
-      "peopleLabel": "People",
+      "peopleLabel": "Men",
       "peopleDetail": "{inArms} under arms · {reserve} in reserve",
       "serviceSupply": "Upkeep: {value} Supply / month",
       "orgEffective": "Effective {n}",

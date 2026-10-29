@@ -489,7 +489,7 @@
       "supply": "Ravitaillement",
       "monthlySupply": "Entretien : -{value} par mois",
       "serviceSpace": "Espace des services",
-      "peopleLabel": "Personnes",
+      "peopleLabel": "Hommes",
       "peopleDetail": "dont {inArms} en armes · {reserve} en réserve",
       "serviceSupply": "Entretien : {value} Ravitaillement / mois",
       "orgEffective": "Effective {n}",
