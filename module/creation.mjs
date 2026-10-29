@@ -189,7 +189,7 @@ export async function runCreation(actor) {
     "system.founding": summary.founding ?? actor.system.founding,
     "system.resources": Object.fromEntries(tables.resources.map(k => [k, { value: current[k] }])),
     "system.events": summary.events.map(e => ({ name: e.name, note: e.text })),
-    ...(actor.type === "company" ? { "system.created": true } : {})
+    "system.created": true
   });
   return ChatMessage.create({
     speaker: ChatMessage.getSpeaker({ actor }),
@@ -229,15 +229,23 @@ async function chooseResources(tables, event, current) {
 /**
  * Modifications initiales de la Maison : un dé par joueur, chacun choisit sa ressource.
  * Au plus `max` jets sur une même ressource ; le bouton Valider reste inactif sinon.
+ * Le tableau montre les jets de départ (7d6 + région) et se met à jour à chaque choix.
  */
 async function choosePlayerBonus(tables, dice, base) {
   const max = tables.playerBonus.max;
-  const options = tables.resources.map(k => `<option value="${k}">${resLabel(tables, k)} (${base[k].roll})</option>`).join("");
+  const loc = key => game.i18n.localize(key);
+  const options = `<option value="">—</option>${tables.resources.map(k => `<option value="${k}">${resLabel(tables, k)}</option>`).join("")}`;
+  const table = `<table class="afc-table"><thead><tr><th>${loc("AFC.Sheet.Resources")}</th><th class="center">7d6</th>
+    <th class="center">${loc("AFC.Creation.Mod")}</th><th class="center">${loc("AFC.Creation.PlayersCol")}</th><th class="center">${loc("AFC.Creation.Final")}</th></tr></thead>
+    <tbody>${tables.resources.map(k => `<tr><td class="role">${resLabel(tables, k)}</td><td class="center">${base[k].roll}</td>
+    <td class="center">${base[k].mod > 0 ? "+" : ""}${base[k].mod || ""}</td><td class="center" data-players="${k}"></td>
+    <td class="center big-num" data-total="${k}"></td></tr>`).join("")}</tbody></table>`;
   const rows = dice.map((d, i) => `<label>${game.i18n.format("AFC.Creation.PlayerDie", { n: i + 1, d })}<select name="p${i}">${options}</select></label>`).join("");
   const chosen = await DialogV2.prompt({
     window: { title: game.i18n.localize("AFC.Creation.PlayersTitle") },
     classes: ["afc", "afc-dialog"],
-    content: `<div class="afc-test-dialog"><p class="hint">${game.i18n.format("AFC.Creation.PlayersHint", { max })}</p>${rows}<p class="hint warn" data-warn></p></div>`,
+    position: { width: 520 },
+    content: `<div class="afc-test-dialog afc-creation-summary"><p class="hint">${game.i18n.format("AFC.Creation.PlayersHint", { max })}</p>${table}${rows}<p class="hint warn" data-warn></p></div>`,
     ok: {
       label: game.i18n.localize("AFC.Creation.Confirm"),
       callback: (ev, button) => dice.map((d, i) => button.form.elements[`p${i}`].value)
@@ -246,13 +254,19 @@ async function choosePlayerBonus(tables, dice, base) {
       const root = dialog.element ?? dialog;
       const ok = root.querySelector('button[data-action="ok"]');
       const selects = [...root.querySelectorAll("select")];
-      // Répartition initiale : on tourne sur les ressources pour respecter la limite.
-      selects.forEach((s, i) => { s.value = tables.resources[i % tables.resources.length]; });
       const sync = () => {
-        const counts = {};
-        selects.forEach(s => { counts[s.value] = (counts[s.value] ?? 0) + 1; });
+        const counts = {}, added = {};
+        selects.forEach((s, i) => {
+          if (!s.value) return;
+          counts[s.value] = (counts[s.value] ?? 0) + 1;
+          added[s.value] = (added[s.value] ?? 0) + dice[i];
+        });
+        for (const k of tables.resources) {
+          root.querySelector(`[data-players="${k}"]`).textContent = added[k] ? `+${added[k]}` : "";
+          root.querySelector(`[data-total="${k}"]`).textContent = Math.max(0, base[k].roll + (added[k] ?? 0) + base[k].mod);
+        }
         const over = Object.entries(counts).filter(([, n]) => n > max).map(([k]) => resLabel(tables, k));
-        ok.disabled = over.length > 0;
+        ok.disabled = over.length > 0 || selects.some(s => !s.value);
         root.querySelector("[data-warn]").textContent = over.length ? game.i18n.format("AFC.Creation.PlayersOver", { list: over.join(", "), max }) : "";
       };
       selects.forEach(s => s.addEventListener("change", sync));

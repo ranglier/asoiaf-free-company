@@ -22,6 +22,8 @@ export default class HouseData extends foundry.abstract.TypeDataModel {
       founding: new fields.StringField({ blank: true }),
       resources: new fields.SchemaField(Object.fromEntries(HOUSE_RESOURCES.map(k => [k, resource()]))),
       glory: new fields.NumberField({ required: true, integer: true, min: 0, initial: 0 }),
+      // Création faite : le bouton de création est alors masqué (sauf pour le MJ en mode édition).
+      created: new fields.BooleanField({ initial: false }),
       // Événements historiques tirés à la création (leurs effets sont déjà reportés dans les ressources).
       events: new fields.ArrayField(new fields.SchemaField({
         name: new fields.StringField({ blank: true }),
@@ -39,6 +41,7 @@ export default class HouseData extends foundry.abstract.TypeDataModel {
 
   /** Ancien champ royaume en texte libre : on le garde s'il correspond à une clé, sinon « autre ». */
   static migrateData(source) {
+    if (source.created === undefined && source.events?.length) source.created = true;
     const renamed = { crownlands: "kingsLanding", vale: "mountainsOfTheMoon" };
     if (source.realm in renamed) source.realm = renamed[source.realm];
     if (source.realm && !(source.realm in REALMS)) source.realm = "other";

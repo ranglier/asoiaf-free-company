@@ -42,7 +42,7 @@
     <h2>{{localize "AFC.Sheet.Resources"}}</h2>
     {{#if editable}}<span class="title-buttons"><button type="button" class="afc-create" data-action="houseEvent"><i class="fa-solid fa-calendar-check"></i> {{localize "AFC.HouseEvent.Button"}}</button>
     <button type="button" class="afc-create" data-action="convert"><i class="fa-solid fa-right-left"></i> {{localize "AFC.Convert.Button"}}</button>
-    <button type="button" class="afc-create" data-action="createHouse"><i class="fa-solid fa-dice"></i> {{localize "AFC.House.Create"}}</button></span>{{/if}}
+    {{#if showCreate}}<button type="button" class="afc-create" data-action="createHouse"><i class="fa-solid fa-dice"></i> {{localize "AFC.House.Create"}}</button>{{/if}}</span>{{/if}}
   </div>
   {{> "systems/asoiaf-free-company/templates/actor/parts/resources.hbs"}}
 

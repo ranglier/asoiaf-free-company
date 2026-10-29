@@ -293,6 +293,7 @@ export class HouseSheet extends AFCActorSheet {
       })) : null
     }));
     context.members = this._prepareMembers(context, "household");
+    context.showCreate = context.editable && (!s.created || (context.editMode && game.user.isGM));
     return context;
   }
 
