@@ -360,8 +360,9 @@
       },
       "AttitudeHint": "attitude au choix",
       "CountHint": "nombre 1d6−2, minimum 1",
-      "FieldIs": "Le champ est de",
-      "Hint": "La charge est d'un métal sur un champ d'émail, d'un émail sur un champ de métal. Le texte reste modifiable avant d'appliquer.",
+      "FieldIs": "Couleurs",
+      "FieldOption": "Champ {field}, charge {charge}",
+      "Hint": "Règle du livre : on ne pose jamais un émail (couleur) sur un émail, ni un métal (or, argent) sur un métal. Le champ prend donc l'une des deux couleurs tirées et la charge l'autre. Le texte reste modifiable avant d'appliquer.",
       "Reroll": "Tout relancer",
       "Apply": "Appliquer"
     },

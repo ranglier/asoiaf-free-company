@@ -136,14 +136,18 @@ function stepsHTML(g) {
     <td><strong>${esc(s.result)}</strong>${s.note ? ` <small>${esc(s.note)}</small>` : ""}</td></tr>`).join("")}</tbody></table>`;
 }
 
+/** Choix du champ, avec les couleurs tirées : « Champ de sinople, charge d'or » ou l'inverse. */
+function fieldOptions(g) {
+  const opt = (value, field, charge) => `<option value="${value}">${esc(game.i18n.format("AFC.Heraldry.FieldOption", { field: de(field), charge: de(charge) }))}</option>`;
+  return opt("tincture", g.tincture, g.metal) + opt("metal", g.metal, g.tincture);
+}
+
 /** Ouvre le générateur ; renvoie le texte du blason à appliquer (ou rien). */
 export async function runHeraldry() {
   let g = await generate();
   const content = `<div class="afc-test-dialog afc-heraldry">
     <div data-steps>${stepsHTML(g)}</div>
-    <label>${loc("AFC.Heraldry.FieldIs")}<select name="fieldIs">
-      <option value="tincture">${loc("AFC.Heraldry.Tincture")}</option><option value="metal">${loc("AFC.Heraldry.Metal")}</option>
-    </select></label>
+    <label>${loc("AFC.Heraldry.FieldIs")}<select name="fieldIs">${fieldOptions(g)}</select></label>
     <label>${loc("AFC.House.arms")}<textarea name="arms" rows="2">${esc(blazon(g, "tincture"))}</textarea></label>
     <p class="hint">${loc("AFC.Heraldry.Hint")}</p>
     <button type="button" class="afc-create" data-reroll><i class="fa-solid fa-dice"></i> ${loc("AFC.Heraldry.Reroll")}</button>
@@ -165,6 +169,9 @@ export async function runHeraldry() {
       root.querySelector("[data-reroll]").addEventListener("click", async () => {
         g = await generate();
         root.querySelector("[data-steps]").innerHTML = stepsHTML(g);
+        const keep = fieldIs.value;
+        fieldIs.innerHTML = fieldOptions(g);
+        fieldIs.value = keep;
         arms.value = blazon(g, fieldIs.value);
       });
     },

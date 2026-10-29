@@ -360,8 +360,9 @@
       },
       "AttitudeHint": "attitude of your choice",
       "CountHint": "number 1d6−2, minimum 1",
-      "FieldIs": "The field is a",
-      "Hint": "The charge is a metal on a tincture field, a tincture on a metal field. The text can be edited before applying.",
+      "FieldIs": "Colors",
+      "FieldOption": "Field {field}, charge {charge}",
+      "Hint": "Book rule: never a tincture on a tincture, nor a metal (gold, silver) on a metal. The field takes one of the two rolled colors and the charge the other. The text can be edited before applying.",
       "Reroll": "Reroll all",
       "Apply": "Apply"
     },
