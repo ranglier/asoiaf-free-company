@@ -17,6 +17,75 @@
     }
   },
   "AFC": {
+    "Month": {
+      "Button": "Fin de mois",
+      "Title": "Fin de mois {n} : {name}",
+      "Run": "Clore le mois",
+      "CardTitle": "Fin du mois {n}",
+      "MonthN": "mois {n}",
+      "Contract": "Contrat",
+      "Employer": "Employeur",
+      "PayShort": "Richesse / mois",
+      "MonthsShort": "mois restants",
+      "UnpaidHint": "Solde impayée depuis {n} mois",
+      "StepIncome": "1. Revenus",
+      "StepUpkeep": "2. Entretien",
+      "StepAction": "3. Action de compagnie (facultative)",
+      "StepEvent": "4. Événement (facultatif)",
+      "Pay": "Paie du contrat (Richesse)",
+      "ContractInfo": "Contrat avec {employer} : {n} mois restants.",
+      "NoContract": "Pas de contrat en cours : saisir la paie à la main si besoin.",
+      "Loot": "Butin (points)",
+      "LootMode": "Le capitaine...",
+      "LootKeep": "garde le butin (Richesse)",
+      "LootShare": "le distribue aux hommes (Cohésion)",
+      "UpkeepInfo": "Entretien : {n} de Ravitaillement (réserve actuelle : {supply}).",
+      "UpkeepWarn": "Réserve insuffisante : solde impayée.",
+      "ServiceEffects": "Appliquer les effets mensuels des services (Prévôt, Forgeron...)",
+      "RollEvent": "Lancer un test d'événement de compagnie",
+      "Steward": "Intendant (test de Statut, spécialité Intendance)",
+      "NoSteward": "Aucun intendant",
+      "EventTitle": "Événement de compagnie",
+      "EventTest": "{steward} : Statut {rank}, Intendance +{bonus}B",
+      "ModOrganization": "Organisation",
+      "ModCohesion": "Cohésion",
+      "ModServices": "Services",
+      "Keep": "Garder",
+      "Reroll": "Relancer",
+      "RerollHint": "Le MJ peut relancer autant de fois qu'il le souhaite.",
+      "Action": {
+        "none": "Aucune",
+        "recruit": "Recruter",
+        "train": "Entraîner",
+        "service": "Acheter un service",
+        "convert": "Convertir des ressources",
+        "rest": "Se reposer (Cohésion +5)",
+        "contract": "Chercher un contrat"
+      },
+      "Line": {
+        "pay": "Paie du contrat : +{n} Richesse.",
+        "lootKept": "Butin gardé : +{n} Richesse.",
+        "lootShared": "Butin distribué aux hommes : +{n} Cohésion.",
+        "upkeep": "Entretien payé : −{n} Ravitaillement (reste {left}).",
+        "unpaid": "Ravitaillement insuffisant pour l'entretien de {n} : solde impayée, −{loss} Cohésion ({months} mois impayé(s) d'affilée).",
+        "desertion": "Désertions : −{n} Effectif.",
+        "service": "{name} : {effect}.",
+        "rest": "Mois de repos : +5 Cohésion.",
+        "action": "Action du mois : {action}.",
+        "contractLeft": "Contrat avec {employer} : encore {n} mois.",
+        "contractEnd": "Fin du contrat avec {employer}.",
+        "crisis": "Cohésion en crise : risque de mutinerie."
+      },
+      "Event": {
+        "disaster": { "name": "Désastre", "effect": "−1d6 sur deux ressources, au choix du MJ." },
+        "calamity": { "name": "Calamité", "effect": "−1d6 sur une ressource, au choix du MJ." },
+        "decline": { "name": "Déclin", "effect": "−1d6 Cohésion, ou −1 sur une ressource." },
+        "calm": { "name": "Mois calme", "effect": "Rien de notable." },
+        "growth": { "name": "Croissance", "effect": "+1 sur une ressource, au choix du MJ." },
+        "boon": { "name": "Bienfait", "effect": "+1d6 sur une ressource, au choix du MJ." },
+        "windfall": { "name": "Aubaine", "effect": "+1d6 sur deux ressources, au choix du MJ." }
+      }
+    },
     "CompanyCatalog": {
       "Title": "Catalogue de la Compagnie",
       "Open": "Catalogue",
@@ -471,11 +540,11 @@
         "zealots": "Fanatiques"
       },
       "Cohesion": {
-        "excellent": "Le moral est bon (+2 Discipline)",
-        "good": "Bonne tenue (+1 Discipline)",
-        "minor": "Problèmes mineurs",
-        "logistics": "Problèmes de logistique",
-        "critical": "Situation critique"
+        "excellent": "Bon moral (+2 Discipline)",
+        "good": "Solide (+1 Discipline)",
+        "minor": "Tensions",
+        "logistics": "Grogne (−1 Discipline, désertions possibles)",
+        "critical": "Crise (−2 Discipline, risque de mutinerie)"
       }
     },
     "Item": {

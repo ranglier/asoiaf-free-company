@@ -1,0 +1,21 @@
+<div class="afc-card month">
+  <header>
+    <h3>{{localize "AFC.Month.CardTitle" n=month}}</h3>
+    <span class="subtitle">{{company.name}}</span>
+  </header>
+  <ul class="month-lines">
+    {{#each lines}}<li>{{this}}</li>{{/each}}
+  </ul>
+  {{#if event}}
+  <div class="damage-box event">
+    <span class="label">{{event.name}}</span>
+    <span class="value">{{event.test.total}}</span>
+    <small>{{event.effect}}</small>
+  </div>
+  {{/if}}
+  <footer>
+    <span class="tag">{{localize "AFC.Company.cohesion"}} {{cohesion}} / {{cohesionMax}} ({{pct}} %) · {{tierLabel}}</span>
+    <span class="tag">{{localize "AFC.Company.supply"}} {{supply}}</span>
+    <span class="tag">{{localize "AFC.Company.Resource.wealth"}} {{wealth}}</span>
+  </footer>
+</div>

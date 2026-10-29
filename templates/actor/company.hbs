@@ -25,11 +25,18 @@
 
   <div class="section-title">
     <h2>{{localize "AFC.Sheet.Resources"}}</h2>
-    {{#if editable}}<button type="button" class="afc-create" data-action="createCompany"><i class="fa-solid fa-dice"></i> {{localize "AFC.Company.Create"}}</button>{{/if}}
+    {{#if editable}}<span class="title-buttons"><button type="button" class="afc-create" data-action="monthEnd"><i class="fa-solid fa-calendar-check"></i> {{localize "AFC.Month.Button"}}</button>
+    <button type="button" class="afc-create" data-action="createCompany"><i class="fa-solid fa-dice"></i> {{localize "AFC.Company.Create"}}</button></span>{{/if}}
   </div>
   {{> "systems/asoiaf-free-company/templates/actor/parts/resources.hbs"}}
 
   <section class="afc-vitals company-status">
+    <div class="vital contract">
+      <span class="label">{{localize "AFC.Month.Contract"}}{{#if system.month}} · {{localize "AFC.Month.MonthN" n=system.month}}{{/if}}</span>
+      <input type="text" name="system.contract.employer" value="{{system.contract.employer}}" placeholder="{{localize "AFC.Month.Employer"}}">
+      <span class="value small"><input type="number" name="system.contract.pay" value="{{system.contract.pay}}" min="0"> <small>{{localize "AFC.Month.PayShort"}}</small> <input type="number" name="system.contract.months" value="{{system.contract.months}}" min="0"> <small>{{localize "AFC.Month.MonthsShort"}}</small></span>
+      {{#if system.unpaidMonths}}<span class="hint warn">{{localize "AFC.Month.UnpaidHint" n=system.unpaidMonths}}</span>{{/if}}
+    </div>
     <div class="vital">
       <span class="label">{{localize "AFC.Company.cohesion"}}</span>
       <div class="bar"><div style="width:{{cohesionPct}}%"></div></div>

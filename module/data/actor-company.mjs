@@ -20,6 +20,15 @@ export default class CompanyData extends foundry.abstract.TypeDataModel {
       resources: new fields.SchemaField(Object.fromEntries(COMPANY_RESOURCES.map(k => [k, resource()]))),
       supply: new fields.NumberField({ required: true, integer: true, min: 0, initial: 0 }),
       cohesion: new fields.NumberField({ required: true, integer: true, min: 0, initial: 0 }),
+      // Contrat en cours (fixé par le MJ) et suivi des mois.
+      contract: new fields.SchemaField({
+        employer: new fields.StringField({ blank: true }),
+        pay: new fields.NumberField({ required: true, integer: true, min: 0, initial: 0 }),
+        months: new fields.NumberField({ required: true, integer: true, min: 0, initial: 0 }),
+        terms: new fields.StringField({ blank: true })
+      }),
+      month: new fields.NumberField({ required: true, integer: true, min: 0, initial: 0 }),
+      unpaidMonths: new fields.NumberField({ required: true, integer: true, min: 0, initial: 0 }),
       // Membres : rôle (texte libre), nom, et lien éventuel vers un acteur du monde.
       members: new fields.ArrayField(new fields.SchemaField({
         role: new fields.StringField({ blank: true }),
@@ -69,6 +78,6 @@ export default class CompanyData extends foundry.abstract.TypeDataModel {
     const cohesionMax = r.authority.value * 3;
     const pct = cohesionMax ? Math.round((this.cohesion / cohesionMax) * 100) : 0;
     const tier = COHESION_TIERS.find(t => pct >= t.min) ?? COHESION_TIERS.at(-1);
-    this.cohesionState = { max: cohesionMax, pct, discipline: tier.discipline, label: tier.label };
+    this.cohesionState = { max: cohesionMax, pct, discipline: tier.discipline, eventMod: tier.eventMod, label: tier.label };
   }
 }

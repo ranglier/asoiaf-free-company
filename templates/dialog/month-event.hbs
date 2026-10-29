@@ -1,0 +1,12 @@
+<div class="afc-test-dialog afc-month-event">
+  <p>{{localize "AFC.Month.EventTest" steward=steward rank=rank bonus=bonus}}</p>
+  <ol class="afc-card-dice">
+    {{#each test.dice as |d|}}<li class="die {{#unless d.kept}}dropped{{/unless}}">{{d.value}}</li>{{/each}}
+  </ol>
+  <p class="mods">{{#each mods as |m|}}<span class="tag">{{m.label}} {{numberFormat m.value sign=true}}</span>{{/each}}</p>
+  <div class="event-result">
+    <span class="total">{{test.total}}</span>
+    <div><strong>{{name}}</strong><small>{{effect}}</small></div>
+  </div>
+  <p class="hint">{{localize "AFC.Month.RerollHint"}}</p>
+</div>

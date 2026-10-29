@@ -308,3 +308,21 @@
 .afc .add-item.catalog { color: var(--afc-wax); }
 .afc-catalog h3.catalog-category { margin: 0.6rem 0 0.1rem; font-family: var(--afc-font-label); font-size: 17px; color: var(--afc-wax); border: none; }
 .afc-catalog h3.catalog-category small { color: var(--afc-ink-soft); font-size: 14px; }
+
+/* ---------- Fin de mois ---------- */
+.afc .title-buttons { display: flex; gap: 0.4rem; }
+.afc .company-status .vital.contract input[type=text] { font-size: 15px; }
+.afc .company-status .value.small { font-size: 15px; flex-wrap: wrap; }
+.afc .company-status .value.small input { width: 2.6em; font-size: 17px; }
+.afc .warn { color: var(--afc-wax); font-style: normal; font-weight: 600; }
+.afc-month-dialog h3 { margin: 0.5rem 0 0.1rem; font-family: var(--afc-font-label); font-size: 17px; color: var(--afc-wax); border-bottom: 1px solid var(--afc-line); }
+.afc-month-dialog .row.two { grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: end; }
+.afc-month-dialog p { margin: 0.2rem 0; }
+.afc-month-event .afc-card-dice { display: flex; gap: 4px; list-style: none; padding: 0; margin: 0.3rem 0; }
+.afc-month-event .die { width: 26px; height: 26px; display: inline-flex; align-items: center; justify-content: center; border: 1px solid var(--afc-ink); border-radius: 4px; font-family: var(--font-primary, "Signika", sans-serif); font-weight: 600; }
+.afc-month-event .die.dropped { opacity: 0.35; text-decoration: line-through; }
+.afc-month-event .event-result { display: flex; align-items: center; gap: 0.6rem; padding: 0.4rem; border: 1px solid var(--afc-wax); border-radius: 5px; }
+.afc-month-event .event-result .total { font-family: var(--font-primary, "Signika", sans-serif); font-size: 32px; font-weight: 600; color: var(--afc-wax); }
+.afc-month-event .event-result strong { display: block; font-family: var(--afc-font-label); font-weight: normal; font-size: 18px; }
+.afc-card.month .month-lines { margin: 0; padding-left: 1.1rem; font-size: 14px; }
+.afc-card.month .damage-box.event .value { font-size: 24px; }

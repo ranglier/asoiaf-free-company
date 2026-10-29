@@ -17,6 +17,75 @@
     }
   },
   "AFC": {
+    "Month": {
+      "Button": "End of month",
+      "Title": "End of month {n}: {name}",
+      "Run": "Close the month",
+      "CardTitle": "End of month {n}",
+      "MonthN": "month {n}",
+      "Contract": "Contract",
+      "Employer": "Employer",
+      "PayShort": "Wealth / month",
+      "MonthsShort": "months left",
+      "UnpaidHint": "Pay unpaid for {n} month(s)",
+      "StepIncome": "1. Income",
+      "StepUpkeep": "2. Upkeep",
+      "StepAction": "3. Company action (optional)",
+      "StepEvent": "4. Event (optional)",
+      "Pay": "Contract pay (Wealth)",
+      "ContractInfo": "Contract with {employer}: {n} months left.",
+      "NoContract": "No current contract: enter pay by hand if needed.",
+      "Loot": "Loot (points)",
+      "LootMode": "The captain...",
+      "LootKeep": "keeps the loot (Wealth)",
+      "LootShare": "shares it with the men (Cohesion)",
+      "UpkeepInfo": "Upkeep: {n} Supply (current stock: {supply}).",
+      "UpkeepWarn": "Not enough supply: pay goes unpaid.",
+      "ServiceEffects": "Apply monthly service effects (Provost, Blacksmith...)",
+      "RollEvent": "Roll a company event test",
+      "Steward": "Steward (Status test, Stewardship specialty)",
+      "NoSteward": "No steward",
+      "EventTitle": "Company event",
+      "EventTest": "{steward}: Status {rank}, Stewardship +{bonus}B",
+      "ModOrganization": "Organization",
+      "ModCohesion": "Cohesion",
+      "ModServices": "Services",
+      "Keep": "Keep",
+      "Reroll": "Reroll",
+      "RerollHint": "The GM may reroll as many times as they like.",
+      "Action": {
+        "none": "None",
+        "recruit": "Recruit",
+        "train": "Train",
+        "service": "Buy a service",
+        "convert": "Convert resources",
+        "rest": "Rest (Cohesion +5)",
+        "contract": "Look for a contract"
+      },
+      "Line": {
+        "pay": "Contract pay: +{n} Wealth.",
+        "lootKept": "Loot kept: +{n} Wealth.",
+        "lootShared": "Loot shared with the men: +{n} Cohesion.",
+        "upkeep": "Upkeep paid: −{n} Supply ({left} left).",
+        "unpaid": "Not enough Supply for the {n} upkeep: pay unpaid, −{loss} Cohesion ({months} unpaid month(s) in a row).",
+        "desertion": "Desertions: −{n} Manpower.",
+        "service": "{name}: {effect}.",
+        "rest": "Month of rest: +5 Cohesion.",
+        "action": "Action of the month: {action}.",
+        "contractLeft": "Contract with {employer}: {n} more month(s).",
+        "contractEnd": "Contract with {employer} ends.",
+        "crisis": "Cohesion in crisis: risk of mutiny."
+      },
+      "Event": {
+        "disaster": { "name": "Disaster", "effect": "−1d6 to two resources, GM's choice." },
+        "calamity": { "name": "Calamity", "effect": "−1d6 to one resource, GM's choice." },
+        "decline": { "name": "Decline", "effect": "−1d6 Cohesion, or −1 to one resource." },
+        "calm": { "name": "Calm month", "effect": "Nothing notable." },
+        "growth": { "name": "Growth", "effect": "+1 to one resource, GM's choice." },
+        "boon": { "name": "Boon", "effect": "+1d6 to one resource, GM's choice." },
+        "windfall": { "name": "Windfall", "effect": "+1d6 to two resources, GM's choice." }
+      }
+    },
     "CompanyCatalog": {
       "Title": "Company catalog",
       "Open": "Catalog",
@@ -473,9 +542,9 @@
       "Cohesion": {
         "excellent": "High morale (+2 Discipline)",
         "good": "Steady (+1 Discipline)",
-        "minor": "Minor problems",
-        "logistics": "Logistics problems",
-        "critical": "Critical situation"
+        "minor": "Tensions",
+        "logistics": "Grumbling (−1 Discipline, possible desertions)",
+        "critical": "Crisis (−2 Discipline, risk of mutiny)"
       }
     },
     "Item": {

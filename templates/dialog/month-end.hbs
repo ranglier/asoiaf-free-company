@@ -1,0 +1,34 @@
+<div class="afc-test-dialog afc-month-dialog">
+  <h3>{{localize "AFC.Month.StepIncome"}}</h3>
+  <div class="row two">
+    <label>{{localize "AFC.Month.Pay"}}
+      <input type="number" name="pay" value="{{#if contractActive}}{{system.contract.pay}}{{else}}0{{/if}}" min="0">
+    </label>
+    <p class="hint">{{#if contractActive}}{{localize "AFC.Month.ContractInfo" employer=system.contract.employer n=system.contract.months}}{{else}}{{localize "AFC.Month.NoContract"}}{{/if}}</p>
+  </div>
+  <div class="row two">
+    <label>{{localize "AFC.Month.Loot"}}<input type="number" name="loot" value="0" min="0"></label>
+    <label>{{localize "AFC.Month.LootMode"}}
+      <select name="lootMode">
+        <option value="keep">{{localize "AFC.Month.LootKeep"}}</option>
+        <option value="share">{{localize "AFC.Month.LootShare"}}</option>
+      </select>
+    </label>
+  </div>
+
+  <h3>{{localize "AFC.Month.StepUpkeep"}}</h3>
+  <p>{{localize "AFC.Month.UpkeepInfo" n=system.monthlySupply supply=system.supply}}
+    {{#if (lt system.supply system.monthlySupply)}}<strong class="warn">{{localize "AFC.Month.UpkeepWarn"}}</strong>{{/if}}</p>
+  {{#if hasMonthlyServices}}
+  <label class="checkbox"><input type="checkbox" name="serviceEffects" checked> {{localize "AFC.Month.ServiceEffects"}}</label>
+  {{/if}}
+
+  <h3>{{localize "AFC.Month.StepAction"}}</h3>
+  <select name="action">{{selectOptions actions selected="none" localize=true}}</select>
+
+  <h3>{{localize "AFC.Month.StepEvent"}}</h3>
+  <label class="checkbox"><input type="checkbox" name="rollEvent"> {{localize "AFC.Month.RollEvent"}}</label>
+  <label>{{localize "AFC.Month.Steward"}}
+    <select name="steward"><option value="">—</option>{{selectOptions stewardOptions selected=steward}}</select>
+  </label>
+</div>

@@ -2,7 +2,7 @@
   "id": "asoiaf-free-company",
   "title": "ASOIAF Free Company",
   "description": "Système non officiel pour jouer dans l'univers du Trône de Fer avec une compagnie de mercenaires : personnages, Maisons et Compagnies, tests à réserve de d6.",
-  "version": "0.7.1",
+  "version": "0.8.0",
   "compatibility": {
     "minimum": "14",
     "verified": "14.369"

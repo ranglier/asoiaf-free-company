@@ -4,6 +4,7 @@ import { rollAttack, weaponProfile, weaponQualities } from "../dice/attack.mjs";
 import { runCreation } from "../creation.mjs";
 import { HoldingCatalog } from "../apps/holding-catalog.mjs";
 import { CompanyCatalog } from "../apps/company-catalog.mjs";
+import { runMonthEnd } from "../month-end.mjs";
 
 const { HandlebarsApplicationMixin } = foundry.applications.api;
 const { ActorSheetV2 } = foundry.applications.sheets;
@@ -302,7 +303,7 @@ export class CompanySheet extends AFCActorSheet {
   static DEFAULT_OPTIONS = {
     classes: ["company"],
     position: { width: 860, height: 860 },
-    actions: { createCompany: CompanySheet.#onCreateCompany, openCatalog: CompanySheet.#onOpenCatalog }
+    actions: { createCompany: CompanySheet.#onCreateCompany, openCatalog: CompanySheet.#onOpenCatalog, monthEnd: CompanySheet.#onMonthEnd }
   };
   static PARTS = { sheet: { template: `${TPL}/company.hbs`, scrollable: [""] } };
   static TABS = {
@@ -352,5 +353,9 @@ export class CompanySheet extends AFCActorSheet {
 
   static #onOpenCatalog() {
     return new CompanyCatalog(this.document).render(true);
+  }
+
+  static #onMonthEnd() {
+    return runMonthEnd(this.document);
   }
 }

@@ -236,11 +236,35 @@ export const UNIT_CLASSES = {
   S: "AFC.Unit.Class.S"
 };
 
-/** Paliers de Cohésion (pourcentage minimal -> bonus de discipline et clé de description). */
+/** Paliers de Cohésion (pourcentage minimal) : bonus de Discipline, modificateur au test d'événement, libellé. */
 export const COHESION_TIERS = [
-  { min: 85, discipline: 2, label: "AFC.Company.Cohesion.excellent" },
-  { min: 60, discipline: 1, label: "AFC.Company.Cohesion.good" },
-  { min: 50, discipline: 0, label: "AFC.Company.Cohesion.minor" },
-  { min: 25, discipline: 0, label: "AFC.Company.Cohesion.logistics" },
-  { min: 0, discipline: 0, label: "AFC.Company.Cohesion.critical" }
+  { min: 85, discipline: 2, eventMod: 3, label: "AFC.Company.Cohesion.excellent" },
+  { min: 60, discipline: 1, eventMod: 1, label: "AFC.Company.Cohesion.good" },
+  { min: 40, discipline: 0, eventMod: 0, label: "AFC.Company.Cohesion.minor" },
+  { min: 20, discipline: -1, eventMod: -2, label: "AFC.Company.Cohesion.logistics" },
+  { min: 0, discipline: -2, eventMod: -5, label: "AFC.Company.Cohesion.critical" }
 ];
+
+/** Test d'événement de compagnie : modificateur selon l'Organisation effective (seuil minimal). */
+export const EVENT_ORGANIZATION_MODS = [[40, 3], [30, 1], [20, 0], [10, -2], [0, -5]];
+
+/** Table d'événements de compagnie (échelle régulière) : résultat maximal du test d'Intendance. */
+export const COMPANY_MONTH_EVENTS = [
+  { max: 5, key: "disaster" },
+  { max: 8, key: "calamity" },
+  { max: 11, key: "decline" },
+  { max: 19, key: "calm" },
+  { max: 24, key: "growth" },
+  { max: 29, key: "boon" },
+  { max: Infinity, key: "windfall" }
+];
+
+/** Effets mensuels automatiques des services (clé de catalogue) et bonus aux tests d'événements. */
+export const SERVICE_MONTHLY = {
+  blacksmith: { might: 1 }, masterSmith: { might: 1 }, armorersGuild: { might: 2 },
+  provost: { authority: 1 }, disciplineOfficers: { authority: 2 }
+};
+export const SERVICE_EVENT_BONUS = { foreman: 1, aidesDeCamp: 2, stewards: 3, priest: 1, chaplains: 1, congregation: 2 };
+
+/** Actions de compagnie (facultatives). */
+export const COMPANY_ACTIONS = ["none", "recruit", "train", "service", "convert", "rest", "contract"];
