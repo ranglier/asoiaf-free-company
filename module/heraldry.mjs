@@ -147,10 +147,16 @@ function blazon(g, fieldIs) {
   return text;
 }
 
+/** Tableau des jets : toujours 8 lignes d'une ligne de texte, pour que sa taille ne bouge pas entre deux tirages. */
+const STEP_ROWS = 8;
 function stepsHTML(g) {
-  return `<table class="afc-table"><tbody>${g.steps.map(s => `<tr>
-    <td class="role">${esc(s.label)}</td><td class="center">${esc(s.formula)} = ${esc(s.value)}</td>
-    <td><strong>${esc(s.result)}</strong>${s.note ? ` <small>${esc(s.note)}</small>` : ""}</td></tr>`).join("")}</tbody></table>`;
+  const rows = g.steps.map(s => {
+    const result = s.note ? `${s.result} (${s.note})` : s.result;
+    return `<tr><td class="role">${esc(s.label)}</td><td class="center">${esc(s.formula)} = ${esc(s.value)}</td>
+      <td title="${esc(result)}"><strong>${esc(s.result)}</strong>${s.note ? ` <small>${esc(s.note)}</small>` : ""}</td></tr>`;
+  });
+  while (rows.length < STEP_ROWS) rows.push(`<tr class="empty"><td></td><td></td><td></td></tr>`);
+  return `<table class="afc-table"><tbody>${rows.join("")}</tbody></table>`;
 }
 
 /** Choix du champ, avec les couleurs tirées : « Champ de sinople, charge d'or » ou l'inverse. */

@@ -346,8 +346,11 @@
 .afc-card.house-event .afc-card-dice { margin: 0.3rem 0; }
 /* Zone du haut à hauteur fixe : le tableau et l'aperçu ne font plus bouger la fenêtre à chaque relance. */
 .afc .afc-heraldry .heraldry-top { display: grid; grid-template-columns: 1fr 230px; gap: 0.6rem; align-items: start; height: 320px; }
-.afc .afc-heraldry [data-steps] { height: 100%; overflow-y: auto; }
-.afc .afc-heraldry [data-steps] table { table-layout: fixed; width: 100%; }
+.afc .afc-heraldry [data-steps] { height: 100%; overflow: hidden; }
+.afc .afc-heraldry [data-steps] table { table-layout: fixed; width: 100%; height: 100%; }
+.afc .afc-heraldry [data-steps] tr { height: 12.5%; }
+/* Une seule ligne par case (texte complet au survol) : les lignes gardent la même hauteur. */
+.afc .afc-heraldry [data-steps] td { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .afc .afc-heraldry [data-steps] td:nth-child(1) { width: 27%; }
 .afc .afc-heraldry [data-steps] td:nth-child(2) { width: 20%; }
 .afc .afc-heraldry .heraldry-preview { height: 100%; overflow: hidden; }
