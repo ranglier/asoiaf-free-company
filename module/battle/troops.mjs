@@ -68,6 +68,8 @@ async function createTroop({ name, side, unitType, training, men, discipline = n
     },
     prototypeToken: {
       name, actorLink: true, texture: { src: img }, lockRotation: true,
+      // Vision large : sur une scène avec vision des jetons, le joueur voit tout le champ de bataille.
+      sight: { enabled: true, range: 1000 },
       disposition: side === "company" ? CONST.TOKEN_DISPOSITIONS.FRIENDLY : CONST.TOKEN_DISPOSITIONS.HOSTILE,
       displayName: CONST.TOKEN_DISPLAY_MODES.HOVER
     }

@@ -1,100 +1,149 @@
 /**
- * Bataille sur la carte : menu d'ordres dans le HUD des jetons de troupe (clic droit) et ordre
- * affiché au-dessus du jeton (le sien tout de suite, celui des autres après la révélation).
+ * Bataille sur la carte :
+ * - menu du jeton de troupe (clic droit) : ordres, cible, officier, ralliement, fenêtre Bataille ;
+ * - désignation de la cible en cliquant sur une troupe (Échap pour annuler) ;
+ * - pastille d'ordre dans le bas du jeton et flèches « troupe → cible ».
+ * Avant la révélation, ordres et flèches ne sont visibles que de qui commande la troupe (et du MJ).
  */
 import { ORDERS } from "./battle-config.mjs";
 import { rallyTroop } from "./engagement.mjs";
-import { canOrder, getBattle, groupOfToken, planOf, setPlan, setTokenOrder } from "./state.mjs";
+import { canCommand, getBattle, setUnit, unitOf } from "./state.mjs";
 
+const { DialogV2 } = foundry.applications.api;
 const loc = key => game.i18n.localize(key);
 const fmt = (key, data) => game.i18n.format(key, data);
-/** Ordres qui visent une troupe adverse. */
-const TARGETED_ORDERS = ["charge", "attack", "shoot"];
-
-/** Troupe ciblée par l'utilisateur (touche T), autre que le jeton lui-même. */
-function targetedTroop(tokenDoc) {
-  const t = [...game.user.targets].map(t => t.document).find(t => t.actor?.type === "troop" && t.id !== tokenDoc.id);
-  return t ?? null;
-}
-const ORDER_ICONS = {
+export const ORDER_ICONS = {
   charge: "fa-horse-head", attack: "fa-hand-fist", hold: "fa-shield-halved",
   shoot: "fa-bullseye", maneuver: "fa-arrows-up-down-left-right", withdraw: "fa-person-walking-arrow-loop-left"
 };
+/** Ordres qui visent une troupe adverse. */
+export const TARGETED_ORDERS = ["charge", "attack", "shoot"];
 
-/** Peut-on donner un ordre à ce jeton (groupe à soi, ou troupe à soi sans groupe) ? */
-function canOrderToken(tokenDoc, battle) {
-  const group = groupOfToken(battle, tokenDoc.id);
-  return group ? canOrder(group) : tokenDoc.actor?.isOwner;
+/** L'ordre (et la cible) de cette troupe est-il visible pour l'utilisateur ? */
+export function orderVisible(token, battle) {
+  return battle.revealed || canCommand(token, battle);
 }
 
-/** Boutons du HUD des troupes : ordres, ralliement, fenêtre Bataille. */
-export function onRenderTokenHUD(hud, html) {
-  const tokenDoc = hud.document;
-  if (tokenDoc.actor?.type !== "troop") return;
+/* ---------- Désignation de la cible sur la carte ---------- */
+
+let picking = null;
+
+/** Attend un clic sur une troupe visible, puis l'enregistre comme cible (Échap : annuler). */
+export function startTargetPick(token) {
+  cancelTargetPick();
+  const view = canvas.app.view;
+  const onDown = event => {
+    if (event.button !== 0) return;
+    const p = canvas.canvasCoordinatesFromClient({ x: event.clientX, y: event.clientY });
+    const hit = canvas.tokens.placeables.find(t => t.document.actor?.type === "troop" && t.document.id !== token.id
+      && t.visible && t.bounds.contains(p.x, p.y));
+    event.stopPropagation();
+    event.preventDefault();
+    cancelTargetPick();
+    if (!hit) return ui.notifications.info(loc("AFC.Battle.PickCancelled"));
+    setUnit(token.id, { target: hit.document.id });
+    ui.notifications.info(fmt("AFC.Battle.PlanSetDone", { a: token.name, d: hit.document.name }));
+  };
+  const onKey = event => { if (event.key === "Escape") cancelTargetPick(); };
+  view.addEventListener("pointerdown", onDown, { capture: true });
+  window.addEventListener("keydown", onKey);
+  view.style.cursor = "crosshair";
+  picking = { onDown, onKey };
+  ui.notifications.info(fmt("AFC.Battle.PickTarget", { name: token.name }));
+}
+
+export function cancelTargetPick() {
+  if (!picking) return;
+  canvas.app.view.removeEventListener("pointerdown", picking.onDown, { capture: true });
+  window.removeEventListener("keydown", picking.onKey);
+  canvas.app.view.style.cursor = "";
+  picking = null;
+}
+
+/** Choix de l'officier d'une troupe (PJ ou PNJ que l'utilisateur possède ; tous pour le MJ). */
+export async function chooseOfficer(token) {
   const battle = getBattle();
-  const group = groupOfToken(battle, tokenDoc.id);
+  const current = unitOf(battle, token.id).officer;
+  const actors = game.actors.filter(a => ["character", "npc"].includes(a.type) && (game.user.isGM || a.isOwner));
+  const officer = await DialogV2.prompt({
+    window: { title: fmt("AFC.Battle.OfficerTitle", { name: token.name }) },
+    classes: ["afc", "afc-dialog"],
+    content: `<div class="afc-test-dialog"><p class="hint">${loc("AFC.Battle.OfficerHint")}</p>
+      <label>${loc("AFC.Battle.Officer")}<select name="officer"><option value="">${loc("AFC.Battle.NoOfficer")}</option>
+      ${actors.map(a => `<option value="${a.id}" ${a.id === current ? "selected" : ""}>${foundry.utils.escapeHTML(a.name)}</option>`).join("")}</select></label></div>`,
+    ok: { label: loc("AFC.Battle.Apply"), callback: (ev, button) => button.form.elements.officer.value },
+    rejectClose: false
+  });
+  if (officer !== null) await setUnit(token.id, { officer });
+}
+
+/** Donne un ordre ; pour un ordre offensif, enchaîne sur la désignation de la cible. */
+export async function giveOrder(token, order) {
+  await setUnit(token.id, { order });
+  if (TARGETED_ORDERS.includes(order)) startTargetPick(token);
+  else ui.notifications.info(`${token.name} : ${loc(`AFC.Battle.Order.${order}`)}`);
+}
+
+/* ---------- Menu du jeton (HUD) ---------- */
+
+export function onRenderTokenHUD(hud, html) {
+  const token = hud.document;
+  if (token.actor?.type !== "troop") return;
+  const battle = getBattle();
+  const unit = unitOf(battle, token.id);
   const col = html.querySelector(".col.left");
   if (!col) return;
-  const button = (icon, tooltip, onClick) => {
+  const button = (icon, tooltip, onClick, { active = false } = {}) => {
     const b = document.createElement("button");
     b.type = "button";
-    b.className = "control-icon afc-hud";
+    b.className = `control-icon afc-hud${active ? " active" : ""}`;
     b.dataset.tooltip = tooltip;
     b.innerHTML = `<i class="fa-solid ${icon}"></i>`;
     b.addEventListener("click", onClick);
     col.append(b);
     return b;
   };
+  const commander = canCommand(token, battle);
+  const locked = battle.revealed && unit.countered && !game.user.isGM;
 
-  if (canOrderToken(tokenDoc, battle) && !(battle.revealed && group?.countered)) {
+  if (commander && !locked) {
     const palette = document.createElement("div");
     palette.className = "afc-order-palette";
     for (const order of ORDERS) {
       const o = document.createElement("button");
       o.type = "button";
-      o.className = `control-icon${group?.order === order ? " active" : ""}`;
-      o.dataset.tooltip = loc(`AFC.Battle.Order.${order}`);
+      o.className = `control-icon${unit.order === order ? " active" : ""}`;
+      o.dataset.tooltip = `${loc(`AFC.Battle.Order.${order}`)} : ${loc(`AFC.Battle.OrderHelp.${order}`)}`;
       o.innerHTML = `<i class="fa-solid ${ORDER_ICONS[order]}"></i>`;
-      o.addEventListener("click", async () => {
-        await setTokenOrder(tokenDoc.id, order);
-        // Ordre offensif : la troupe ciblée (touche T), s'il y en a une, devient la cible désignée.
-        const target = targetedTroop(tokenDoc);
-        if (TARGETED_ORDERS.includes(order) && target && !battle.revealed) await setPlan(tokenDoc.id, target.id);
-        ui.notifications.info(`${tokenDoc.name} : ${loc(`AFC.Battle.Order.${order}`)}${target && TARGETED_ORDERS.includes(order) ? ` → ${target.name}` : ""}`);
+      o.addEventListener("click", event => {
+        event.stopPropagation();
         hud.close();
+        giveOrder(token, order);
       });
       palette.append(o);
     }
-    const b = button("fa-flag", battle.revealed ? loc("AFC.Battle.Counter") : loc("AFC.Battle.GiveOrder"), () => palette.classList.toggle("open"));
-    b.append(palette);
+    const label = battle.revealed ? loc("AFC.Battle.Counter") : loc("AFC.Battle.GiveOrder");
+    button(unit.order ? ORDER_ICONS[unit.order] : "fa-flag", label, () => palette.classList.toggle("open"), { active: !!unit.order }).append(palette);
+    if (TARGETED_ORDERS.includes(unit.order)) {
+      button("fa-crosshairs", unit.target ? loc("AFC.Battle.PlanChange") : loc("AFC.Battle.PlanSet"), () => { hud.close(); startTargetPick(token); });
+    }
   }
-  // Cible désignée : la troupe actuellement ciblée (touche T) ; sans cible, efface la désignation.
-  if ((canOrderToken(tokenDoc, battle) && !battle.revealed) || game.user.isGM) {
-    const current = planOf(battle, tokenDoc.id);
-    button("fa-crosshairs", current ? loc("AFC.Battle.PlanChange") : loc("AFC.Battle.PlanSet"), async () => {
-      const target = targetedTroop(tokenDoc);
-      await setPlan(tokenDoc.id, target?.id ?? null);
-      ui.notifications.info(target ? fmt("AFC.Battle.PlanSetDone", { a: tokenDoc.name, d: target.name }) : fmt("AFC.Battle.PlanCleared", { a: tokenDoc.name }));
-      hud.close();
-    });
-  }
-  if (tokenDoc.actor.isOwner && tokenDoc.actor.system.state !== "fresh") button("fa-flag-checkered", loc("AFC.Battle.Rally"), () => rallyTroop(tokenDoc.id));
+  if (commander) button("fa-user-tie", loc("AFC.Battle.OfficerButton"), () => { hud.close(); chooseOfficer(token); }, { active: !!unit.officer });
+  if (commander && token.actor.system.state !== "fresh") button("fa-flag-checkered", loc("AFC.Battle.Rally"), () => rallyTroop(token.id));
   button("fa-chess-rook", loc("AFC.Battle.Title"), () => game.afc.openBattle());
 }
 
-/* ---------- Ordre affiché au-dessus du jeton ---------- */
+/* ---------- Pastilles d'ordre ---------- */
 
 /** Dessine (ou retire) la pastille d'ordre d'un jeton de troupe. */
 export function drawOrderBadge(token) {
-  token.children.filter(c => c.name === "afcOrder").forEach(c => c.destroy());
+  token.children.filter(c => c.name === "afcOrder").forEach(c => c.destroy({ children: true }));
   const doc = token.document;
   if (doc.actor?.type !== "troop" || !doc.parent) return;
   const battle = getBattle(doc.parent);
-  const group = groupOfToken(battle, doc.id);
-  if (!group?.order) return;
-  // Le sien : tout de suite ; celui des autres : seulement après la révélation.
-  if (!battle.revealed && !canOrder(group)) return;
-  const text = new foundry.canvas.containers.PreciseText(loc(`AFC.Battle.Order.${group.order}`), Object.assign(CONFIG.canvasTextStyle.clone(), {
+  const { order } = unitOf(battle, doc.id);
+  if (!order || !orderVisible(doc, battle)) return;
+  const text = new foundry.canvas.containers.PreciseText(loc(`AFC.Battle.Order.${order}`), Object.assign(CONFIG.canvasTextStyle.clone(), {
     fontSize: 13, fill: "#f3ead6", stroke: "#2b2118", strokeThickness: 3
   }));
   text.anchor.set(0.5, 1);
@@ -102,51 +151,57 @@ export function drawOrderBadge(token) {
   badge.name = "afcOrder";
   const bg = new PIXI.Graphics();
   const w = text.width + 14, h = text.height + 4;
-  bg.beginFill(battle.revealed ? 0x8e1b1b : 0x2b2118, 0.85).drawRoundedRect(-w / 2, -h, w, h, 6).endFill();
+  // Sombre : ordre encore secret (vu par son commandant) ; rouge : ordre révélé.
+  bg.beginFill(battle.revealed ? 0x8e1b1b : 0x2b2118, 0.88).drawRoundedRect(-w / 2, -h, w, h, 6).endFill();
   badge.addChild(bg, text);
   // Dans la bande vide du bas du jeton (le symbole occupe le milieu) : pas de chevauchement entre voisins.
   badge.position.set(token.w / 2, token.h - 2);
   token.addChild(badge);
 }
 
-/** Redessine les pastilles de toutes les troupes de la scène. */
 export function refreshOrderBadges() {
   if (!canvas.ready) return;
   for (const token of canvas.tokens.placeables) if (token.document.actor?.type === "troop") drawOrderBadge(token);
 }
 
-/* ---------- Flèches des cibles désignées ---------- */
+/* ---------- Flèches des cibles ---------- */
 
-/** Centre d'un jeton d'après son document (juste, même pendant une animation de déplacement). */
-const docCenter = doc => ({ x: doc.x + (doc.width * canvas.grid.sizeX) / 2, y: doc.y + (doc.height * canvas.grid.sizeY) / 2 });
-/** Style des flèches selon l'ordre : charge épaisse, attaque pleine, tir en pointillés. */
+/** Style selon l'ordre : charge épaisse, attaque pleine, tir en pointillés. */
 const ARROWS = { charge: { width: 7 }, attack: { width: 4 }, shoot: { width: 3, dash: [14, 10] } };
+let arrowFrame = null;
+
+/** Redessine les flèches à la prochaine image (une seule fois, même si beaucoup de jetons bougent). */
+export function scheduleArrows() {
+  if (arrowFrame) return;
+  arrowFrame = requestAnimationFrame(() => {
+    arrowFrame = null;
+    drawPlanArrows();
+  });
+}
 
 /**
- * Dessine les flèches « troupe → cible ». Visibles par qui peut donner l'ordre (et le MJ) avant la
- * révélation, par tous après ; jamais vers ou depuis un jeton caché pour un joueur.
+ * Flèches « troupe → cible », dessinées depuis la position affichée des jetons (elles suivent les
+ * déplacements animés). Jamais vers ou depuis un jeton caché pour un joueur.
  */
 export function drawPlanArrows() {
   if (!canvas.ready) return;
   canvas.tokens.children.filter(c => c.name === "afcPlans").forEach(c => c.destroy({ children: true }));
   const battle = getBattle();
-  if (!battle.plans.length) return;
   const layer = new PIXI.Container();
   layer.name = "afcPlans";
-  for (const plan of battle.plans) {
-    const from = canvas.scene.tokens.get(plan.from), to = canvas.scene.tokens.get(plan.to);
-    if (!from?.actor || !to) continue;
-    const group = groupOfToken(battle, plan.from);
-    const mine = group ? canOrder(group) : from.actor.isOwner;
-    if (!battle.revealed && !mine) continue;
-    if (!game.user.isGM && (from.hidden || to.hidden)) continue;
-    const style = ARROWS[group?.order] ?? { width: 3, dash: [6, 8] };
-    const color = from.actor.system.side === "company" ? 0x4f8fc8 : 0xd04a3f;
-    const a = docCenter(from), b = docCenter(to);
+  for (const unit of battle.units) {
+    if (!unit.target || !TARGETED_ORDERS.includes(unit.order)) continue;
+    const from = canvas.tokens.get(unit.id), to = canvas.tokens.get(unit.target);
+    if (!from?.document.actor || !to) continue;
+    if (!orderVisible(from.document, battle)) continue;
+    if (!game.user.isGM && (from.document.hidden || to.document.hidden)) continue;
+    const style = ARROWS[unit.order];
+    const color = from.document.actor.system.side === "company" ? 0x4f8fc8 : 0xd04a3f;
+    const a = from.center, b = to.center;
     const len = Math.hypot(b.x - a.x, b.y - a.y);
     if (len < 1) continue;
     const ux = (b.x - a.x) / len, uy = (b.y - a.y) / len;
-    // On part près du centre du jeton et on s'arrête au bord de la cible : visible même entre voisins.
+    // Depuis près du centre du jeton jusqu'au bord de la cible : visible même entre voisins.
     const r0 = canvas.grid.sizeX * 0.15, r1 = canvas.grid.sizeX * 0.38;
     const start = { x: a.x + ux * r0, y: a.y + uy * r0 };
     const end = { x: b.x - ux * r1, y: b.y - uy * r1 };
@@ -155,7 +210,6 @@ export function drawPlanArrows() {
     segment(g, start, end, style.dash);
     g.lineStyle({ width: style.width, color, alpha: 0.95 });
     segment(g, start, end, style.dash);
-    // Pointe de flèche.
     const head = 12 + style.width * 2, nx = -uy, ny = ux;
     g.lineStyle(0);
     g.beginFill(color, 0.95).drawPolygon([
@@ -165,7 +219,7 @@ export function drawPlanArrows() {
     ]).endFill();
     layer.addChild(g);
   }
-  // Au-dessus des jetons (semi-transparentes) pour rester lisibles entre cases voisines.
+  // Au-dessus des jetons, semi-transparentes, pour rester lisibles entre cases voisines.
   layer.alpha = 0.85;
   canvas.tokens.addChild(layer);
 }

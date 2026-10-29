@@ -13,8 +13,8 @@ import { AFCItemSheet } from "./module/sheets/item-sheet.mjs";
 import { TroopSheet } from "./module/sheets/troop-sheet.mjs";
 import { BattleApp } from "./module/battle/battle-app.mjs";
 import { onRenderBattleCard } from "./module/battle/engagement.mjs";
-import { registerBattleSocket } from "./module/battle/state.mjs";
-import { drawOrderBadge, drawPlanArrows, onRenderTokenHUD, refreshOrderBadges } from "./module/battle/map.mjs";
+import { migrateBattle, registerBattleSocket } from "./module/battle/state.mjs";
+import { cancelTargetPick, drawOrderBadge, drawPlanArrows, onRenderTokenHUD, refreshOrderBadges, scheduleArrows } from "./module/battle/map.mjs";
 import { refreshTroopImage, registerTroopStatuses, syncTroopStatus } from "./module/battle/troops.mjs";
 import { evaluateTest, rollAbilityTest, rollTest } from "./module/dice/test-roll.mjs";
 import { onRenderChatMessage, resolveDamage, rollAttack } from "./module/dice/attack.mjs";
@@ -56,7 +56,7 @@ Hooks.once("init", () => {
   return foundry.applications.handlebars.loadTemplates([
     ...["abilities", "vitals", "tabs-nav", "weapons", "armor", "qualities", "mode-toggle", "resources", "members", "events"]
       .map(p => `systems/${AFC.SYSTEM_ID}/templates/actor/parts/${p}.hbs`),
-    `systems/${AFC.SYSTEM_ID}/templates/apps/battle-group.hbs`
+    `systems/${AFC.SYSTEM_ID}/templates/apps/battle-troop.hbs`
   ]);
 });
 
@@ -96,12 +96,17 @@ Hooks.on("updateScene", (scene, changes) => {
   drawPlanArrows();
 });
 Hooks.on("canvasReady", () => {
+  migrateBattle();
   BattleApp.refresh();
   refreshOrderBadges();
   drawPlanArrows();
 });
-// Les flèches suivent les jetons déplacés, cachés ou supprimés.
-for (const hook of ["updateToken", "deleteToken"]) Hooks.on(hook, () => drawPlanArrows());
+// Les flèches suivent les jetons image par image (déplacements animés), et leur visibilité.
+Hooks.on("refreshToken", (token, flags) => {
+  if (flags.refreshPosition || flags.refreshVisibility) scheduleArrows();
+});
+for (const hook of ["createToken", "deleteToken"]) Hooks.on(hook, () => scheduleArrows());
+Hooks.on("canvasTearDown", () => cancelTargetPick());
 Hooks.on("drawToken", token => drawOrderBadge(token));
 Hooks.on("renderTokenHUD", onRenderTokenHUD);
 Hooks.on("controlToken", () => BattleApp.refresh());
@@ -109,6 +114,11 @@ Hooks.on("targetToken", () => BattleApp.refresh());
 Hooks.on("updateActor", (actor, changes, options, userId) => {
   if (actor.type !== "troop") return;
   BattleApp.refresh();
+  // Ordre ou cible changés (drapeau de la troupe) : pastilles et flèches.
+  if (foundry.utils.hasProperty(changes, `flags.${AFC.SYSTEM_ID}`)) {
+    refreshOrderBadges();
+    scheduleArrows();
+  }
   // Icônes d'état du jeton, posées par le client qui a fait la modification.
   if (userId === game.user.id && foundry.utils.hasProperty(changes, "system.state")) syncTroopStatus(actor);
   // Symbole du jeton : suit le type et le camp.

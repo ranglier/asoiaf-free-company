@@ -1,6 +1,7 @@
 <div class="afc-sheet parchment afc-battle">
   <header class="battle-head">
-    <h2>{{localize "AFC.Battle.Round"}} {{battle.round}} · {{#if battle.revealed}}{{localize "AFC.Battle.PhaseRevealed"}}{{else}}{{localize "AFC.Battle.PhaseOrders"}}{{/if}}</h2>
+    <h2>{{localize "AFC.Battle.Round"}} {{battle.round}}
+      <span class="phase {{#if battle.revealed}}revealed{{/if}}">{{#if battle.revealed}}{{localize "AFC.Battle.PhaseRevealed"}}{{else}}{{localize "AFC.Battle.PhaseOrders"}}{{/if}}</span></h2>
     {{#if isGM}}
     <label class="weather">{{localize "AFC.Battle.WeatherLabel"}}<select name="weather">{{selectOptions weathers selected=battle.weather localize=true}}</select></label>
     {{else}}
@@ -9,46 +10,53 @@
   </header>
 
   {{#if isGM}}
-  <div class="title-buttons battle-gm">
+  <div class="battle-toolbar">
     <button type="button" data-action="reveal" {{#if battle.revealed}}disabled{{/if}}><i class="fa-solid fa-eye"></i> {{localize "AFC.Battle.Reveal"}}</button>
     <button type="button" data-action="endTurn"><i class="fa-solid fa-forward-step"></i> {{localize "AFC.Battle.EndTurn"}}</button>
-    <button type="button" data-action="newGroup"><i class="fa-solid fa-object-group"></i> {{localize "AFC.Battle.NewGroup"}}</button>
     <button type="button" data-action="newEnemy"><i class="fa-solid fa-skull"></i> {{localize "AFC.Battle.NewEnemy"}}</button>
     <button type="button" data-action="report"><i class="fa-solid fa-scroll"></i> {{localize "AFC.Battle.Report"}}</button>
     <button type="button" data-action="reset"><i class="fa-solid fa-trash"></i> {{localize "AFC.Battle.Reset"}}</button>
   </div>
   {{/if}}
 
-  <div class="battle-columns">
-    <section>
-      <h3>{{localize "AFC.Battle.Side.company"}}</h3>
-      {{#each company as |g|}}{{> "systems/asoiaf-free-company/templates/apps/battle-group.hbs" g=g orders=@root.orders isGM=@root.isGM}}{{else}}<p class="hint">{{localize "AFC.Battle.NoGroup"}}</p>{{/each}}
-    </section>
-    <section>
-      <h3>{{localize "AFC.Battle.Side.enemy"}}</h3>
-      {{#each enemy as |g|}}{{> "systems/asoiaf-free-company/templates/apps/battle-group.hbs" g=g orders=@root.orders isGM=@root.isGM}}{{else}}<p class="hint">{{localize "AFC.Battle.NoGroup"}}</p>{{/each}}
-    </section>
-  </div>
+  <div class="battle-scroll">
+    <details class="battle-help">
+      <summary><i class="fa-solid fa-circle-question"></i> {{localize "AFC.Battle.HelpTitle"}}</summary>
+      <p>{{localize "AFC.Battle.HelpHowTo"}}</p>
+      <ul class="battle-orders-help">
+        {{#each orders as |o|}}<li><i class="fa-solid {{o.icon}}"></i> <b>{{o.label}}</b> : {{o.help}}</li>{{/each}}
+      </ul>
+      <p><b>{{localize "AFC.Battle.TriangleLabel"}}</b> : {{#each triangle as |t|}}{{t.a}} &gt; {{t.b}}{{#unless @last}} · {{/unless}}{{/each}} ({{localize "AFC.Battle.TriangleHint"}})</p>
+      <p>{{localize "AFC.Battle.HelpTurn"}}</p>
+    </details>
 
-  {{#if isGM}}
-  <section class="battle-engage">
-    <h3>{{localize "AFC.Battle.Engagement"}}</h3>
-    {{#if plans.length}}
-    <h4>{{localize "AFC.Battle.Planned"}}</h4>
-    <ul class="battle-plans">
-      {{#each plans as |p|}}
-      <li><b>{{p.fromName}}</b> <small>({{p.order}})</small> → <b>{{p.toName}}</b>
-        <button type="button" data-action="resolvePlan" data-from="{{p.from}}" data-to="{{p.to}}" data-shoot="{{p.shoot}}">
-          <i class="fa-solid {{#if p.shoot}}fa-bullseye{{else}}fa-khanda{{/if}}"></i> {{#if p.shoot}}{{localize "AFC.Battle.Shoot"}}{{else}}{{localize "AFC.Battle.Melee"}}{{/if}}</button></li>
-      {{/each}}
-    </ul>
+    {{#if isGM}}
+    <section class="battle-engage">
+      <h3>{{localize "AFC.Battle.Planned"}}</h3>
+      {{#if plans.length}}
+      <ul class="battle-plans">
+        {{#each plans as |p|}}
+        <li><b>{{p.fromName}}</b> <small>({{p.order}})</small> → <b>{{p.toName}}</b>
+          <button type="button" data-action="resolvePlan" data-from="{{p.from}}" data-to="{{p.to}}" data-shoot="{{p.shoot}}">
+            <i class="fa-solid {{#if p.shoot}}fa-bullseye{{else}}fa-khanda{{/if}}"></i> {{localize "AFC.Battle.Resolve"}}</button></li>
+        {{/each}}
+      </ul>
+      {{else}}<p class="hint">{{localize "AFC.Battle.NoPlan"}}</p>{{/if}}
+      <p class="hint">{{localize "AFC.Battle.FreeEngage"}} <b>{{#if controlled}}{{controlled}}{{else}}—{{/if}}</b> → <b>{{#if target}}{{target}}{{else}}—{{/if}}</b>
+        <button type="button" class="small" data-action="shoot"><i class="fa-solid fa-bullseye"></i> {{localize "AFC.Battle.Shoot"}}</button>
+        <button type="button" class="small" data-action="melee"><i class="fa-solid fa-khanda"></i> {{localize "AFC.Battle.Melee"}}</button></p>
+    </section>
     {{/if}}
-    <p class="hint">{{localize "AFC.Battle.EngageHint"}}</p>
-    <p>{{localize "AFC.Battle.Attacker"}} : <b>{{#if controlled}}{{controlled}}{{else}}—{{/if}}</b> · {{localize "AFC.Battle.Target"}} : <b>{{#if target}}{{target}}{{else}}—{{/if}}</b></p>
-    <div class="title-buttons">
-      <button type="button" data-action="shoot"><i class="fa-solid fa-bullseye"></i> {{localize "AFC.Battle.Shoot"}}</button>
-      <button type="button" data-action="melee"><i class="fa-solid fa-khanda"></i> {{localize "AFC.Battle.Melee"}}</button>
+
+    <div class="battle-columns">
+      <section>
+        <h3 class="side company">{{localize "AFC.Battle.Side.company"}}</h3>
+        {{#each company as |t|}}{{> "systems/asoiaf-free-company/templates/apps/battle-troop.hbs" t=t orders=@root.orders isGM=@root.isGM}}{{else}}<p class="hint">{{localize "AFC.Battle.NoTroop"}}</p>{{/each}}
+      </section>
+      <section>
+        <h3 class="side enemy">{{localize "AFC.Battle.Side.enemy"}}</h3>
+        {{#each enemy as |t|}}{{> "systems/asoiaf-free-company/templates/apps/battle-troop.hbs" t=t orders=@root.orders isGM=@root.isGM}}{{else}}<p class="hint">{{localize "AFC.Battle.NoTroop"}}</p>{{/each}}
+      </section>
     </div>
-  </section>
-  {{/if}}
+  </div>
 </div>

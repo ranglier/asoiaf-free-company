@@ -1,41 +1,43 @@
 /**
- * Fenêtre Bataille : groupes des deux camps, ordres secrets, révélation, engagements (tir et mêlée
- * entre le jeton contrôlé et la cible), ralliement, fin de tour et bilan.
+ * Fenêtre Bataille : une fiche compacte par troupe (état, ordre, cible, officier), l'aide-mémoire,
+ * et pour le MJ la conduite du tour (révélation, engagements prévus résolus en un clic, fin de tour).
  */
 import { SYSTEM_ID } from "../config.mjs";
-import { ORDERS, TROOP_STATES, WEATHER } from "./battle-config.mjs";
+import { ORDERS, TRIANGLE, TROOP_STATES, WEATHER } from "./battle-config.mjs";
 import { battleReport, endTurn, orderLabel, rallyTroop, resolveMelee, resolveShoot, revealOrders } from "./engagement.mjs";
-import { canOrder, clearBattle, getBattle, groupOfToken, saveBattle, setOrder } from "./state.mjs";
+import { chooseOfficer, giveOrder, ORDER_ICONS, orderVisible, startTargetPick, TARGETED_ORDERS } from "./map.mjs";
+import { canCommand, clearBattle, getBattle, saveBattle, setUnit, unitOf } from "./state.mjs";
 import { createEnemyTroop } from "./troops.mjs";
 
 const { ApplicationV2, HandlebarsApplicationMixin, DialogV2 } = foundry.applications.api;
 const loc = key => game.i18n.localize(key);
+const COMMAND = ["commandement", "command"];
 
 export class BattleApp extends HandlebarsApplicationMixin(ApplicationV2) {
   static DEFAULT_OPTIONS = {
     id: "afc-battle",
     classes: ["afc", "afc-battle-app"],
-    position: { width: 760, height: 720 },
+    position: { width: 820, height: 760 },
     window: { title: "AFC.Battle.Title", icon: "fa-solid fa-chess-rook", resizable: true },
     actions: {
-      setOrder: BattleApp.#onSetOrder,
       reveal: BattleApp.#onReveal,
       endTurn: BattleApp.#onEndTurn,
       report: BattleApp.#onReport,
-      newGroup: BattleApp.#onNewGroup,
-      deleteGroup: BattleApp.#onDeleteGroup,
-      removeTroop: BattleApp.#onRemoveTroop,
       newEnemy: BattleApp.#onNewEnemy,
+      reset: BattleApp.#onReset,
       melee: BattleApp.#onMelee,
       shoot: BattleApp.#onShoot,
       resolvePlan: BattleApp.#onResolvePlan,
+      pickTarget: BattleApp.#onPickTarget,
+      clearTarget: BattleApp.#onClearTarget,
+      officer: BattleApp.#onOfficer,
       rally: BattleApp.#onRally,
-      openTroop: BattleApp.#onOpenTroop,
-      reset: BattleApp.#onReset
+      focus: BattleApp.#onFocus,
+      openTroop: BattleApp.#onOpenTroop
     }
   };
 
-  static PARTS = { body: { template: `systems/${SYSTEM_ID}/templates/apps/battle.hbs`, scrollable: [""] } };
+  static PARTS = { body: { template: `systems/${SYSTEM_ID}/templates/apps/battle.hbs`, scrollable: [".battle-scroll"] } };
 
   /** Ouvre (ou ramène au premier plan) la fenêtre unique. */
   static open() {
@@ -53,53 +55,62 @@ export class BattleApp extends HandlebarsApplicationMixin(ApplicationV2) {
     const scene = canvas.scene;
     const battle = getBattle();
     const isGM = game.user.isGM;
-    const orders = Object.fromEntries(ORDERS.map(k => [k, `AFC.Battle.Order.${k}`]));
-    const groupView = group => {
-      const mine = canOrder(group);
-      const officer = game.actors.get(group.officer);
-      const troops = group.troops.map(id => scene.tokens.get(id)).filter(t => t?.actor)
-        .filter(t => isGM || group.side === "company" || !t.hidden)
-        .map(t => {
-          const s = t.actor.system;
-          const known = isGM || s.side === "company";
-          return {
-            id: t.id, name: t.name, state: s.state, stateLabel: TROOP_STATES[s.state].label, known,
-            cushion: s.cushion, cushionMax: s.cushionMax, disorders: s.disorders,
-            rallies: s.rallies, ralliesMax: s.ralliesMax, move: s.move, range: s.range, hidden: t.hidden,
-            traits: s.traits.map(k => loc(`AFC.Battle.Trait.${k}.name`)).join(", "),
-            canRally: t.actor.isOwner || isGM
-          };
-        });
-      const commandBonus = officer?.system.abilities?.warfare?.specialties
-        ?.find(sp => ["commandement", "command"].includes(sp.name.trim().toLowerCase()))?.bonus ?? 0;
+    const tokens = scene?.tokens.filter(t => t.actor?.type === "troop") ?? [];
+    // Charge des officiers : 1 + dés de bonus en Commandement.
+    const officerLoad = {};
+    for (const u of battle.units) if (u.officer) officerLoad[u.officer] = (officerLoad[u.officer] ?? 0) + 1;
+    const commandMax = id => {
+      const w = game.actors.get(id)?.system.abilities?.warfare;
+      return 1 + (w?.specialties?.find(s => COMMAND.includes(s.name.trim().toLowerCase()))?.bonus ?? 0);
+    };
+
+    const troopView = token => {
+      const s = token.actor.system;
+      const unit = unitOf(battle, token.id);
+      const mine = canCommand(token, battle);
+      const visible = orderVisible(token, battle);
+      const target = unit.target ? scene.tokens.get(unit.target) : null;
+      const officer = unit.officer ? game.actors.get(unit.officer) : null;
+      const known = isGM || s.side === "company";
       return {
-        ...group, troops, mine,
-        officerName: officer?.name ?? loc("AFC.Battle.NoOfficer"),
-        tooMany: officer && group.troops.length > 1 + commandBonus ? 1 + commandBonus : 0,
-        showOrder: battle.revealed || mine,
-        orderText: orderLabel(group.order),
-        canSet: mine && (!battle.revealed || !group.countered),
-        counterMode: battle.revealed,
-        pending: !group.order
+        id: token.id, name: token.name, img: token.texture.src, hidden: token.hidden, side: s.side,
+        state: s.state, stateLabel: TROOP_STATES[s.state].label, known, mine,
+        order: unit.order, orderText: orderLabel(unit.order),
+        orderOptions: ORDERS.map(k => ({ key: k, label: loc(`AFC.Battle.Order.${k}`), selected: k === unit.order })), orderIcon: ORDER_ICONS[unit.order] ?? "fa-flag",
+        // Avant la révélation, un joueur ne sait même pas si l'ennemi a reçu un ordre.
+        showOrder: visible && !!unit.order, secret: !visible && !!unit.order && (isGM || s.side === "company"),
+        canSet: mine && !(battle.revealed && unit.countered && !isGM),
+        countered: unit.countered,
+        targeted: TARGETED_ORDERS.includes(unit.order),
+        targetName: target && (isGM || !target.hidden) ? target.name : null,
+        officerName: officer?.name ?? null,
+        overload: officer && officerLoad[unit.officer] > commandMax(unit.officer) ? commandMax(unit.officer) : 0,
+        cushion: s.cushion, cushionMax: s.cushionMax, disorders: s.disorders, rallies: s.rallies, ralliesMax: s.ralliesMax,
+        move: s.move, range: s.range, rank: s.rank,
+        traits: s.traits.map(k => ({ name: loc(`AFC.Battle.Trait.${k}.name`), effect: loc(`AFC.Battle.Trait.${k}.effect`) })),
+        canRally: mine && !["fresh", "destroyed"].includes(s.state)
       };
     };
+    const side = key => tokens.filter(t => t.actor.system.side === key && (isGM || key === "company" || !t.hidden)).map(troopView);
+
     const controlled = canvas.tokens.controlled[0]?.document;
-    const target = [...game.user.targets][0]?.document;
+    const targeted = [...game.user.targets][0]?.document;
+    const plans = isGM ? battle.units.filter(u => u.target && TARGETED_ORDERS.includes(u.order)).map(u => {
+      const from = scene.tokens.get(u.id), to = scene.tokens.get(u.target);
+      if (!from || !to) return null;
+      return { from: u.id, to: u.target, fromName: from.name, toName: to.name, order: orderLabel(u.order), shoot: u.order === "shoot" };
+    }).filter(Boolean).sort((a, b) => b.shoot - a.shoot) : [];
+
     return {
-      scene, battle, isGM, orders,
-      company: battle.groups.filter(g => g.side === "company").map(groupView),
-      enemy: battle.groups.filter(g => g.side === "enemy").map(groupView).filter(g => isGM || g.troops.length),
+      battle, isGM, hasScene: !!scene,
+      orders: ORDERS.map(k => ({ key: k, label: loc(`AFC.Battle.Order.${k}`), icon: ORDER_ICONS[k], help: loc(`AFC.Battle.OrderHelp.${k}`) })),
+      triangle: Object.entries(TRIANGLE).map(([a, b]) => ({ a: orderLabel(a), b: orderLabel(b) })),
+      company: side("company"), enemy: side("enemy"),
       weathers: Object.fromEntries(Object.keys(WEATHER).map(k => [k, `AFC.Battle.Weather.${k}`])),
       weatherLabel: `AFC.Battle.Weather.${battle.weather}`,
+      plans,
       controlled: controlled?.actor?.type === "troop" ? controlled.name : null,
-      target: target?.actor?.type === "troop" ? target.name : null,
-      // Engagements prévus (cibles désignées), dans l'ordre : tirs d'abord, puis mêlées.
-      plans: isGM ? battle.plans.map(p => {
-        const from = scene.tokens.get(p.from), to = scene.tokens.get(p.to);
-        if (!from || !to) return null;
-        const order = groupOfToken(battle, p.from)?.order ?? "";
-        return { from: p.from, to: p.to, fromName: from.name, toName: to.name, order: orderLabel(order), shoot: order === "shoot" };
-      }).filter(Boolean).sort((a, b) => b.shoot - a.shoot) : []
+      target: targeted?.actor?.type === "troop" ? targeted.name : null
     };
   }
 
@@ -110,61 +121,36 @@ export class BattleApp extends HandlebarsApplicationMixin(ApplicationV2) {
       battle.weather = event.target.value;
       await saveBattle(battle);
     });
+    // Choix d'un ordre dans une fiche de troupe (enchaîne sur la cible pour un ordre offensif).
+    this.element.querySelectorAll("select[data-order]").forEach(select => select.addEventListener("change", event => {
+      const token = canvas.scene.tokens.get(event.target.closest("[data-troop]").dataset.troop);
+      if (token && event.target.value) giveOrder(token, event.target.value);
+    }));
   }
 
-  static async #onSetOrder(event, target) {
-    const select = target.closest("[data-group]").querySelector("select[name=order]");
-    if (!select?.value) return;
-    await setOrder(target.closest("[data-group]").dataset.group, select.value, { counter: getBattle().revealed });
-    ui.notifications.info(loc("AFC.Battle.OrderSent"));
+  static #token(target) {
+    return canvas.scene.tokens.get(target.closest("[data-troop]")?.dataset.troop);
   }
 
   static #onReveal() { return revealOrders(); }
   static #onEndTurn() { return endTurn(); }
   static #onReport() { return battleReport(); }
   static #onNewEnemy() { return createEnemyTroop(); }
+  static #onPickTarget(event, target) { const t = BattleApp.#token(target); if (t) startTargetPick(t); }
+  static #onClearTarget(event, target) { const t = BattleApp.#token(target); if (t) setUnit(t.id, { target: "" }); }
+  static #onOfficer(event, target) { const t = BattleApp.#token(target); if (t) chooseOfficer(t); }
+  static #onRally(event, target) { const t = BattleApp.#token(target); if (t) rallyTroop(t.id); }
+  static #onOpenTroop(event, target) { BattleApp.#token(target)?.actor?.sheet.render(true); }
 
-  /** Crée un groupe avec les jetons de troupes sélectionnés et un officier. */
-  static async #onNewGroup() {
-    const tokens = canvas.tokens.controlled.map(t => t.document).filter(t => t.actor?.type === "troop");
-    if (!tokens.length) return ui.notifications.warn(loc("AFC.Battle.SelectTroops"));
-    const side = tokens[0].actor.system.side;
-    const officers = game.actors.filter(a => ["character", "npc"].includes(a.type));
-    const data = await DialogV2.prompt({
-      window: { title: loc("AFC.Battle.NewGroup") },
-      classes: ["afc", "afc-dialog"],
-      content: `<div class="afc-test-dialog">
-        <label>${loc("AFC.Battle.GroupName")}<input type="text" name="name" value="${foundry.utils.escapeHTML(tokens.map(t => t.name).join(", "))}"></label>
-        <label>${loc("AFC.Battle.Officer")}<select name="officer"><option value="">—</option>${officers.map(a => `<option value="${a.id}">${foundry.utils.escapeHTML(a.name)}</option>`).join("")}</select></label></div>`,
-      ok: { label: loc("AFC.Battle.Create"), callback: (ev, button) => ({ name: button.form.elements.name.value.trim(), officer: button.form.elements.officer.value }) },
-      rejectClose: false
-    });
-    if (!data) return;
-    const battle = getBattle();
-    const ids = tokens.map(t => t.id);
-    // Une troupe n'appartient qu'à un groupe.
-    for (const g of battle.groups) g.troops = g.troops.filter(id => !ids.includes(id));
-    battle.groups = battle.groups.filter(g => g.troops.length);
-    battle.groups.push({ id: foundry.utils.randomID(), name: data.name || loc("AFC.Battle.Group"), side, officer: data.officer, troops: ids, order: "", countered: false });
-    await saveBattle(battle);
+  /** Centre la vue sur la troupe et la sélectionne. */
+  static #onFocus(event, target) {
+    const token = BattleApp.#token(target)?.object;
+    if (!token) return;
+    canvas.animatePan({ x: token.center.x, y: token.center.y, duration: 250 });
+    if (token.isOwner) token.control({ releaseOthers: true });
   }
 
-  static async #onDeleteGroup(event, target) {
-    const battle = getBattle();
-    battle.groups = battle.groups.filter(g => g.id !== target.closest("[data-group]").dataset.group);
-    await saveBattle(battle);
-  }
-
-  static async #onRemoveTroop(event, target) {
-    const battle = getBattle();
-    const id = target.closest("[data-troop]").dataset.troop;
-    const group = groupOfToken(battle, id);
-    if (group) group.troops = group.troops.filter(t => t !== id);
-    battle.groups = battle.groups.filter(g => g.troops.length);
-    await saveBattle(battle);
-  }
-
-  /** Jeton contrôlé (attaquant ou tireur) et cible. */
+  /** Jeton contrôlé (qui agit) et cible : engagement libre. */
   static #pair() {
     const a = canvas.tokens.controlled[0]?.document;
     const d = [...game.user.targets][0]?.document;
@@ -176,16 +162,13 @@ export class BattleApp extends HandlebarsApplicationMixin(ApplicationV2) {
   }
   static #onMelee() { const p = BattleApp.#pair(); return p && resolveMelee(...p); }
   static #onShoot() { const p = BattleApp.#pair(); return p && resolveShoot(...p); }
-  /** Résout un engagement prévu (tir si l'ordre est Tirer, sinon mêlée). */
+
+  /** Engagement prévu : tir si l'ordre est Tirer, sinon mêlée. */
   static #onResolvePlan(event, target) {
     const { from, to, shoot } = target.dataset;
     const a = canvas.scene.tokens.get(from), d = canvas.scene.tokens.get(to);
     if (!a || !d) return;
     return shoot === "true" ? resolveShoot(a, d) : resolveMelee(a, d);
-  }
-  static #onRally(event, target) { return rallyTroop(target.closest("[data-troop]").dataset.troop); }
-  static #onOpenTroop(event, target) {
-    return canvas.scene.tokens.get(target.closest("[data-troop]").dataset.troop)?.actor?.sheet.render(true);
   }
 
   static async #onReset() {

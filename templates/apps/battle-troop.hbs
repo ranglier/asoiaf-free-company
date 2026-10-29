@@ -1,0 +1,49 @@
+<div class="battle-troop side-{{t.side}} state-{{t.state}}" data-troop="{{t.id}}">
+  <img class="symbol" src="{{t.img}}" alt="" data-action="focus" data-tooltip="AFC.Battle.Focus">
+  <div class="body">
+    <div class="line">
+      <a class="name" data-action="focus" data-tooltip="AFC.Battle.Focus">{{t.name}}</a>
+      {{#if t.hidden}}<i class="fa-solid fa-eye-slash" data-tooltip="AFC.Battle.Hidden"></i>{{/if}}
+      <span class="tag state">{{localize t.stateLabel}}</span>
+      {{#if t.known}}<a class="icon" data-action="openTroop" data-tooltip="AFC.Battle.OpenSheet"><i class="fa-solid fa-file-lines"></i></a>{{/if}}
+    </div>
+
+    <div class="line order">
+      {{#if t.canSet}}
+      <select data-order>
+        <option value="">{{localize "AFC.Battle.Waiting"}}</option>
+        {{#each t.orderOptions as |o|}}<option value="{{o.key}}" {{#if o.selected}}selected{{/if}}>{{o.label}}</option>{{/each}}
+      </select>
+      {{else if t.showOrder}}
+      <span class="tag order"><i class="fa-solid {{t.orderIcon}}"></i> {{t.orderText}}</span>
+      {{else if t.secret}}
+      <span class="tag">{{localize "AFC.Battle.OrderGiven"}}</span>
+      {{else if t.known}}
+      <span class="tag muted">{{localize "AFC.Battle.Waiting"}}</span>
+      {{/if}}
+      {{#if t.targeted}}{{#if t.showOrder}}
+      <span class="target"><i class="fa-solid fa-arrow-right"></i> {{#if t.targetName}}{{t.targetName}}{{else}}<i>{{localize "AFC.Battle.NoTarget"}}</i>{{/if}}</span>
+      {{#if t.canSet}}<a class="icon" data-action="pickTarget" data-tooltip="AFC.Battle.PickOnMap"><i class="fa-solid fa-crosshairs"></i></a>
+      {{#if t.targetName}}<a class="icon" data-action="clearTarget" data-tooltip="AFC.Battle.ClearTarget"><i class="fa-solid fa-xmark"></i></a>{{/if}}{{/if}}
+      {{/if}}{{/if}}
+      {{#if t.countered}}<small>{{localize "AFC.Battle.Countered"}}</small>{{/if}}
+    </div>
+
+    {{#if t.known}}
+    <div class="line officer">
+      <i class="fa-solid fa-user-tie"></i> {{#if t.officerName}}{{t.officerName}}{{else}}<i>{{localize "AFC.Battle.NoOfficerRank" n=t.rank}}</i>{{/if}}
+      {{#if t.mine}}<a class="icon" data-action="officer" data-tooltip="AFC.Battle.OfficerButton"><i class="fa-solid fa-pen"></i></a>{{/if}}
+      {{#if t.overload}}<span class="warn">{{localize "AFC.Battle.TooMany" n=t.overload}}</span>{{/if}}
+    </div>
+    <div class="line stats">
+      <span data-tooltip="AFC.Battle.Cushion"><i class="fa-solid fa-shield"></i> {{t.cushion}}/{{t.cushionMax}}</span>
+      <span data-tooltip="AFC.Battle.Move"><i class="fa-solid fa-shoe-prints"></i> {{t.move}}</span>
+      {{#if t.range}}<span data-tooltip="AFC.Battle.Range"><i class="fa-solid fa-bullseye"></i> {{t.range}}</span>{{/if}}
+      <span data-tooltip="AFC.Battle.Disorders"><i class="fa-solid fa-person-falling"></i> {{t.disorders}}</span>
+      <span data-tooltip="AFC.Battle.Rallies"><i class="fa-solid fa-flag-checkered"></i> {{t.rallies}}/{{t.ralliesMax}}</span>
+      {{#if t.canRally}}<button type="button" class="small" data-action="rally"><i class="fa-solid fa-flag"></i> {{localize "AFC.Battle.Rally"}}</button>{{/if}}
+    </div>
+    <div class="line traits">{{#each t.traits as |tr|}}<span class="trait" data-tooltip="{{tr.effect}}">{{tr.name}}</span>{{/each}}</div>
+    {{/if}}
+  </div>
+</div>
