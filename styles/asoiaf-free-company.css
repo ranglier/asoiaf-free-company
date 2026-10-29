@@ -414,3 +414,9 @@ body.detached .application.afc.afc-fill.afc-dialog .window-content { max-height:
 .afc .afc-battle .battle-group, .afc .afc-battle .battle-group-head strong, .afc .afc-battle .battle-group-head small { color: var(--afc-ink); }
 .afc .afc-battle .tag { background: var(--afc-paper); color: var(--afc-ink); border: 1px solid var(--afc-line); border-radius: 3px; padding: 0 0.3rem; font-size: 0.85rem; }
 .afc .afc-battle .battle-group-head strong { font-family: var(--afc-font-label); }
+/* HUD des troupes : palette des ordres. */
+#token-hud .afc-hud { position: relative; }
+#token-hud .afc-order-palette { display: none; position: absolute; right: calc(100% + 6px); top: 0; grid-template-columns: repeat(3, 40px); gap: 4px; padding: 4px; background: rgba(0, 0, 0, 0.75); border-radius: 6px; z-index: 10; }
+#token-hud .afc-order-palette.open { display: grid; }
+#token-hud .afc-order-palette .control-icon { width: 40px; height: 40px; margin: 0; }
+#token-hud .afc-order-palette .control-icon.active { border-color: #ff6400; }

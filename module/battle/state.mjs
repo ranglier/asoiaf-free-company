@@ -45,6 +45,29 @@ export async function setOrder(groupId, order, { counter = false } = {}) {
   game.socket.emit(CHANNEL, { action: "order", scene: canvas.scene.id, group: groupId, order, counter, user: game.user.id });
 }
 
+/**
+ * Ordre donné depuis un jeton (carte) : à son groupe, ou à un groupe créé pour lui seul s'il n'en a pas.
+ * Après la révélation, c'est un contre-ordre.
+ */
+export async function setTokenOrder(tokenId, order) {
+  const counter = getBattle().revealed;
+  if (game.user.isGM) return applyTokenOrder(canvas.scene, tokenId, order, counter, game.user);
+  game.socket.emit(CHANNEL, { action: "orderToken", scene: canvas.scene.id, token: tokenId, order, counter, user: game.user.id });
+}
+
+async function applyTokenOrder(scene, tokenId, order, counter, user) {
+  const battle = getBattle(scene);
+  let group = groupOfToken(battle, tokenId);
+  if (!group) {
+    const token = scene.tokens.get(tokenId);
+    if (!token?.actor || (!user.isGM && !token.actor.testUserPermission(user, "OWNER"))) return;
+    group = { id: foundry.utils.randomID(), name: token.name, side: token.actor.system.side, officer: "", troops: [tokenId], order: "", countered: false };
+    battle.groups.push(group);
+    await saveBattle(battle, scene);
+  }
+  return applyOrder(scene, group.id, order, counter, user);
+}
+
 async function applyOrder(scene, groupId, order, counter, user) {
   const battle = getBattle(scene);
   const group = battle.groups.find(g => g.id === groupId);
@@ -66,9 +89,11 @@ async function applyOrder(scene, groupId, order, counter, user) {
 /** Écoute du canal : seul le MJ actif traite les ordres des joueurs. */
 export function registerBattleSocket() {
   game.socket.on(CHANNEL, data => {
-    if (data?.action !== "order" || game.users.activeGM !== game.user) return;
-    const scene = game.scenes.get(data.scene);
-    const user = game.users.get(data.user);
-    if (scene && user) applyOrder(scene, data.group, data.order, data.counter, user);
+    if (game.users.activeGM !== game.user) return;
+    const scene = game.scenes.get(data?.scene);
+    const user = game.users.get(data?.user);
+    if (!scene || !user) return;
+    if (data.action === "order") applyOrder(scene, data.group, data.order, data.counter, user);
+    if (data.action === "orderToken") applyTokenOrder(scene, data.token, data.order, data.counter, user);
   });
 }

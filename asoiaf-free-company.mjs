@@ -14,6 +14,7 @@ import { TroopSheet } from "./module/sheets/troop-sheet.mjs";
 import { BattleApp } from "./module/battle/battle-app.mjs";
 import { onRenderBattleCard } from "./module/battle/engagement.mjs";
 import { registerBattleSocket } from "./module/battle/state.mjs";
+import { drawOrderBadge, onRenderTokenHUD, refreshOrderBadges } from "./module/battle/map.mjs";
 import { refreshTroopImage, registerTroopStatuses, syncTroopStatus } from "./module/battle/troops.mjs";
 import { evaluateTest, rollAbilityTest, rollTest } from "./module/dice/test-roll.mjs";
 import { onRenderChatMessage, resolveDamage, rollAttack } from "./module/dice/attack.mjs";
@@ -82,16 +83,23 @@ Hooks.on("getSceneControlButtons", controls => {
   const tokens = controls.tokens ?? controls.token;
   if (!tokens?.tools) return;
   tokens.tools.afcBattle = {
-    name: "afcBattle", title: "AFC.Battle.Title", icon: "fa-solid fa-chess-rook", order: 99,
+    name: "afcBattle", title: "AFC.Battle.Title", tooltip: "AFC.Battle.Title", icon: "fa-solid fa-chess-rook", order: 99,
     button: true, visible: true, onChange: () => BattleApp.open()
   };
 });
 
-/** La fenêtre Bataille suit la scène, les troupes, la sélection et les cibles. */
+/** La fenêtre Bataille et les pastilles d'ordre suivent la scène, les troupes, la sélection et les cibles. */
 Hooks.on("updateScene", (scene, changes) => {
-  if (scene.id === canvas.scene?.id && foundry.utils.hasProperty(changes, `flags.${AFC.SYSTEM_ID}`)) BattleApp.refresh();
+  if (scene.id !== canvas.scene?.id || !foundry.utils.hasProperty(changes, `flags.${AFC.SYSTEM_ID}`)) return;
+  BattleApp.refresh();
+  refreshOrderBadges();
 });
-Hooks.on("canvasReady", () => BattleApp.refresh());
+Hooks.on("canvasReady", () => {
+  BattleApp.refresh();
+  refreshOrderBadges();
+});
+Hooks.on("drawToken", token => drawOrderBadge(token));
+Hooks.on("renderTokenHUD", onRenderTokenHUD);
 Hooks.on("controlToken", () => BattleApp.refresh());
 Hooks.on("targetToken", () => BattleApp.refresh());
 Hooks.on("updateActor", (actor, changes, options, userId) => {
