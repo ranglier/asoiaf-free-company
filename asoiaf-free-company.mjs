@@ -14,7 +14,7 @@ import { TroopSheet } from "./module/sheets/troop-sheet.mjs";
 import { BattleApp } from "./module/battle/battle-app.mjs";
 import { onRenderBattleCard } from "./module/battle/engagement.mjs";
 import { migrateBattle, registerBattleSocket } from "./module/battle/state.mjs";
-import { cancelTargetPick, drawOrderBadge, drawPlanArrows, onRenderTokenHUD, refreshOrderBadges, scheduleArrows } from "./module/battle/map.mjs";
+import { cancelTargetPick, drawPlanArrows, drawTroopMarks, onRenderTokenHUD, refreshOrderBadges, scheduleArrows } from "./module/battle/map.mjs";
 import { refreshTroopImage, registerTroopStatuses, syncTroopStatus } from "./module/battle/troops.mjs";
 import { evaluateTest, rollAbilityTest, rollTest } from "./module/dice/test-roll.mjs";
 import { onRenderChatMessage, resolveDamage, rollAttack } from "./module/dice/attack.mjs";
@@ -107,7 +107,7 @@ Hooks.on("refreshToken", (token, flags) => {
 });
 for (const hook of ["createToken", "deleteToken"]) Hooks.on(hook, () => scheduleArrows());
 Hooks.on("canvasTearDown", () => cancelTargetPick());
-Hooks.on("drawToken", token => drawOrderBadge(token));
+Hooks.on("drawToken", token => drawTroopMarks(token));
 Hooks.on("renderTokenHUD", onRenderTokenHUD);
 Hooks.on("controlToken", () => BattleApp.refresh());
 Hooks.on("targetToken", () => BattleApp.refresh());
@@ -120,6 +120,8 @@ Hooks.on("updateActor", (actor, changes, options, userId) => {
     scheduleArrows();
   }
   // Icônes d'état du jeton, posées par le client qui a fait la modification.
+  // État : marqueur au centre du jeton (et retrait des anciennes icônes d'état de Foundry).
+  if (foundry.utils.hasProperty(changes, "system.state")) for (const t of actor.getActiveTokens()) drawTroopMarks(t);
   if (userId === game.user.id && foundry.utils.hasProperty(changes, "system.state")) syncTroopStatus(actor);
   // Symbole du jeton : suit le type et le camp.
   if (userId === game.user.id && (foundry.utils.hasProperty(changes, "system.side") || foundry.utils.hasProperty(changes, "system.unitType"))) refreshTroopImage(actor);

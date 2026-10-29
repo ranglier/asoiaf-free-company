@@ -130,11 +130,12 @@ export function registerTroopStatuses() {
   }
 }
 
-/** Met les icônes d'état du jeton en accord avec l'état de la troupe. */
+/**
+ * L'état s'affiche désormais au centre du jeton (map.mjs) : on retire les icônes d'état de Foundry
+ * posées par les versions précédentes (elles se plaçaient dans le coin du carré, hors du symbole).
+ */
 export async function syncTroopStatus(actor) {
   for (const key of STATE_ORDER) {
-    if (!TROOP_STATES[key].icon) continue;
-    const active = actor.system.state === key;
-    if (actor.statuses.has(`afc-${key}`) !== active) await actor.toggleStatusEffect(`afc-${key}`, { active, overlay: key === "destroyed" });
+    if (actor.statuses.has(`afc-${key}`)) await actor.toggleStatusEffect(`afc-${key}`, { active: false });
   }
 }

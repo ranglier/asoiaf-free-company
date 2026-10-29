@@ -5,7 +5,7 @@
  * - pastille d'ordre dans le bas du jeton et flèches « troupe → cible ».
  * Avant la révélation, ordres et flèches ne sont visibles que de qui commande la troupe (et du MJ).
  */
-import { ORDERS } from "./battle-config.mjs";
+import { ORDERS, TROOP_STATES } from "./battle-config.mjs";
 import { rallyTroop } from "./engagement.mjs";
 import { canCommand, getBattle, setUnit, unitOf } from "./state.mjs";
 
@@ -161,7 +161,7 @@ export function drawOrderBadge(token) {
 
 export function refreshOrderBadges() {
   if (!canvas.ready) return;
-  for (const token of canvas.tokens.placeables) if (token.document.actor?.type === "troop") drawOrderBadge(token);
+  for (const token of canvas.tokens.placeables) if (token.document.actor?.type === "troop") drawTroopMarks(token);
 }
 
 /* ---------- Flèches des cibles ---------- */
@@ -233,4 +233,49 @@ function segment(g, a, b, dash) {
     if (on) g.moveTo(a.x + ux * d, a.y + uy * d).lineTo(a.x + ux * (d + step), a.y + uy * (d + step));
     d += step;
   }
+}
+
+/* ---------- Marqueur d'état au centre du jeton ---------- */
+
+/** Couleur du marqueur selon l'état (Fraîche : pas de marqueur). */
+const STATE_COLORS = { shaken: 0xc9a227, disordered: 0xd0701c, routed: 0x9b2c25, destroyed: 0x2b2118 };
+
+/**
+ * Marqueur d'état dessiné au centre de la troupe (les icônes d'état de Foundry se placent dans le
+ * coin du carré du jeton, hors du symbole sur une grille hexagonale). Visible de tous.
+ */
+export async function drawStateMarker(token) {
+  token.children.filter(c => c.name === "afcState").forEach(c => c.destroy({ children: true }));
+  const actor = token.document.actor;
+  if (actor?.type !== "troop") return;
+  const state = actor.system.state;
+  const color = STATE_COLORS[state];
+  if (!color) return;
+  const marker = new PIXI.Container();
+  marker.name = "afcState";
+  const r = token.w * 0.17;
+  const circle = new PIXI.Graphics();
+  circle.lineStyle({ width: 3, color: 0xf3ead6, alpha: 1 }).beginFill(color, 0.95).drawCircle(0, 0, r).endFill();
+  marker.addChild(circle);
+  const src = TROOP_STATES[state]?.icon;
+  if (src) {
+    const texture = await foundry.canvas.loadTexture(src);
+    if (texture && !marker.destroyed) {
+      const icon = new PIXI.Sprite(texture);
+      icon.anchor.set(0.5);
+      icon.width = icon.height = r * 1.3;
+      marker.addChild(icon);
+    }
+  }
+  if (token.destroyed || marker.destroyed) return;
+  // Un seul marqueur, même si deux dessins se sont croisés.
+  token.children.filter(c => c.name === "afcState").forEach(c => c.destroy({ children: true }));
+  marker.position.set(token.w / 2, token.h / 2);
+  token.addChild(marker);
+}
+
+/** Pastille d'ordre et marqueur d'état d'un jeton de troupe. */
+export function drawTroopMarks(token) {
+  drawOrderBadge(token);
+  drawStateMarker(token);
 }
