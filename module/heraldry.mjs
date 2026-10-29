@@ -123,71 +123,181 @@ async function rollCharge(type, g, step) {
 }
 
 /**
- * Description structurée du blason (pour le dessin), selon que le champ est d'émail ou de métal.
+ * Blason structuré (modèle modifiable) tiré d'un jet, selon que le champ est d'émail ou de métal.
  * Champ divisé : la fourrure, s'il y en a une, remplace la seconde couleur (le livre le permet).
  * Champ plain : la fourrure n'est pas utilisée.
+ * Rebattements : le nom garde « X » et le nombre de pièces va dans count.
  */
-function armsSpec(g, fieldIs) {
+function fromRoll(g, fieldIs) {
   const field = fieldIs === "metal" ? g.metal : g.tincture;
   const second = g.plain ? null : (g.fur || (fieldIs === "metal" ? g.secondMetal.name : g.secondTincture.name));
-  const chargeColor = fieldIs === "metal" ? g.tincture : g.metal;
-  return {
-    partition: g.partition, line: g.partitionLine ?? null, colors: [field, second],
-    charge: g.chargeSpec ? { ...g.chargeSpec, color: chargeColor } : null
-  };
+  const charge = g.chargeSpec ? { count: 1, attitude: null, line: null, ...g.chargeSpec, color: fieldIs === "metal" ? g.tincture : g.metal } : null;
+  if (charge?.type === "subordinary") {
+    const x = charge.name.match(/\d+/)?.[0];
+    charge.count = x ? Number(x) : 1;
+    charge.name = SUBORDINARIES.find(([, n]) => n.replace("X", x) === charge.name)?.[1] ?? charge.name;
+  }
+  return { partition: g.partition, line: g.partitionLine ?? null, colors: [field, second], charge };
 }
 
-/** Texte du blason, tiré de la description structurée. */
-function blazon(g, fieldIs) {
-  const spec = armsSpec(g, fieldIs);
-  const [field, second] = spec.colors;
-  let text = g.plain ? de(field).replace(/^./, c => c.toUpperCase())
-    : `${g.partition}${g.partitionLine ? ` ${g.partitionLine.toLowerCase()}` : ""} ${de(field)} et ${de(second)}`;
-  if (g.charge) text += `, ${g.charge.toLowerCase()} ${de(spec.charge.color)}`;
+/** Description à dessiner : le « X » des rebattements est remplacé par le nombre. */
+function renderSpec(m) {
+  if (m.charge?.type !== "subordinary") return m;
+  return { ...m, charge: { ...m.charge, name: m.charge.name.replace("X", String(m.charge.count ?? 6)) } };
+}
+
+/** Texte de la charge : « 3 × tour », « lion rampant », « bande (ondé) ». */
+function chargeText(c) {
+  const n = c.count > 1 ? `${c.count} × ` : "";
+  switch (c.type) {
+    case "subordinary": return c.name.replace("X", String(c.count ?? 6));
+    case "ordinary": return c.line ? `${c.name} (${c.line.toLowerCase()})` : c.name;
+    case "animal": return `${n}${c.name}${c.attitude ? ` ${c.attitude}` : ""}`;
+    default: return `${n}${c.name}`;
+  }
+}
+
+/** Texte du blason, tiré du modèle. */
+function blazon(m) {
+  const [field, second] = m.colors;
+  let text = m.partition === PLAIN || !second ? de(field).replace(/^./, c => c.toUpperCase())
+    : `${m.partition}${m.line ? ` ${m.line.toLowerCase()}` : ""} ${de(field)} et ${de(second)}`;
+  if (m.charge) text += `, ${chargeText(m.charge).toLowerCase()} ${de(m.charge.color)}`;
   return text;
 }
 
 /** Tableau des jets : toujours 8 lignes d'une ligne de texte, pour que sa taille ne bouge pas entre deux tirages. */
 const STEP_ROWS = 8;
 function stepsHTML(g) {
-  const rows = g.steps.map(s => {
+  const rows = (g?.steps ?? []).map(s => {
     const result = s.note ? `${s.result} (${s.note})` : s.result;
     return `<tr><td class="role">${esc(s.label)}</td><td class="center">${esc(s.formula)} = ${esc(s.value)}</td>
       <td title="${esc(result)}"><strong>${esc(s.result)}</strong>${s.note ? ` <small>${esc(s.note)}</small>` : ""}</td></tr>`;
   });
+  if (!g) rows.push(`<tr><td colspan="3" class="hint">${esc(loc("AFC.Heraldry.NoRoll"))}</td></tr>`);
   while (rows.length < STEP_ROWS) rows.push(`<tr class="empty"><td></td><td></td><td></td></tr>`);
   return `<table class="afc-table"><tbody>${rows.join("")}</tbody></table>`;
 }
 
 /** Choix du champ, avec les couleurs tirées : « Champ de sinople, charge d'or » ou l'inverse. */
 function fieldOptions(g) {
+  if (!g) return `<option value="">—</option>`;
   const opt = (value, field, charge) => `<option value="${value}">${esc(game.i18n.format("AFC.Heraldry.FieldOption", { field: de(field), charge: de(charge) }))}</option>`;
   return opt("tincture", g.tincture, g.metal) + opt("metal", g.metal, g.tincture);
 }
 
-/** Aperçu dessiné et avertissements (charge pas encore dessinée, ligne non représentée). */
-function previewHTML(g, fieldIs) {
-  const spec = armsSpec(g, fieldIs);
+/* ---------- Ajustement à la main ---------- */
+
+const names = table => [...new Set(table.map(r => r[1]).filter(Boolean))];
+const family = color => (TINCTURES.some(r => r[1] === color) ? "tincture" : METALS.some(r => r[1] === color) ? "metal" : "fur");
+const CHARGE_LISTS = () => ({
+  ordinary: names(ORDINARIES), subordinary: names(SUBORDINARIES), plant: names(PLANTS), animal: names(ANIMALS), object: names(OBJECTS)
+});
+const options = (list, blank = false) => (blank ? `<option value="">—</option>` : "") + list.map(v => `<option value="${esc(v)}">${esc(v)}</option>`).join("");
+function colorOptions() {
+  const group = (label, list) => `<optgroup label="${esc(loc(label))}">${options(list)}</optgroup>`;
+  return group("AFC.Heraldry.Tinctures", names(TINCTURES)) + group("AFC.Heraldry.Metals", names(METALS)) + group("AFC.Heraldry.Furs", names(FURS));
+}
+
+function editHTML() {
+  const sel = (name, label, inner) => `<label>${esc(loc(label))}<select name="${name}">${inner}</select></label>`;
+  return `<fieldset class="heraldry-edit"><legend>${esc(loc("AFC.Heraldry.Adjust"))}</legend>
+    ${sel("partition", "AFC.Heraldry.Partition", options(names(PARTITIONS)))}
+    ${sel("line", "AFC.Heraldry.Line", options(names(LINES), true))}
+    ${sel("color1", "AFC.Heraldry.Field", colorOptions())}
+    ${sel("color2", "AFC.Heraldry.SecondColor", `<option value="">—</option>${colorOptions()}`)}
+    ${sel("ctype", "AFC.Heraldry.ChargeType", `<option value="">${esc(loc("AFC.Heraldry.None"))}</option>`
+      + Object.keys(CHARGE_LISTS()).map(t => `<option value="${t}">${esc(loc(`AFC.Heraldry.Type.${t}`))}</option>`).join(""))}
+    ${sel("cname", "AFC.Heraldry.Charge", "")}
+    ${sel("ccolor", "AFC.Heraldry.ChargeColor", colorOptions())}
+    <label>${esc(loc("AFC.Heraldry.Count"))}<input type="number" name="ccount" min="1" max="7" value="1"></label>
+    ${sel("cattitude", "AFC.Heraldry.Attitude", options(ATTITUDES, true))}
+    ${sel("cline", "AFC.Heraldry.ChargeLine", options(names(LINES), true))}
+  </fieldset>`;
+}
+
+/** Remplit le formulaire d'ajustement avec le modèle. */
+function writeForm(root, m) {
+  const f = name => root.querySelector(`[name="${name}"]`);
+  f("partition").value = m.partition;
+  f("line").value = m.line ?? "";
+  f("color1").value = m.colors[0];
+  f("color2").value = m.colors[1] ?? "";
+  const c = m.charge;
+  f("ctype").value = c?.type ?? "";
+  fillChargeNames(root, c?.type);
+  if (c) {
+    f("cname").value = c.name;
+    f("ccolor").value = c.color;
+    f("ccount").value = c.count ?? 1;
+    f("cattitude").value = c.attitude ?? "";
+    f("cline").value = c.line ?? "";
+  }
+  syncEnabled(root);
+}
+
+/** Liste des charges du type choisi. */
+function fillChargeNames(root, type) {
+  root.querySelector('[name="cname"]').innerHTML = type ? options(CHARGE_LISTS()[type] ?? []) : "";
+}
+
+/** N'active que les champs utiles au type de charge et à la partition. */
+function syncEnabled(root) {
+  const f = name => root.querySelector(`[name="${name}"]`);
+  const type = f("ctype").value, plain = f("partition").value === PLAIN;
+  f("line").disabled = plain;
+  f("color2").disabled = plain;
+  for (const n of ["cname", "ccolor"]) f(n).disabled = !type;
+  f("ccount").disabled = !["plant", "animal", "object", "subordinary"].includes(type);
+  f("cattitude").disabled = type !== "animal";
+  f("cline").disabled = type !== "ordinary";
+}
+
+/** Lit le formulaire d'ajustement. */
+function readForm(root) {
+  const v = name => root.querySelector(`[name="${name}"]`).value;
+  const plain = v("partition") === PLAIN, type = v("ctype");
+  const m = { partition: v("partition"), line: plain ? null : (v("line") || null), colors: [v("color1"), plain ? null : (v("color2") || null)], charge: null };
+  // Champ divisé sans seconde couleur : on reprend la première pour garder un dessin cohérent.
+  if (!plain && !m.colors[1]) m.colors[1] = m.colors[0];
+  if (type) {
+    // Clés toujours présentes (null si vides) : l'enregistrement fusionne, une valeur absente resterait.
+    m.charge = {
+      type, name: v("cname"), color: v("ccolor"), count: Math.min(7, Math.max(1, Number(v("ccount")) || 1)),
+      attitude: type === "animal" ? (v("cattitude") || null) : null,
+      line: type === "ordinary" ? (v("cline") || null) : null
+    };
+  }
+  return m;
+}
+
+/** Aperçu dessiné et avertissements (charge sans dessin, ligne non représentée, règle des couleurs). */
+function previewHTML(m, g) {
+  const spec = renderSpec(m);
   const notes = [];
   if (!canDraw(spec.charge)) notes.push(game.i18n.format("AFC.Heraldry.NotDrawn", { name: spec.charge.name }));
   if (!canDrawLine(spec)) notes.push(game.i18n.format("AFC.Heraldry.LineNotDrawn", { line: (spec.line ?? spec.charge.line).toLowerCase() }));
-  if (g.fur && g.plain) notes.push(loc("AFC.Heraldry.FurUnused"));
+  if (m.charge && family(m.charge.color) !== "fur" && family(m.charge.color) === family(m.colors[0])) notes.push(loc("AFC.Heraldry.RuleWarning"));
+  if (g?.fur && g.plain && m.partition === PLAIN) notes.push(loc("AFC.Heraldry.FurUnused"));
   return renderArms(spec, { id: "afc-arms-preview" }) + notes.map(n => `<p class="hint">${esc(n)}</p>`).join("");
 }
 
 /**
- * Ouvre le générateur. Renvoie { arms, spec, svg, portrait } : le texte, la description structurée,
- * l'image SVG et le choix de l'utiliser comme portrait ; rien si la fenêtre est fermée.
+ * Ouvre le générateur. Avec un blason existant (initial), il s'ouvre sur ce blason sans tirage.
+ * Renvoie { arms, spec, svg, portrait } : le texte, le blason structuré, l'image SVG et le choix
+ * de l'utiliser comme portrait ; rien si la fenêtre est fermée.
  */
-export async function runHeraldry() {
-  let g = await generate();
+export async function runHeraldry({ initial = null } = {}) {
+  let g = initial?.partition ? null : await generate();
+  let model = g ? fromRoll(g, "tincture") : foundry.utils.deepClone(initial);
   const content = `<div class="afc-test-dialog afc-heraldry">
     <div class="heraldry-top">
       <div data-steps>${stepsHTML(g)}</div>
       <div class="heraldry-preview" data-preview></div>
     </div>
     <label>${loc("AFC.Heraldry.FieldIs")}<select name="fieldIs">${fieldOptions(g)}</select></label>
-    <label>${loc("AFC.House.arms")}<textarea name="arms" rows="2">${esc(blazon(g, "tincture"))}</textarea></label>
+    ${editHTML()}
+    <label>${loc("AFC.House.arms")}<textarea name="arms" rows="2"></textarea></label>
     <label class="checkbox"><input type="checkbox" name="portrait" checked> ${loc("AFC.Heraldry.UseAsPortrait")}</label>
     <p class="hint">${loc("AFC.Heraldry.Hint")}</p>
     <button type="button" class="afc-create" data-reroll><i class="fa-solid fa-dice"></i> ${loc("AFC.Heraldry.Reroll")}</button>
@@ -195,33 +305,54 @@ export async function runHeraldry() {
   return DialogV2.prompt({
     window: { title: loc("AFC.Heraldry.Title") },
     classes: ["afc", "afc-dialog"],
-    position: { width: 820 },
+    position: { width: 860 },
     content,
     ok: {
       label: loc("AFC.Heraldry.Apply"),
       callback: (event, button) => {
         const f = button.form.elements;
-        const spec = armsSpec(g, f.fieldIs.value);
-        return { arms: f.arms.value.trim(), spec, svg: renderArms(spec), portrait: f.portrait.checked };
+        return { arms: f.arms.value.trim(), spec: model, svg: renderArms(renderSpec(model)), portrait: f.portrait.checked };
       }
     },
     render: (event, dialog) => {
       const root = dialog.element ?? dialog;
       const fieldIs = root.querySelector('[name="fieldIs"]');
       const arms = root.querySelector('[name="arms"]');
+      fieldIs.disabled = !g;
+      // Le texte suit le blason ; il reste modifiable juste avant d'appliquer.
       const refresh = () => {
-        arms.value = blazon(g, fieldIs.value);
-        root.querySelector("[data-preview]").innerHTML = previewHTML(g, fieldIs.value);
+        arms.value = blazon(model);
+        root.querySelector("[data-preview]").innerHTML = previewHTML(model, g);
       };
       // Aperçu posé après le rendu (le contenu initial du dialogue est nettoyé du SVG).
+      writeForm(root, model);
       refresh();
-      fieldIs.addEventListener("change", refresh);
+      fieldIs.addEventListener("change", () => {
+        if (!g) return;
+        model = fromRoll(g, fieldIs.value);
+        writeForm(root, model);
+        refresh();
+      });
+      root.querySelector(".heraldry-edit").addEventListener("change", event => {
+        if (event.target.name === "ctype") {
+          fillChargeNames(root, event.target.value);
+          // Nouveau type : nombre par défaut (6 pièces pour un rebattement, sinon 1).
+          root.querySelector('[name="ccount"]').value = event.target.value === "subordinary" ? 6 : 1;
+          if (event.target.value && !root.querySelector('[name="ccolor"]').value) root.querySelector('[name="ccolor"]').value = "Or";
+        }
+        syncEnabled(root);
+        model = readForm(root);
+        refresh();
+      });
       root.querySelector("[data-reroll]").addEventListener("click", async () => {
         g = await generate();
         root.querySelector("[data-steps]").innerHTML = stepsHTML(g);
-        const keep = fieldIs.value;
+        const keep = fieldIs.value || "tincture";
         fieldIs.innerHTML = fieldOptions(g);
         fieldIs.value = keep;
+        fieldIs.disabled = false;
+        model = fromRoll(g, keep);
+        writeForm(root, model);
         refresh();
       });
     },

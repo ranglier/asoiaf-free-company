@@ -356,3 +356,6 @@
 .afc .afc-heraldry .heraldry-preview { height: 100%; overflow: hidden; }
 .afc .afc-heraldry .heraldry-preview svg { width: 230px; height: 230px; display: block; border-radius: 6px; }
 .afc .afc-heraldry .heraldry-preview .hint { margin: 0.2rem 0 0; font-size: 0.85rem; }
+.afc .afc-heraldry .heraldry-edit { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.3rem 0.6rem; border: 1px solid var(--afc-line); border-radius: 4px; padding: 0.3rem 0.6rem 0.5rem; margin: 0.4rem 0; }
+.afc .afc-heraldry .heraldry-edit legend { font-family: var(--afc-font-label); padding: 0 0.3rem; }
+.afc .afc-heraldry .heraldry-edit select:disabled, .afc .afc-heraldry .heraldry-edit input:disabled { opacity: 0.45; }

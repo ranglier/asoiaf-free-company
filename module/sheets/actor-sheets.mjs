@@ -314,7 +314,7 @@ export class HouseSheet extends AFCActorSheet {
   }
 
   static async #onHeraldry() {
-    const result = await runHeraldry();
+    const result = await runHeraldry({ initial: this.document.system.heraldry });
     if (!result) return;
     const update = { "system.arms": result.arms, "system.heraldry": result.spec };
     if (result.portrait) {
