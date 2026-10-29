@@ -107,6 +107,13 @@ export async function runCreation(actor) {
   for (const key of tables.resources) base[key] = await rollResource(key);
   const value = key => Math.max(0, base[key].roll + base[key].players + base[key].mod);
 
+  // Customisation : les jets de départ sont saisis (proposés avec le tirage, modifiables).
+  if (step1.custom) {
+    const entered = await chooseBaseValues(tables, base);
+    if (!entered) return;
+    for (const key of tables.resources) base[key].roll = entered[key];
+  }
+
   // Maison : chaque joueur lance 1d6 et l'ajoute à la ressource de son choix.
   if (tables.playerBonus && step1.players) {
     const dice = [];
@@ -117,7 +124,7 @@ export async function runCreation(actor) {
 
   // Compagnie : relance possible de la ressource la plus faible (le nouveau jet est conservé).
   let rerolled = null;
-  if (tables.rerollLowest) {
+  if (tables.rerollLowest && !step1.custom) {
     const lowest = tables.resources.reduce((lo, k) => (value(k) < value(lo) ? k : lo));
     const lines = tables.resources.map(k => `<li><strong>${resLabel(tables, k)}</strong> ${value(k)}${k === lowest ? " ←" : ""}</li>`).join("");
     const reroll = await DialogV2.confirm({
@@ -356,6 +363,31 @@ async function chooseEvents(tables, count) {
         draw();
       });
       draw();
+    },
+    rejectClose: false
+  });
+  return result ?? null;
+}
+
+/**
+ * Customisation des jets de départ : une case par ressource, préremplie avec le tirage (7d6).
+ * Le modificateur d'origine s'ajoute ensuite, comme pour un tirage. Renvoie { clé: valeur } ou null.
+ */
+async function chooseBaseValues(tables, base) {
+  const loc = key => game.i18n.localize(key);
+  const rows = tables.resources.map(k => `<tr><td class="role">${resLabel(tables, k)}</td>
+    <td class="center"><input type="number" name="${k}" value="${base[k].roll}" min="0"></td>
+    <td class="center">${base[k].mod > 0 ? "+" : ""}${base[k].mod || ""}</td></tr>`).join("");
+  const result = await DialogV2.prompt({
+    window: { title: loc("AFC.Creation.CustomBaseTitle") },
+    classes: ["afc", "afc-dialog"],
+    position: { width: 460 },
+    content: `<div class="afc-test-dialog afc-creation-summary"><p class="hint">${loc("AFC.Creation.CustomBaseIntro")}</p>
+      <table class="afc-table"><thead><tr><th>${loc("AFC.Sheet.Resources")}</th><th class="center">7d6</th><th class="center">${loc("AFC.Creation.Mod")}</th></tr></thead>
+      <tbody>${rows}</tbody></table></div>`,
+    ok: {
+      label: loc("AFC.Creation.Confirm"),
+      callback: (ev, button) => Object.fromEntries(tables.resources.map(k => [k, Math.max(0, Number(button.form.elements[k].value) || 0)]))
     },
     rejectClose: false
   });

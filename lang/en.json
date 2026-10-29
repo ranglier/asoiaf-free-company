@@ -432,7 +432,9 @@
       "Reminder3": "Unpaid wages: −10% Cohesion per month; on the second month, desertions then risk of mutiny."
     },
     "Creation": {
-      "CustomEvents": "Customization: choose the historical events instead of rolling them",
+      "CustomEvents": "Customization: enter the starting rolls and choose the historical events instead of rolling them",
+      "CustomBaseTitle": "Starting rolls (customization)",
+      "CustomBaseIntro": "Enter the 7d6 roll of each resource (the roll is suggested). The origin modifier is added afterwards. To enter an existing sheet, type its value before events minus that modifier.",
       "CustomTitle": "Historical events (customization)",
       "CustomIntro": "Pick each event from the table (or roll it on 3d6 with the row's die). Its effects are rolled automatically and can be edited. Handy to enter an existing sheet.",
       "CustomCount": "Number of events",

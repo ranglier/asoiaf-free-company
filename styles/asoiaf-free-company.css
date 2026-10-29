@@ -379,3 +379,4 @@ body.detached .application.afc.afc-fill.afc-dialog .window-content { max-height:
 .afc .afc-custom-events .custom-event-deltas { display: grid; grid-template-columns: repeat(7, 1fr); gap: 0.3rem; margin-top: 0.3rem; }
 .afc .afc-custom-events .custom-event-deltas label { font-size: 0.8rem; }
 .afc .afc-custom-events .custom-event-deltas input { width: 100%; text-align: center; }
+.afc .afc-creation-summary td input[type="number"] { width: 4.5rem; text-align: center; }

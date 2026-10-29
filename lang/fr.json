@@ -432,7 +432,9 @@
       "Reminder3": "Solde impayée : −10 % de Cohésion par mois ; au deuxième mois, désertions puis risque de mutinerie."
     },
     "Creation": {
-      "CustomEvents": "Customisation : choisir les événements historiques au lieu de les tirer",
+      "CustomEvents": "Customisation : saisir les jets de départ et choisir les événements historiques au lieu de les tirer",
+      "CustomBaseTitle": "Jets de départ (customisation)",
+      "CustomBaseIntro": "Saisissez le jet de 7d6 de chaque ressource (le tirage est proposé). Le modificateur d'origine s'ajoute ensuite. Pour reprendre une fiche existante, saisissez sa valeur avant événements moins ce modificateur.",
       "CustomTitle": "Événements historiques (customisation)",
       "CustomIntro": "Choisissez chaque événement dans la table (ou tirez-le au 3d6 avec le dé de la ligne). Ses effets sont tirés automatiquement et restent modifiables. Pratique pour reprendre une fiche déjà créée.",
       "CustomCount": "Nombre d'événements",
