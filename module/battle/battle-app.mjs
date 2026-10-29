@@ -28,6 +28,7 @@ export class BattleApp extends HandlebarsApplicationMixin(ApplicationV2) {
       newEnemy: BattleApp.#onNewEnemy,
       melee: BattleApp.#onMelee,
       shoot: BattleApp.#onShoot,
+      resolvePlan: BattleApp.#onResolvePlan,
       rally: BattleApp.#onRally,
       openTroop: BattleApp.#onOpenTroop,
       reset: BattleApp.#onReset
@@ -91,7 +92,14 @@ export class BattleApp extends HandlebarsApplicationMixin(ApplicationV2) {
       weathers: Object.fromEntries(Object.keys(WEATHER).map(k => [k, `AFC.Battle.Weather.${k}`])),
       weatherLabel: `AFC.Battle.Weather.${battle.weather}`,
       controlled: controlled?.actor?.type === "troop" ? controlled.name : null,
-      target: target?.actor?.type === "troop" ? target.name : null
+      target: target?.actor?.type === "troop" ? target.name : null,
+      // Engagements prévus (cibles désignées), dans l'ordre : tirs d'abord, puis mêlées.
+      plans: isGM ? battle.plans.map(p => {
+        const from = scene.tokens.get(p.from), to = scene.tokens.get(p.to);
+        if (!from || !to) return null;
+        const order = groupOfToken(battle, p.from)?.order ?? "";
+        return { from: p.from, to: p.to, fromName: from.name, toName: to.name, order: orderLabel(order), shoot: order === "shoot" };
+      }).filter(Boolean).sort((a, b) => b.shoot - a.shoot) : []
     };
   }
 
@@ -168,6 +176,13 @@ export class BattleApp extends HandlebarsApplicationMixin(ApplicationV2) {
   }
   static #onMelee() { const p = BattleApp.#pair(); return p && resolveMelee(...p); }
   static #onShoot() { const p = BattleApp.#pair(); return p && resolveShoot(...p); }
+  /** Résout un engagement prévu (tir si l'ordre est Tirer, sinon mêlée). */
+  static #onResolvePlan(event, target) {
+    const { from, to, shoot } = target.dataset;
+    const a = canvas.scene.tokens.get(from), d = canvas.scene.tokens.get(to);
+    if (!a || !d) return;
+    return shoot === "true" ? resolveShoot(a, d) : resolveMelee(a, d);
+  }
   static #onRally(event, target) { return rallyTroop(target.closest("[data-troop]").dataset.troop); }
   static #onOpenTroop(event, target) {
     return canvas.scene.tokens.get(target.closest("[data-troop]").dataset.troop)?.actor?.sheet.render(true);

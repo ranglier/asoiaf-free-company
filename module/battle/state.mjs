@@ -12,7 +12,7 @@ const CHANNEL = `system.${SYSTEM_ID}`;
 export function getBattle(scene = canvas.scene) {
   const data = scene?.getFlag(SYSTEM_ID, FLAG);
   return foundry.utils.mergeObject(
-    { round: 1, revealed: false, weather: "clear", groups: [], engaged: [], reload: [], reloadNext: [] },
+    { round: 1, revealed: false, weather: "clear", groups: [], plans: [], engaged: [], reload: [], reloadNext: [] },
     foundry.utils.deepClone(data ?? {})
   );
 }
@@ -86,6 +86,32 @@ async function applyOrder(scene, groupId, order, counter, user) {
   }
 }
 
+/** Cible désignée d'une troupe (Charger, Attaquer, Tirer). */
+export const planOf = (battle, tokenId) => battle.plans.find(p => p.from === tokenId)?.to ?? null;
+
+/**
+ * Désigne (ou efface, cible nulle) la cible d'une troupe. Les joueurs le font avant la révélation ;
+ * après, seul le MJ peut la changer.
+ */
+export async function setPlan(tokenId, targetId) {
+  if (game.user.isGM) return applyPlan(canvas.scene, tokenId, targetId, game.user);
+  game.socket.emit(CHANNEL, { action: "plan", scene: canvas.scene.id, token: tokenId, target: targetId, user: game.user.id });
+}
+
+async function applyPlan(scene, tokenId, targetId, user) {
+  const battle = getBattle(scene);
+  const token = scene.tokens.get(tokenId);
+  if (!token?.actor) return;
+  if (!user.isGM) {
+    const group = groupOfToken(battle, tokenId);
+    const allowed = group ? canOrder(group, user, scene) : token.actor.testUserPermission(user, "OWNER");
+    if (!allowed || battle.revealed) return;
+  }
+  battle.plans = battle.plans.filter(p => p.from !== tokenId);
+  if (targetId && targetId !== tokenId) battle.plans.push({ from: tokenId, to: targetId });
+  await saveBattle(battle, scene);
+}
+
 /** Écoute du canal : seul le MJ actif traite les ordres des joueurs. */
 export function registerBattleSocket() {
   game.socket.on(CHANNEL, data => {
@@ -95,5 +121,6 @@ export function registerBattleSocket() {
     if (!scene || !user) return;
     if (data.action === "order") applyOrder(scene, data.group, data.order, data.counter, user);
     if (data.action === "orderToken") applyTokenOrder(scene, data.token, data.order, data.counter, user);
+    if (data.action === "plan") applyPlan(scene, data.token, data.target, user);
   });
 }

@@ -385,6 +385,7 @@ export async function endTurn() {
   battle.round += 1;
   battle.revealed = false;
   battle.engaged = [];
+  battle.plans = [];
   battle.reload = battle.reloadNext ?? [];
   battle.reloadNext = [];
   for (const g of battle.groups) { g.order = ""; g.countered = false; }

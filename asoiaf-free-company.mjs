@@ -14,7 +14,7 @@ import { TroopSheet } from "./module/sheets/troop-sheet.mjs";
 import { BattleApp } from "./module/battle/battle-app.mjs";
 import { onRenderBattleCard } from "./module/battle/engagement.mjs";
 import { registerBattleSocket } from "./module/battle/state.mjs";
-import { drawOrderBadge, onRenderTokenHUD, refreshOrderBadges } from "./module/battle/map.mjs";
+import { drawOrderBadge, drawPlanArrows, onRenderTokenHUD, refreshOrderBadges } from "./module/battle/map.mjs";
 import { refreshTroopImage, registerTroopStatuses, syncTroopStatus } from "./module/battle/troops.mjs";
 import { evaluateTest, rollAbilityTest, rollTest } from "./module/dice/test-roll.mjs";
 import { onRenderChatMessage, resolveDamage, rollAttack } from "./module/dice/attack.mjs";
@@ -93,11 +93,15 @@ Hooks.on("updateScene", (scene, changes) => {
   if (scene.id !== canvas.scene?.id || !foundry.utils.hasProperty(changes, `flags.${AFC.SYSTEM_ID}`)) return;
   BattleApp.refresh();
   refreshOrderBadges();
+  drawPlanArrows();
 });
 Hooks.on("canvasReady", () => {
   BattleApp.refresh();
   refreshOrderBadges();
+  drawPlanArrows();
 });
+// Les flèches suivent les jetons déplacés, cachés ou supprimés.
+for (const hook of ["updateToken", "deleteToken"]) Hooks.on(hook, () => drawPlanArrows());
 Hooks.on("drawToken", token => drawOrderBadge(token));
 Hooks.on("renderTokenHUD", onRenderTokenHUD);
 Hooks.on("controlToken", () => BattleApp.refresh());

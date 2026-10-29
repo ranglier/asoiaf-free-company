@@ -33,6 +33,16 @@
   {{#if isGM}}
   <section class="battle-engage">
     <h3>{{localize "AFC.Battle.Engagement"}}</h3>
+    {{#if plans.length}}
+    <h4>{{localize "AFC.Battle.Planned"}}</h4>
+    <ul class="battle-plans">
+      {{#each plans as |p|}}
+      <li><b>{{p.fromName}}</b> <small>({{p.order}})</small> → <b>{{p.toName}}</b>
+        <button type="button" data-action="resolvePlan" data-from="{{p.from}}" data-to="{{p.to}}" data-shoot="{{p.shoot}}">
+          <i class="fa-solid {{#if p.shoot}}fa-bullseye{{else}}fa-khanda{{/if}}"></i> {{#if p.shoot}}{{localize "AFC.Battle.Shoot"}}{{else}}{{localize "AFC.Battle.Melee"}}{{/if}}</button></li>
+      {{/each}}
+    </ul>
+    {{/if}}
     <p class="hint">{{localize "AFC.Battle.EngageHint"}}</p>
     <p>{{localize "AFC.Battle.Attacker"}} : <b>{{#if controlled}}{{controlled}}{{else}}—{{/if}}</b> · {{localize "AFC.Battle.Target"}} : <b>{{#if target}}{{target}}{{else}}—{{/if}}</b></p>
     <div class="title-buttons">

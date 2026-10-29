@@ -420,3 +420,6 @@ body.detached .application.afc.afc-fill.afc-dialog .window-content { max-height:
 #token-hud .afc-order-palette.open { display: grid; }
 #token-hud .afc-order-palette .control-icon { width: 40px; height: 40px; margin: 0; }
 #token-hud .afc-order-palette .control-icon.active { border-color: #ff6400; }
+.afc .afc-battle .battle-plans { list-style: none; margin: 0 0 0.5rem; padding: 0; }
+.afc .afc-battle .battle-plans li { display: flex; gap: 0.4rem; align-items: center; border-top: 1px dotted var(--afc-line); padding: 0.2rem 0; color: var(--afc-ink); }
+.afc .afc-battle .battle-plans button { margin-left: auto; width: auto; flex: none; }
