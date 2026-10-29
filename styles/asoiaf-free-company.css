@@ -344,6 +344,12 @@
 .afc .afc-heraldry small { color: var(--afc-ink-soft, #6b5a45); }
 .afc .afc-heraldry [data-reroll] { margin-top: 0.4rem; }
 .afc-card.house-event .afc-card-dice { margin: 0.3rem 0; }
-.afc .afc-heraldry .heraldry-top { display: grid; grid-template-columns: 1fr 230px; gap: 0.6rem; align-items: start; }
+/* Zone du haut à hauteur fixe : le tableau et l'aperçu ne font plus bouger la fenêtre à chaque relance. */
+.afc .afc-heraldry .heraldry-top { display: grid; grid-template-columns: 1fr 230px; gap: 0.6rem; align-items: start; height: 320px; }
+.afc .afc-heraldry [data-steps] { height: 100%; overflow-y: auto; }
+.afc .afc-heraldry [data-steps] table { table-layout: fixed; width: 100%; }
+.afc .afc-heraldry [data-steps] td:nth-child(1) { width: 27%; }
+.afc .afc-heraldry [data-steps] td:nth-child(2) { width: 20%; }
+.afc .afc-heraldry .heraldry-preview { height: 100%; overflow: hidden; }
 .afc .afc-heraldry .heraldry-preview svg { width: 230px; height: 230px; display: block; border-radius: 6px; }
 .afc .afc-heraldry .heraldry-preview .hint { margin: 0.2rem 0 0; font-size: 0.85rem; }
