@@ -33,7 +33,7 @@
 
   <section class="afc-vitals company-status">
     <div class="vital contract">
-      <span class="label">{{localize "AFC.Month.Contract"}}{{#if system.month}} · {{localize "AFC.Month.MonthN" n=system.month}}{{/if}}</span>
+      <span class="label">{{localize "AFC.Month.Contract"}}{{#if system.month}} · {{localize "AFC.Month.MonthN" n=system.month}}{{/if}}{{#if isGM}} <a class="icon" data-action="contractHelp" data-tooltip="AFC.ContractHelp.Button"><i class="fa-solid fa-circle-question"></i></a>{{/if}}</span>
       <input type="text" name="system.contract.employer" value="{{system.contract.employer}}" placeholder="{{localize "AFC.Month.Employer"}}">
       <span class="value small"><input type="number" name="system.contract.pay" value="{{system.contract.pay}}" min="0"> <small>{{localize "AFC.Month.PayShort"}}</small> <input type="number" name="system.contract.months" value="{{system.contract.months}}" min="0"> <small>{{localize "AFC.Month.MonthsShort"}}</small></span>
       {{#if system.unpaidMonths}}<span class="hint warn">{{localize "AFC.Month.UnpaidHint" n=system.unpaidMonths}}</span>{{/if}}

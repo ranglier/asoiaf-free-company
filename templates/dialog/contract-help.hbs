@@ -1,0 +1,41 @@
+<div class="afc-test-dialog afc-contract-help">
+  <p class="hint">{{localize "AFC.ContractHelp.Intro"}}</p>
+
+  <h3>{{localize "AFC.ContractHelp.StepsTitle"}}</h3>
+  <ol>
+    <li>{{localize "AFC.ContractHelp.Step1"}}</li>
+    <li>{{localize "AFC.ContractHelp.Step2"}}</li>
+    <li>{{localize "AFC.ContractHelp.Step3"}}</li>
+    <li>{{localize "AFC.ContractHelp.Step4"}}</li>
+  </ol>
+
+  <h3>{{localize "AFC.ContractHelp.LeversTitle"}}</h3>
+  <ul>
+    <li>{{localize "AFC.ContractHelp.Lever1"}}</li>
+    <li>{{localize "AFC.ContractHelp.Lever2"}}</li>
+    <li>{{localize "AFC.ContractHelp.Lever3"}}</li>
+    <li>{{localize "AFC.ContractHelp.Lever4"}}</li>
+    <li>{{localize "AFC.ContractHelp.Lever5"}}</li>
+  </ul>
+
+  <h3>{{localize "AFC.ContractHelp.BadTitle"}}</h3>
+  <ul>
+    <li>{{localize "AFC.ContractHelp.Bad1"}}</li>
+    <li>{{localize "AFC.ContractHelp.Bad2"}}</li>
+    <li>{{localize "AFC.ContractHelp.Bad3"}}</li>
+  </ul>
+
+  <h3>{{localize "AFC.ContractHelp.ServicesTitle"}}</h3>
+  {{#if services.length}}
+  <ul>{{#each services as |s|}}<li><strong>{{s.name}}</strong>{{#if s.effect}} : {{s.effect}}{{/if}}</li>{{/each}}</ul>
+  {{else}}
+  <p class="hint">{{localize "AFC.ContractHelp.NoServices"}}</p>
+  {{/if}}
+
+  <h3>{{localize "AFC.ContractHelp.RemindersTitle"}}</h3>
+  <ul>
+    <li>{{localize "AFC.ContractHelp.Reminder1"}}</li>
+    <li>{{localize "AFC.ContractHelp.Reminder2"}}</li>
+    <li>{{localize "AFC.ContractHelp.Reminder3"}}</li>
+  </ul>
+</div>

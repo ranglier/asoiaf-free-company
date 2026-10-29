@@ -366,3 +366,7 @@ body.detached .application.afc.afc-fill {
   max-width: none !important; max-height: none !important; border-radius: 0;
 }
 body.detached .application.afc.afc-fill.afc-dialog .window-content { max-height: none; flex: 1 1 auto; }
+.afc .afc-contract-help h3 { margin: 0.6rem 0 0.2rem; }
+.afc .afc-contract-help ol, .afc .afc-contract-help ul { margin: 0.1rem 0 0.2rem 1.2rem; padding: 0; }
+.afc .afc-contract-help li { margin: 0.1rem 0; }
+.afc .company-status .contract .label a.icon { margin-left: 0.3rem; cursor: pointer; }

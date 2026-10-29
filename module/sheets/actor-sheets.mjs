@@ -6,6 +6,7 @@ import { HoldingCatalog } from "../apps/holding-catalog.mjs";
 import { CompanyCatalog } from "../apps/company-catalog.mjs";
 import { runMonthEnd } from "../month-end.mjs";
 import { runConversion } from "../conversion.mjs";
+import { openContractHelp } from "../contract-help.mjs";
 import { runHouseEvent } from "../house-month.mjs";
 import { runHeraldry, saveArmsImage } from "../heraldry.mjs";
 
@@ -329,7 +330,9 @@ export class CompanySheet extends AFCActorSheet {
   static DEFAULT_OPTIONS = {
     classes: ["company"],
     position: { width: 860, height: 860 },
-    actions: { createCompany: CompanySheet.#onCreateCompany, openCatalog: CompanySheet.#onOpenCatalog, monthEnd: CompanySheet.#onMonthEnd, convert: CompanySheet.#onConvert }
+    actions: { createCompany: CompanySheet.#onCreateCompany, openCatalog: CompanySheet.#onOpenCatalog, monthEnd: CompanySheet.#onMonthEnd, convert: CompanySheet.#onConvert,
+      contractHelp: CompanySheet.#onContractHelp
+    }
   };
   static PARTS = { sheet: { template: `${TPL}/company.hbs`, scrollable: [""] } };
   static TABS = {
@@ -370,6 +373,8 @@ export class CompanySheet extends AFCActorSheet {
     }), { count: 0, men: 0, manpower: 0, might: 0 });
     context.initial = (this.document.name || "?").charAt(0).toUpperCase();
     context.members = this._prepareMembers(context, "members");
+    // Aide à la négociation : réservée au MJ.
+    context.isGM = game.user.isGM;
     // Bouton de création : caché une fois la Compagnie créée, sauf pour le MJ en mode édition (pour refaire).
     context.showCreate = context.editable && (!s.created || (context.editMode && game.user.isGM));
     return context;
@@ -385,6 +390,11 @@ export class CompanySheet extends AFCActorSheet {
 
   static #onMonthEnd() {
     return runMonthEnd(this.document);
+  }
+
+  static #onContractHelp() {
+    if (!game.user.isGM) return;
+    return openContractHelp(this.document);
   }
 
   static #onConvert() {
