@@ -1,6 +1,9 @@
 /* ASOIAF Free Company : thème « parchemin et sceaux ».
-   Polices (licence OFL) : Grenze Gotisch (noms, onglets), MedievalSharp (libellés), Cormorant Garamond (texte). */
-@import url("https://fonts.googleapis.com/css2?family=Grenze+Gotisch:wght@500;600&family=MedievalSharp&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&display=swap");
+   Polices (licence OFL, dossier fonts/) : Grenze Gotisch (noms, onglets), MedievalSharp (libellés), Cormorant Garamond (texte). */
+@font-face { font-family: "Grenze Gotisch"; font-style: normal; font-weight: 100 900; font-display: swap; src: url("../fonts/GrenzeGotisch.woff2") format("woff2"); }
+@font-face { font-family: "MedievalSharp"; font-style: normal; font-weight: 400; font-display: swap; src: url("../fonts/MedievalSharp.woff2") format("woff2"); }
+@font-face { font-family: "Cormorant Garamond"; font-style: normal; font-weight: 300 700; font-display: swap; src: url("../fonts/CormorantGaramond.woff2") format("woff2"); }
+@font-face { font-family: "Cormorant Garamond"; font-style: italic; font-weight: 300 700; font-display: swap; src: url("../fonts/CormorantGaramond-Italic.woff2") format("woff2"); }
 
 :root {
   --afc-paper: #e9dcc0;
@@ -330,3 +333,14 @@
 .afc-month-dialog .presets { display: flex; gap: 0.3rem; }
 .afc-month-dialog .presets a { padding: 0 0.45rem; border: 1px solid var(--afc-line); border-radius: 4px; background: var(--afc-paper-light); cursor: pointer; font-size: 15px; }
 .afc-month-dialog .presets a:hover { background: var(--afc-wax); color: var(--afc-wax-text); }
+
+/* ---------- Conversion, événement de maison, blason ---------- */
+.afc .afc-conversion .row.conv { display: grid; grid-template-columns: 1fr 5rem 1fr; gap: 0.4rem; align-items: center; }
+.afc .afc-conversion .afc-table td, .afc .afc-heraldry .afc-table td { padding: 0.15rem 0.35rem; }
+.afc .with-button { display: flex; gap: 0.3rem; align-items: center; }
+.afc .with-button input { flex: 1 1 auto; }
+.afc .window-content .with-button button.icon { flex: none; width: 2rem; padding: 0; }
+.afc .afc-heraldry textarea { width: 100%; font-family: var(--afc-font-body); font-size: 1.05rem; }
+.afc .afc-heraldry small { color: var(--afc-ink-soft, #6b5a45); }
+.afc .afc-heraldry [data-reroll] { margin-top: 0.4rem; }
+.afc-card.house-event .afc-card-dice { margin: 0.3rem 0; }

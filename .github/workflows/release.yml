@@ -29,7 +29,7 @@ jobs:
              system.json > system.tmp && mv system.tmp system.json
 
       - name: Construire le zip
-        run: zip -r asoiaf-free-company.zip system.json asoiaf-free-company.mjs module templates lang styles README.md LICENSE
+        run: zip -r asoiaf-free-company.zip system.json asoiaf-free-company.mjs module templates lang styles fonts README.md LICENSE
 
       - name: Attacher à la release
         env:

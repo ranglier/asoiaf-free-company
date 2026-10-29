@@ -7,6 +7,7 @@
     <thead><tr>
       <th>{{localize "AFC.Sheet.Resources"}}</th>
       <th class="center">7d6</th>
+      {{#if playerBonus}}<th class="center">{{localize "AFC.Creation.PlayersCol"}}</th>{{/if}}
       <th class="center">{{localize "AFC.Creation.Mod"}}</th>
       <th class="center">{{localize "AFC.Creation.Events"}}</th>
       <th class="center">{{localize "AFC.Creation.Final"}}</th>
@@ -16,6 +17,7 @@
     <tr>
       <td class="role">{{r.label}}</td>
       <td class="center">{{r.roll}}</td>
+      {{#if @root.playerBonus}}<td class="center">{{#if r.players}}+{{r.players}}{{/if}}</td>{{/if}}
       <td class="center">{{numberFormat r.mod sign=true}}</td>
       <td class="center">{{numberFormat r.events sign=true}}</td>
       <td class="center big-num">{{r.final}}</td>

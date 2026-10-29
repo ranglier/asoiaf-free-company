@@ -140,7 +140,8 @@ export class HoldingCatalog extends HandlebarsApplicationMixin(ApplicationV2) {
         effect: loc(`AFC.Catalog.${h.key}.effect`),
         requirement: game.i18n.has(`AFC.Catalog.${h.key}.requirement`) ? loc(`AFC.Catalog.${h.key}.requirement`) : "",
         buildTime: h.buildTime ? `${h.buildTime} ${loc("AFC.Catalog.Months")}` : ""
-      }
+      },
+      flags: { [SYSTEM_ID]: { catalog: { key: h.key } } }
     }]);
     ui.notifications.info(game.i18n.format("AFC.Catalog.Added", { name: loc(`AFC.Catalog.${h.key}.name`), actor: this.actor.name }));
     return this.render();

@@ -18,8 +18,8 @@ https://github.com/ranglier/asoiaf-free-company/releases/latest/download/system.
 
 ## Avertissement
 
-Projet de fan, sans lien avec Green Ronin Publishing ni avec George R. R. Martin. Le dépôt ne reproduit pas le texte des livres de règles. Il contient des mécaniques, des libellés courts, les tables chiffrées de création de Maison du livre de base (modificateurs des royaumes, fondations, événements historiques) et des règles maison originales (Compagnie de mercenaires). Pour jouer, utilisez vos propres livres.
+Projet de fan, sans lien avec Green Ronin Publishing ni avec George R. R. Martin. Le dépôt ne reproduit pas le texte des livres de règles. Il contient des mécaniques, des libellés courts, les tables chiffrées de création de Maison du livre de base (modificateurs des royaumes, fondations, événements historiques) et des règles maison originales (Compagnie de mercenaires). Pour jouer, utilisez vos propres livres. Les tables d'héraldique (6-9 à 6-17) et d'événements de Maison (6-18) sont aussi incluses, avec leurs libellés français.
 
 ## Licence
 
-Code sous licence MIT (voir `LICENSE`).
+Code sous licence MIT (voir `LICENSE`). Polices (dossier `fonts/`) : Grenze Gotisch, MedievalSharp et Cormorant Garamond, sous licence SIL Open Font License 1.1 (textes joints).

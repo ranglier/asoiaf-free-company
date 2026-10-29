@@ -1,0 +1,23 @@
+<div class="afc-test-dialog afc-conversion">
+  <table class="afc-table">
+    <thead><tr><th>{{localize "AFC.Convert.From"}}</th><th>{{localize "AFC.Convert.To"}}</th><th class="center">{{localize "AFC.Convert.Rate"}}</th><th class="center">{{localize "AFC.Convert.Hasty"}}</th></tr></thead>
+    <tbody>
+      {{#each rows as |r|}}<tr><td class="role">{{r.from}}</td><td class="effect">{{r.to}}</td><td class="center">{{r.rate}}</td><td class="center">{{r.hasty}}</td></tr>{{/each}}
+    </tbody>
+  </table>
+  <p class="hint">{{localize "AFC.Convert.Hint"}}</p>
+  <h3>{{localize "AFC.Convert.First"}}</h3>
+  <div class="row conv">
+    <select name="from1"><option value="">—</option>{{selectOptions sources}}</select>
+    <input type="number" name="amount1" value="0" min="0">
+    <select name="to1"><option value="">—</option>{{selectOptions targets}}</select>
+  </div>
+  <p class="hint" data-preview="1"></p>
+  <h3>{{localize "AFC.Convert.Second"}}</h3>
+  <div class="row conv">
+    <select name="from2"><option value="">—</option>{{selectOptions sources}}</select>
+    <input type="number" name="amount2" value="0" min="0">
+    <select name="to2"><option value="">—</option>{{selectOptions targets}}</select>
+  </div>
+  <p class="hint" data-preview="2"></p>
+</div>

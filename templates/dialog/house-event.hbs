@@ -1,0 +1,20 @@
+<div class="afc-test-dialog afc-month-dialog">
+  <p class="hint">{{localize "AFC.HouseEvent.Intro"}}</p>
+  <label class="checkbox"><input type="radio" name="mode" value="roll" checked> {{localize "AFC.HouseEvent.ModeRoll"}}</label>
+  <label class="checkbox"><input type="radio" name="mode" value="skip"> {{localize "AFC.HouseEvent.ModeSkip"}}</label>
+  <label>{{localize "AFC.HouseEvent.SkipResource"}}<select name="resource">{{selectOptions resources localize=true}}</select></label>
+
+  <h3>{{localize "AFC.HouseEvent.Test"}}</h3>
+  <label>{{localize "AFC.Month.Steward"}}
+    <select name="steward"><option value="">—</option>{{selectOptions stewardOptions selected=steward}}</select>
+  </label>
+  <p>
+    <span class="tag">{{localize "AFC.House.Resource.law"}} {{law}} : {{numberFormat lawMod sign=true}}</span>
+    <span class="tag">{{localize "AFC.House.Resource.population"}} {{population}} : {{numberFormat popMod sign=true}}</span>
+    {{#each bonuses as |b|}}<span class="tag">{{b.name}} : {{b.display}}</span>{{/each}}
+  </p>
+  <label>{{localize "AFC.HouseEvent.Influence"}} ({{localize "AFC.House.available"}} {{influence}})
+    <input type="number" name="influence" value="0" min="0" step="5">
+  </label>
+  {{#if market}}<p class="hint">{{market}}</p>{{/if}}
+</div>

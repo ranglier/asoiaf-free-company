@@ -1,0 +1,21 @@
+<div class="afc-card month house-event">
+  <header>
+    <h3>{{localize "AFC.HouseEvent.CardTitle"}}</h3>
+    <span class="subtitle">{{house.name}}</span>
+  </header>
+  {{#if skipped}}
+  <ul class="month-lines"><li>{{skipped}}</li></ul>
+  {{else}}
+  <p class="month-lines">{{localize "AFC.HouseEvent.TestLine" steward=steward rank=rank bonus=bonus}}</p>
+  <ol class="afc-card-dice">
+    {{#each test.dice as |d|}}<li class="die {{#unless d.kept}}dropped{{/unless}}">{{d.value}}</li>{{/each}}
+  </ol>
+  <footer>{{#each mods as |m|}}<span class="tag">{{m.label}} {{numberFormat m.value sign=true}}</span>{{/each}}</footer>
+  <div class="damage-box event">
+    <span class="label">{{name}}</span>
+    <span class="value">{{test.total}}</span>
+    <small>{{effect}}</small>
+  </div>
+  {{#if market}}<p class="hint">{{market}}</p>{{/if}}
+  {{/if}}
+</div>

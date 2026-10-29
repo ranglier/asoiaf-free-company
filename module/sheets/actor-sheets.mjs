@@ -5,6 +5,9 @@ import { runCreation } from "../creation.mjs";
 import { HoldingCatalog } from "../apps/holding-catalog.mjs";
 import { CompanyCatalog } from "../apps/company-catalog.mjs";
 import { runMonthEnd } from "../month-end.mjs";
+import { runConversion } from "../conversion.mjs";
+import { runHouseEvent } from "../house-month.mjs";
+import { runHeraldry } from "../heraldry.mjs";
 
 const { HandlebarsApplicationMixin } = foundry.applications.api;
 const { ActorSheetV2 } = foundry.applications.sheets;
@@ -256,7 +259,10 @@ export class HouseSheet extends AFCActorSheet {
   static DEFAULT_OPTIONS = {
     classes: ["house"],
     position: { width: 860, height: 860 },
-    actions: { createHouse: HouseSheet.#onCreateHouse, openCatalog: HouseSheet.#onOpenCatalog }
+    actions: {
+      createHouse: HouseSheet.#onCreateHouse, openCatalog: HouseSheet.#onOpenCatalog,
+      convert: HouseSheet.#onConvert, houseEvent: HouseSheet.#onHouseEvent, heraldry: HouseSheet.#onHeraldry
+    }
   };
   static PARTS = { sheet: { template: `${TPL}/house.hbs`, scrollable: [""] } };
   static TABS = {
@@ -297,13 +303,26 @@ export class HouseSheet extends AFCActorSheet {
   static #onOpenCatalog() {
     return new HoldingCatalog(this.document).render(true);
   }
+
+  static #onConvert() {
+    return runConversion(this.document);
+  }
+
+  static #onHouseEvent() {
+    return runHouseEvent(this.document);
+  }
+
+  static async #onHeraldry() {
+    const arms = await runHeraldry();
+    if (arms) await this.document.update({ "system.arms": arms });
+  }
 }
 
 export class CompanySheet extends AFCActorSheet {
   static DEFAULT_OPTIONS = {
     classes: ["company"],
     position: { width: 860, height: 860 },
-    actions: { createCompany: CompanySheet.#onCreateCompany, openCatalog: CompanySheet.#onOpenCatalog, monthEnd: CompanySheet.#onMonthEnd }
+    actions: { createCompany: CompanySheet.#onCreateCompany, openCatalog: CompanySheet.#onOpenCatalog, monthEnd: CompanySheet.#onMonthEnd, convert: CompanySheet.#onConvert }
   };
   static PARTS = { sheet: { template: `${TPL}/company.hbs`, scrollable: [""] } };
   static TABS = {
@@ -359,5 +378,9 @@ export class CompanySheet extends AFCActorSheet {
 
   static #onMonthEnd() {
     return runMonthEnd(this.document);
+  }
+
+  static #onConvert() {
+    return runConversion(this.document);
   }
 }

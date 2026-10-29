@@ -268,3 +268,41 @@ export const SERVICE_EVENT_BONUS = { foreman: 1, aidesDeCamp: 2, stewards: 3, pr
 
 /** Actions de compagnie (facultatives). */
 export const COMPANY_ACTIONS = ["none", "recruit", "train", "service", "convert", "rest", "contract"];
+
+/**
+ * Gestion des ressources (conversion) : ressource cédée -> ressources obtenues, taux normal et précipité
+ * (« 2 » = 2 points cédés pour 1 obtenu). `per` : points obtenus par point cédé (Richesse -> Ravitaillement).
+ * Maison : table 6-19 du livre. Compagnie : règles maison révisées.
+ */
+export const HOUSE_CONVERSIONS = {
+  influence: { to: ["law"], rate: 1, hasty: 2 },
+  population: { to: ["power"], rate: 1, hasty: 2 },
+  power: { to: ["influence", "law", "population"], rate: 1, hasty: 2 },
+  wealth: { to: ["defense", "influence", "lands", "law", "population", "power"], rate: 2, hasty: 3 },
+  lands: { to: ["defense"], rate: 1, hasty: 2 }
+};
+export const COMPANY_CONVERSIONS = {
+  renown: { to: ["authority"], rate: 1, hasty: 2 },
+  manpower: { to: ["might"], rate: 1, hasty: 2 },
+  might: { to: ["renown", "authority", "manpower"], rate: 1, hasty: 2 },
+  wealth: { to: ["renown", "authority", "manpower", "might", "organization", "supply"], rate: 2, hasty: 3, per: { supply: 5 } }
+};
+
+/* ---------- Test d'événement de maison (livre, chapitre 6 « La maison en action ») ---------- */
+
+/** Modificateur de Loi (valeur minimale -> modificateur). */
+export const HOUSE_LAW_MODS = [[71, 5], [61, 2], [51, 1], [41, 0], [31, -1], [21, -2], [11, -5], [1, -10], [0, -20]];
+/** Modificateur de Population (valeur minimale -> modificateur). */
+export const HOUSE_POPULATION_MODS = [[71, -10], [61, -5], [51, 0], [41, 1], [31, 3], [21, 1], [11, 0], [1, -5], [0, -10]];
+/** Bonus des possessions de Richesse (clé de catalogue) : nombre fixe ou formule de dés. */
+export const HOUSE_HOLDING_EVENT_BONUS = { artisan: 1, godswood: "2d6-6", maester: 3, mine: 5, port: 5, sept: 3 };
+
+/** Table 6-18 : résultat du test -> événement (2 ou moins : Désastre ; 42 et plus : Aubaine). */
+const F = { D: "disaster", C: "curse", L: "decline", G: "growth", B: "blessing", A: "boon" };
+export const HOUSE_FORTUNES = Object.fromEntries(Object.entries({
+  2: "D", 3: "C", 4: "L", 5: "D", 6: "G", 7: "L", 8: "G", 9: "C", 10: "L", 11: "G", 12: "A", 13: "L", 14: "B",
+  15: "G", 16: "C", 17: "L", 18: "B", 19: "C", 20: "B", 21: "G", 22: "G", 23: "C", 24: "G", 25: "G", 26: "B",
+  27: "B", 28: "A", 29: "C", 30: "B", 31: "G", 32: "G", 33: "G", 34: "G", 35: "B", 36: "A", 37: "G", 38: "G",
+  39: "G", 40: "G", 41: "G", 42: "A"
+}).map(([k, v]) => [k, F[v]]));
+export const houseFortune = total => HOUSE_FORTUNES[Math.min(42, Math.max(2, total))];

@@ -7,6 +7,7 @@
       {{selectOptions origins selected=selected localize=true}}
     </select>
   </label>
+  {{#if tables.playerBonus}}<label>{{localize "AFC.Creation.Players"}}<input type="number" name="players" value="{{players}}" min="0" max="12"></label>{{/if}}
   <label>{{localize "AFC.Creation.Founding"}}
     <select name="founding">
       <option value="random">{{localize "AFC.Creation.RandomFounding"}}</option>

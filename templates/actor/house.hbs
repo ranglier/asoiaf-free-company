@@ -11,7 +11,7 @@
         <label>{{localize "AFC.House.head"}}<input type="text" name="system.head" value="{{system.head}}"></label>
         <label>{{localize "AFC.House.founding"}}<input type="text" name="system.founding" value="{{system.founding}}"></label>
         <label>{{localize "AFC.House.motto"}}<input type="text" name="system.motto" value="{{system.motto}}"></label>
-        <label class="span-3">{{localize "AFC.House.arms"}}<input type="text" name="system.arms" value="{{system.arms}}"></label>
+        <label class="span-3">{{localize "AFC.House.arms"}}<span class="with-button"><input type="text" name="system.arms" value="{{system.arms}}"><button type="button" class="icon" data-action="heraldry" data-tooltip="AFC.Heraldry.Button"><i class="fa-solid fa-shield-halved"></i></button></span></label>
       </div>
       {{else}}
       <h1 class="name">{{actor.name}}</h1>
@@ -40,7 +40,9 @@
 
   <div class="section-title">
     <h2>{{localize "AFC.Sheet.Resources"}}</h2>
-    {{#if editable}}<button type="button" class="afc-create" data-action="createHouse"><i class="fa-solid fa-dice"></i> {{localize "AFC.House.Create"}}</button>{{/if}}
+    {{#if editable}}<span class="title-buttons"><button type="button" class="afc-create" data-action="houseEvent"><i class="fa-solid fa-calendar-check"></i> {{localize "AFC.HouseEvent.Button"}}</button>
+    <button type="button" class="afc-create" data-action="convert"><i class="fa-solid fa-right-left"></i> {{localize "AFC.Convert.Button"}}</button>
+    <button type="button" class="afc-create" data-action="createHouse"><i class="fa-solid fa-dice"></i> {{localize "AFC.House.Create"}}</button></span>{{/if}}
   </div>
   {{> "systems/asoiaf-free-company/templates/actor/parts/resources.hbs"}}
 

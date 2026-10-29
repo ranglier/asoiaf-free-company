@@ -48,7 +48,9 @@ function creationTables(type) {
     originRoll: { formula: "3d6", table: REALM_ROLLS },
     foundings: HOUSE_FOUNDINGS,
     events: HOUSE_EVENTS,
-    rerollLowest: false
+    rerollLowest: false,
+    // Modifications initiales : chaque joueur ajoute 1d6 à une ressource (au plus deux jets par ressource).
+    playerBonus: { max: 2 }
   };
 }
 
@@ -73,13 +75,15 @@ export async function runCreation(actor) {
       tables,
       origins: Object.fromEntries(Object.entries(tables.origins).map(([k, o]) => [k, o.label])),
       foundings: Object.fromEntries(tables.foundings.map((f, i) => [String(i), f.label])),
-      selected: actor.system[tables.originField]
+      selected: actor.system[tables.originField],
+      players: game.users.filter(u => !u.isGM).length || 1
     }),
     ok: {
       label: game.i18n.localize("AFC.Creation.Roll"),
       callback: (event, button) => ({
         origin: button.form.elements.origin.value,
-        founding: button.form.elements.founding.value
+        founding: button.form.elements.founding.value,
+        players: Math.max(0, Number(button.form.elements.players?.value) || 0)
       })
     },
     rejectClose: false
@@ -96,11 +100,19 @@ export async function runCreation(actor) {
   const mods = tables.origins[step1.origin]?.mods ?? {};
   const rollResource = async key => {
     const roll = await new Roll("7d6").evaluate();
-    return { roll: roll.total, mod: mods[key] ?? 0 };
+    return { roll: roll.total, players: 0, mod: mods[key] ?? 0 };
   };
   const base = {};
   for (const key of tables.resources) base[key] = await rollResource(key);
-  const value = key => Math.max(0, base[key].roll + base[key].mod);
+  const value = key => Math.max(0, base[key].roll + base[key].players + base[key].mod);
+
+  // Maison : chaque joueur lance 1d6 et l'ajoute à la ressource de son choix.
+  if (tables.playerBonus && step1.players) {
+    const dice = [];
+    for (let i = 0; i < step1.players; i++) dice.push((await new Roll("1d6").evaluate()).total);
+    const chosen = await choosePlayerBonus(tables, dice, base);
+    chosen.forEach((key, i) => { base[key].players += dice[i]; });
+  }
 
   // Compagnie : relance possible de la ressource la plus faible (le nouveau jet est conservé).
   let rerolled = null;
@@ -150,12 +162,12 @@ export async function runCreation(actor) {
 
   // Récapitulatif avant d'appliquer.
   const summary = {
-    actor, tables, rerolled,
+    actor, tables, rerolled, playerBonus: Boolean(tables.playerBonus && step1.players),
     origin: tables.origins[step1.origin] ? game.i18n.localize(tables.origins[step1.origin].label) : null,
     founding: founding ? game.i18n.localize(founding.label) : null,
     eventCount,
     rows: tables.resources.map(k => ({
-      label: resLabel(tables, k), roll: base[k].roll, mod: base[k].mod, start: value(k),
+      label: resLabel(tables, k), roll: base[k].roll, players: base[k].players, mod: base[k].mod, start: value(k),
       events: current[k] - value(k), final: current[k]
     })),
     events: events.map(e => ({ ...e, text: formatDeltas(tables, e.deltas) }))
@@ -212,4 +224,42 @@ async function chooseResources(tables, event, current) {
   });
   // Fenêtre fermée sans choix : les ressources les plus faibles.
   return chosen?.length === count ? chosen : [...tables.resources].sort((a, b) => current[a] - current[b]).slice(0, count);
+}
+
+/**
+ * Modifications initiales de la Maison : un dé par joueur, chacun choisit sa ressource.
+ * Au plus `max` jets sur une même ressource ; le bouton Valider reste inactif sinon.
+ */
+async function choosePlayerBonus(tables, dice, base) {
+  const max = tables.playerBonus.max;
+  const options = tables.resources.map(k => `<option value="${k}">${resLabel(tables, k)} (${base[k].roll})</option>`).join("");
+  const rows = dice.map((d, i) => `<label>${game.i18n.format("AFC.Creation.PlayerDie", { n: i + 1, d })}<select name="p${i}">${options}</select></label>`).join("");
+  const chosen = await DialogV2.prompt({
+    window: { title: game.i18n.localize("AFC.Creation.PlayersTitle") },
+    classes: ["afc", "afc-dialog"],
+    content: `<div class="afc-test-dialog"><p class="hint">${game.i18n.format("AFC.Creation.PlayersHint", { max })}</p>${rows}<p class="hint warn" data-warn></p></div>`,
+    ok: {
+      label: game.i18n.localize("AFC.Creation.Confirm"),
+      callback: (ev, button) => dice.map((d, i) => button.form.elements[`p${i}`].value)
+    },
+    render: (ev, dialog) => {
+      const root = dialog.element ?? dialog;
+      const ok = root.querySelector('button[data-action="ok"]');
+      const selects = [...root.querySelectorAll("select")];
+      // Répartition initiale : on tourne sur les ressources pour respecter la limite.
+      selects.forEach((s, i) => { s.value = tables.resources[i % tables.resources.length]; });
+      const sync = () => {
+        const counts = {};
+        selects.forEach(s => { counts[s.value] = (counts[s.value] ?? 0) + 1; });
+        const over = Object.entries(counts).filter(([, n]) => n > max).map(([k]) => resLabel(tables, k));
+        ok.disabled = over.length > 0;
+        root.querySelector("[data-warn]").textContent = over.length ? game.i18n.format("AFC.Creation.PlayersOver", { list: over.join(", "), max }) : "";
+      };
+      selects.forEach(s => s.addEventListener("change", sync));
+      sync();
+    },
+    rejectClose: false
+  });
+  // Fenêtre fermée : répartition par défaut (une ressource différente par dé).
+  return chosen ?? dice.map((d, i) => tables.resources[i % tables.resources.length]);
 }
