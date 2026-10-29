@@ -326,3 +326,7 @@
 .afc-month-event .event-result strong { display: block; font-family: var(--afc-font-label); font-weight: normal; font-size: 18px; }
 .afc-card.month .month-lines { margin: 0; padding-left: 1.1rem; font-size: 14px; }
 .afc-card.month .damage-box.event .value { font-size: 24px; }
+.afc-month-dialog .loot-split { display: flex; flex-direction: column; gap: 2px; }
+.afc-month-dialog .presets { display: flex; gap: 0.3rem; }
+.afc-month-dialog .presets a { padding: 0 0.45rem; border: 1px solid var(--afc-line); border-radius: 4px; background: var(--afc-paper-light); cursor: pointer; font-size: 15px; }
+.afc-month-dialog .presets a:hover { background: var(--afc-wax); color: var(--afc-wax-text); }

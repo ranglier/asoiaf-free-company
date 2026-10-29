@@ -108,14 +108,33 @@ export async function runMonthEnd(company) {
         const f = button.form.elements;
         return {
           pay: Number(f.pay.value) || 0,
-          loot: Number(f.loot.value) || 0,
-          lootMode: f.lootMode.value,
+          loot: Math.max(0, Number(f.loot.value) || 0),
+          lootShared: Math.max(0, Number(f.lootShared.value) || 0),
           serviceEffects: f.serviceEffects?.checked ?? false,
           action: f.action.value,
           rollEvent: f.rollEvent.checked,
           steward: f.steward.value
         };
       }
+    },
+    // Raccourcis de partage et aperçu en direct.
+    render: (event, dialog) => {
+      const root = dialog.element ?? dialog;
+      const loot = root.querySelector('[name="loot"]');
+      const shared = root.querySelector('[name="lootShared"]');
+      const preview = root.querySelector("[data-loot-preview]");
+      const refresh = () => {
+        const total = Math.max(0, Number(loot.value) || 0);
+        const part = Math.min(total, Math.max(0, Number(shared.value) || 0));
+        preview.textContent = game.i18n.format("AFC.Month.LootPreview", { shared: part, kept: total - part });
+      };
+      root.querySelectorAll("[data-loot-share]").forEach(a => a.addEventListener("click", () => {
+        shared.value = Math.round((Number(loot.value) || 0) * Number(a.dataset.lootShare) / 100);
+        refresh();
+      }));
+      loot.addEventListener("input", refresh);
+      shared.addEventListener("input", refresh);
+      refresh();
     },
     rejectClose: false
   });
@@ -130,8 +149,14 @@ export async function runMonthEnd(company) {
 
   // 1. Revenus.
   if (opts.pay) { r.wealth += opts.pay; add("pay", { n: opts.pay }); }
-  if (opts.loot && opts.lootMode === "keep") { r.wealth += opts.loot; add("lootKept", { n: opts.loot }); }
-  if (opts.loot && opts.lootMode === "share") { cohesion += opts.loot; add("lootShared", { n: opts.loot }); }
+  // Butin partagé : la part distribuée va à la Cohésion, le reste à la Richesse.
+  if (opts.loot) {
+    const shared = Math.min(opts.lootShared, opts.loot);
+    const kept = opts.loot - shared;
+    r.wealth += kept;
+    cohesion += shared;
+    add("loot", { n: opts.loot, shared, kept });
+  }
 
   // 2. Entretien et solde.
   const upkeep = s.monthlySupply;

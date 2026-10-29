@@ -8,12 +8,13 @@
   </div>
   <div class="row two">
     <label>{{localize "AFC.Month.Loot"}}<input type="number" name="loot" value="0" min="0"></label>
-    <label>{{localize "AFC.Month.LootMode"}}
-      <select name="lootMode">
-        <option value="keep">{{localize "AFC.Month.LootKeep"}}</option>
-        <option value="share">{{localize "AFC.Month.LootShare"}}</option>
-      </select>
-    </label>
+    <label>{{localize "AFC.Month.LootShared"}}<input type="number" name="lootShared" value="0" min="0"></label>
+  </div>
+  <div class="loot-split">
+    <span class="presets">
+      <a data-loot-share="0">0 %</a><a data-loot-share="25">25 %</a><a data-loot-share="50">50 %</a><a data-loot-share="75">75 %</a><a data-loot-share="100">100 %</a>
+    </span>
+    <span class="hint" data-loot-preview></span>
   </div>
 
   <h3>{{localize "AFC.Month.StepUpkeep"}}</h3>
