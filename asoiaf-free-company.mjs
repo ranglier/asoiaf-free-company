@@ -12,10 +12,11 @@ import { AFCItemSheet } from "./module/sheets/item-sheet.mjs";
 import { evaluateTest, rollAbilityTest, rollTest } from "./module/dice/test-roll.mjs";
 import { onRenderChatMessage, resolveDamage, rollAttack } from "./module/dice/attack.mjs";
 import { registerSettings } from "./module/settings.mjs";
+import { runCreation } from "./module/creation.mjs";
 
 Hooks.once("init", () => {
   CONFIG.AFC = AFC;
-  game.afc = { rollAbilityTest, rollTest, evaluateTest, rollAttack, resolveDamage };
+  game.afc = { rollAbilityTest, rollTest, evaluateTest, rollAttack, resolveDamage, runCreation };
   registerSettings();
 
   Object.assign(CONFIG.Actor.dataModels, {
@@ -44,7 +45,7 @@ Hooks.once("init", () => {
   DocumentSheetConfig.registerSheet(Item, AFC.SYSTEM_ID, AFCItemSheet, { makeDefault: true, label: "AFC.Sheet.item" });
 
   return foundry.applications.handlebars.loadTemplates([
-    ...["abilities", "vitals", "tabs-nav", "weapons", "armor", "qualities", "mode-toggle", "resources", "members"]
+    ...["abilities", "vitals", "tabs-nav", "weapons", "armor", "qualities", "mode-toggle", "resources", "members", "events"]
       .map(p => `systems/${AFC.SYSTEM_ID}/templates/actor/parts/${p}.hbs`)
   ]);
 });

@@ -1,0 +1,14 @@
+<div class="afc-card creation">
+  <header>
+    <h3>{{actor.name}}</h3>
+    <span class="subtitle">{{#if origin}}{{origin}}{{/if}}{{#if founding}} · {{founding}}{{/if}}</span>
+  </header>
+  <div class="creation-resources">
+    {{#each rows as |r|}}<span class="res"><small>{{r.label}}</small><strong>{{r.final}}</strong></span>{{/each}}
+  </div>
+  {{#if events.length}}
+  <ol class="creation-events">
+    {{#each events as |e|}}<li><strong>{{e.name}}</strong>{{#if e.text}} <small>{{e.text}}</small>{{/if}}</li>{{/each}}
+  </ol>
+  {{/if}}
+</div>

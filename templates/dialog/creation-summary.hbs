@@ -1,0 +1,33 @@
+<div class="afc-test-dialog afc-creation-summary">
+  <p class="facts">
+    {{#if origin}}<span><strong>{{localize tables.originLabel}}</strong> {{origin}}</span>{{/if}}
+    {{#if founding}}<span><strong>{{localize "AFC.Creation.Founding"}}</strong> {{founding}} ({{eventCount}} {{localize "AFC.Creation.EventsShort"}})</span>{{/if}}
+  </p>
+  <table class="afc-table">
+    <thead><tr>
+      <th>{{localize "AFC.Sheet.Resources"}}</th>
+      <th class="center">7d6</th>
+      <th class="center">{{localize "AFC.Creation.Mod"}}</th>
+      <th class="center">{{localize "AFC.Creation.Events"}}</th>
+      <th class="center">{{localize "AFC.Creation.Final"}}</th>
+    </tr></thead>
+    <tbody>
+    {{#each rows as |r|}}
+    <tr>
+      <td class="role">{{r.label}}</td>
+      <td class="center">{{r.roll}}</td>
+      <td class="center">{{numberFormat r.mod sign=true}}</td>
+      <td class="center">{{numberFormat r.events sign=true}}</td>
+      <td class="center big-num">{{r.final}}</td>
+    </tr>
+    {{/each}}
+    </tbody>
+  </table>
+  {{#if rerolled}}<p class="hint">{{localize "AFC.Creation.Rerolled"}} : {{rerolled.before}} → {{rerolled.after}}</p>{{/if}}
+  <ol class="afc-event-list">
+    {{#each events as |e|}}
+    <li><strong>{{e.name}}</strong> <small>(3d6 = {{e.roll}})</small>{{#if e.text}} — {{e.text}}{{/if}}</li>
+    {{/each}}
+  </ol>
+  <p class="hint">{{localize "AFC.Creation.ApplyHint"}}</p>
+</div>

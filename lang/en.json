@@ -106,16 +106,37 @@
       "other": "Other"
     },
     "Realm": {
-      "crownlands": "The Crownlands",
-      "dorne": "Dorne",
-      "ironIslands": "The Iron Islands",
+      "kingsLanding": "King's Landing",
+      "dragonstone": "Dragonstone",
       "north": "The North",
+      "ironIslands": "The Iron Islands",
       "riverlands": "The Riverlands",
-      "vale": "The Vale of Arryn",
+      "mountainsOfTheMoon": "Mountains of the Moon",
+      "westerlands": "The Westerlands",
       "reach": "The Reach",
       "stormlands": "The Stormlands",
-      "westerlands": "The Westerlands",
+      "dorne": "Dorne",
       "other": "Other (Essos...)"
+    },
+    "Creation": {
+      "Title": "Creation: {name}",
+      "Intro": "Resources are rolled with 7d6 + the origin modifier, then modified by historical events. Nothing is applied before the summary.",
+      "Founding": "Founding",
+      "RandomFounding": "Roll at random (1d6)",
+      "Warning": "Current resources, founding and events will be replaced.",
+      "Roll": "Roll the dice",
+      "RerollTitle": "Starting resources",
+      "RerollQuestion": "Reroll the lowest resource ({res}: {n})? The new roll is kept, even if lower.",
+      "Rerolled": "Lowest resource rerolled",
+      "ChooseResources": "{event}: choose {n} resources, each increases by {formula}.",
+      "ChooseExactly": "If the window is closed without a choice, the {n} lowest resources are used.",
+      "Confirm": "Confirm",
+      "Mod": "Mod.",
+      "Events": "Events",
+      "EventsShort": "events",
+      "Final": "Total",
+      "Apply": "Apply to sheet",
+      "ApplyHint": "Applying replaces the sheet's resources, founding and events, and posts the result to chat."
     },
     "Settings": {
       "defaultDifficulty": {
@@ -241,6 +262,32 @@
       "noEvent": "No event.",
       "addEvent": "Add an event",
       "Create": "Create House",
+      "Founding": {
+        "ancient": "Ancient (Age of Heroes)",
+        "veryOld": "Very old (Andal Invasion)",
+        "old": "Old (Rhoynar Invasion)",
+        "established": "Established (Aegon's Conquest)",
+        "recent": "Recent (Blackfyre Rebellion)",
+        "new": "New (War of the Usurper)"
+      },
+      "Event": {
+        "ascent": "Ascent",
+        "catastrophe": "Catastrophe",
+        "conquest": "Conquest",
+        "defeat": "Defeat",
+        "decline": "Decline",
+        "doom": "Doom",
+        "favor": "Favor",
+        "glory": "Glory",
+        "infrastructure": "Infrastructure",
+        "invasion": "Invasion/Revolt",
+        "madness": "Madness",
+        "scandal": "Scandal",
+        "treachery": "Treachery",
+        "victory": "Victory",
+        "villain": "Villain",
+        "windfall": "Windfall"
+      },
       "CreateSoon": "House creation is coming in a future version.",
       "Resource": {
         "defense": "Defense",
@@ -272,6 +319,32 @@
         "might": "Might",
         "wealth": "Wealth",
         "organization": "Organization"
+      },
+      "Founding": {
+        "antique": "Antique (Aegon's Conquest, year 0)",
+        "veryOld": "Very old (Dance of the Dragons, 130)",
+        "old": "Old (First Blackfyre Rebellion, 196)",
+        "established": "Established (Fourth Blackfyre Rebellion, 236)",
+        "recent": "Recent (War of the Ninepenny Kings, 260)",
+        "fresh": "Fresh (War of the Usurper, 298)"
+      },
+      "Event": {
+        "calamity": "Calamity",
+        "defeat": "Defeat",
+        "catastrophe": "Catastrophe",
+        "madness": "Madness",
+        "mutiny": "Mutiny",
+        "scandal": "Scandal",
+        "treachery": "Treachery",
+        "decline": "Decline",
+        "prosperity": "Prosperity",
+        "evolution": "Evolution",
+        "favor": "Favor",
+        "victory": "Victory",
+        "cruelty": "Cruelty",
+        "glory": "Glory",
+        "rival": "Rival",
+        "windfall": "Windfall"
       },
       "Origin": {
         "merchants": "Merchants",

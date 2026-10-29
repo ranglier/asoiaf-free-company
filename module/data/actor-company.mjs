@@ -23,6 +23,11 @@ export default class CompanyData extends foundry.abstract.TypeDataModel {
         name: new fields.StringField({ blank: true }),
         actor: new fields.StringField({ blank: true })
       })),
+      // Événements historiques tirés à la création (leurs effets sont déjà reportés dans les ressources).
+      events: new fields.ArrayField(new fields.SchemaField({
+        name: new fields.StringField({ blank: true }),
+        note: new fields.StringField({ blank: true })
+      })),
       history: new fields.HTMLField({ blank: true })
     };
   }

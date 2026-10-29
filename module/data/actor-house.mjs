@@ -39,6 +39,8 @@ export default class HouseData extends foundry.abstract.TypeDataModel {
 
   /** Ancien champ royaume en texte libre : on le garde s'il correspond à une clé, sinon « autre ». */
   static migrateData(source) {
+    const renamed = { crownlands: "kingsLanding", vale: "mountainsOfTheMoon" };
+    if (source.realm in renamed) source.realm = renamed[source.realm];
     if (source.realm && !(source.realm in REALMS)) source.realm = "other";
     // Rôles du foyer : ancienne liste fermée -> texte libre traduit.
     for (const m of source.household ?? []) {

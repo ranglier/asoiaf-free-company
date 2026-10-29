@@ -87,18 +87,71 @@ export const HOUSE_RESOURCES = ["defense", "influence", "lands", "law", "populat
 /** Ressources dans lesquelles on investit des possessions (Loi et Population n'en ont pas). */
 export const HOLDING_RESOURCES = ["defense", "influence", "lands", "power", "wealth"];
 
-/** Royaumes de Westeros (+ autre, pour Essos). */
+/** Royaumes de Westeros du livre de base (+ autre, pour Essos). */
 export const REALMS = {
-  crownlands: "AFC.Realm.crownlands",
-  dorne: "AFC.Realm.dorne",
-  ironIslands: "AFC.Realm.ironIslands",
+  kingsLanding: "AFC.Realm.kingsLanding",
+  dragonstone: "AFC.Realm.dragonstone",
   north: "AFC.Realm.north",
+  ironIslands: "AFC.Realm.ironIslands",
   riverlands: "AFC.Realm.riverlands",
-  vale: "AFC.Realm.vale",
+  mountainsOfTheMoon: "AFC.Realm.mountainsOfTheMoon",
+  westerlands: "AFC.Realm.westerlands",
   reach: "AFC.Realm.reach",
   stormlands: "AFC.Realm.stormlands",
-  westerlands: "AFC.Realm.westerlands",
+  dorne: "AFC.Realm.dorne",
   other: "AFC.Realm.other"
+};
+
+/**
+ * Tables de création de Maison (livre de base, chapitre 6, tables 6-2 à 6-4).
+ * Ordre des valeurs : Défense, Influence, Terres, Loi, Population, Puissance, Richesse.
+ */
+const HOUSE_ORDER = ["defense", "influence", "lands", "law", "population", "power", "wealth"];
+const houseValues = values => Object.fromEntries(values.map((v, i) => [HOUSE_ORDER[i], v]).filter(([, v]) => v));
+
+/** Modificateurs de départ par royaume (table 6-2). */
+export const REALM_MODIFIERS = {
+  kingsLanding: houseValues([5, -5, -5, 20, 5, -5, -5]),
+  dragonstone: houseValues([20, -5, -5, 5, 0, 0, -5]),
+  north: houseValues([5, 10, 20, -10, -5, -5, -5]),
+  ironIslands: houseValues([10, -5, -5, 0, 0, 10, 0]),
+  riverlands: houseValues([-5, -5, 5, 0, 10, 0, 5]),
+  mountainsOfTheMoon: houseValues([20, 10, -5, -10, -5, 0, 0]),
+  westerlands: houseValues([-5, 10, -5, -5, -5, 0, 20]),
+  reach: houseValues([-5, 10, 0, -5, 5, 0, 5]),
+  stormlands: houseValues([5, 0, -5, 10, -5, 5, 0]),
+  dorne: houseValues([0, -5, 10, -5, 0, 10, 0])
+};
+
+/** Première fondation (1d6, table 6-3) : nombre d'événements historiques (minimum 1). */
+export const HOUSE_FOUNDINGS = [
+  { label: "AFC.House.Founding.ancient", events: "1d6+3" },
+  { label: "AFC.House.Founding.veryOld", events: "1d6+2" },
+  { label: "AFC.House.Founding.old", events: "1d6+1" },
+  { label: "AFC.House.Founding.established", events: "1d6" },
+  { label: "AFC.House.Founding.recent", events: "1d6-1" },
+  { label: "AFC.House.Founding.new", events: "1d6-2" }
+];
+
+/** Événements historiques d'une Maison (3d6, table 6-4). */
+const houseEvent = (key, values) => ({ label: `AFC.House.Event.${key}`, mods: houseValues(values) });
+export const HOUSE_EVENTS = {
+  3: houseEvent("ascent", ["", "+1d6", "+1d6", "", "", "+1d6", "+1d6"]),
+  4: houseEvent("catastrophe", ["", "", "", "-1d6", "-1d6", "-1d6", "-1d6"]),
+  5: houseEvent("conquest", ["-1d6", "+1d6", "+1d6", "-1d6", "+1d6", "", "+1d6"]),
+  6: houseEvent("defeat", ["-1d6", "-1d6", "-1d6", "", "-1d6", "-1d6", "-1d6"]),
+  7: houseEvent("decline", ["", "-1d6", "-1d6", "", "", "-1d6", "-1d6"]),
+  8: houseEvent("doom", ["-2d6", "-2d6", "-2d6", "-2d6", "-2d6", "-2d6", "-2d6"]),
+  9: houseEvent("favor", ["", "+1d6", "+1d6", "+1d6", "", "+1d6", ""]),
+  10: houseEvent("glory", ["+1d6", "+1d6", "", "+1d6", "", "+1d6", ""]),
+  11: { label: "AFC.House.Event.infrastructure", choose: 2, formula: "1d6" },
+  12: houseEvent("invasion", ["", "", "", "-2d6", "-1d6", "-1d6", "-1d6"]),
+  13: houseEvent("madness", ["6-2d6", "6-2d6", "6-2d6", "6-2d6", "6-2d6", "6-2d6", "6-2d6"]),
+  14: houseEvent("scandal", ["", "-1d6", "-1d6", "", "", "-1d6", ""]),
+  15: houseEvent("treachery", ["", "-1d6", "", "-1d6", "", "+1d6", ""]),
+  16: houseEvent("victory", ["+1d6", "+1d6", "", "", "", "+1d6", ""]),
+  17: houseEvent("villain", ["", "+1d6", "", "-1d6", "-1d6", "+1d6", ""]),
+  18: houseEvent("windfall", ["+1d6", "+2d6", "+1d6", "+1d6", "+1d6", "+2d6", "+2d6"])
 };
 
 
@@ -114,6 +167,41 @@ export const COMPANY_ORIGINS = {
   soldiers: { label: "AFC.Company.Origin.soldiers", mods: { renown: 0, organization: 5, authority: 10, manpower: 0, might: 15, wealth: -20 } },
   sailors: { label: "AFC.Company.Origin.sailors", mods: { renown: 10, organization: 10, authority: 0, manpower: -5, might: 0, wealth: -5 } },
   zealots: { label: "AFC.Company.Origin.zealots", mods: { renown: 5, organization: 5, authority: 0, manpower: 20, might: 0, wealth: -20 } }
+};
+
+/** Ancienneté d'une Compagnie (1d6) : nombre d'événements historiques (minimum 1). Règles maison. */
+export const COMPANY_FOUNDINGS = [
+  { label: "AFC.Company.Founding.antique", events: "1d6+4" },
+  { label: "AFC.Company.Founding.veryOld", events: "1d6+3" },
+  { label: "AFC.Company.Founding.old", events: "1d6+2" },
+  { label: "AFC.Company.Founding.established", events: "1d6+1" },
+  { label: "AFC.Company.Founding.recent", events: "1d6-1" },
+  { label: "AFC.Company.Founding.fresh", events: "1d6-2" }
+];
+
+/** Événements historiques d'une Compagnie (3d6). Ordre des valeurs : Renommée, Organisation, Autorité, Effectif, Puissance, Richesse. */
+const COMPANY_EVENT_ORDER = ["renown", "organization", "authority", "manpower", "might", "wealth"];
+const companyEvent = (key, values) => ({
+  label: `AFC.Company.Event.${key}`,
+  mods: Object.fromEntries(values.map((v, i) => [COMPANY_EVENT_ORDER[i], v]).filter(([, v]) => v))
+});
+export const COMPANY_EVENTS = {
+  3: companyEvent("calamity", ["-2d6", "-1d6", "-1d6", "-1d6", "-2d6", "-2d6"]),
+  4: companyEvent("defeat", ["-1d6", "-1d6", "-1d6", "-1d6", "-1d6", ""]),
+  5: companyEvent("catastrophe", ["", "-1d6", "-1d6", "-1d6", "-1d6", "-1d6"]),
+  6: companyEvent("madness", ["6-2d6", "6-2d6", "6-2d6", "6-2d6", "6-2d6", "6-2d6"]),
+  7: companyEvent("mutiny", ["", "-1d6", "-2d6", "-1d6", "-1d6", ""]),
+  8: companyEvent("scandal", ["-1d6", "", "-1d6", "", "", ""]),
+  9: companyEvent("treachery", ["-1d6", "", "", "-1d6", "+1d6", ""]),
+  10: companyEvent("decline", ["-1d6", "", "", "-1d6", "-1d6", "-1d6"]),
+  11: { label: "AFC.Company.Event.prosperity", choose: 2, formula: "1d6" },
+  12: companyEvent("evolution", ["", "+1d6", "", "+1d6", "+1d6", "+1d6"]),
+  13: companyEvent("favor", ["+1d6", "", "", "", "", "+2d6"]),
+  14: companyEvent("victory", ["+1d6", "+1d6", "+1d6", "", "+1d6", "+1d6"]),
+  15: companyEvent("cruelty", ["+1d6", "", "-1d6", "-1d6", "+1d6", ""]),
+  16: companyEvent("glory", ["+1d6", "", "+1d6", "", "", "+1d6"]),
+  17: companyEvent("rival", ["+1d6", "-1d6", "-1d6", "+1d6", "+1d6", "+1d6"]),
+  18: companyEvent("windfall", ["+2d6", "+1d6", "+1d6", "+1d6", "+2d6", "+2d6"])
 };
 
 /** Taille des services : coût en espace, prix et entretien en Richesse. */

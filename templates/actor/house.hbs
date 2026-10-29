@@ -114,26 +114,7 @@
     </section>
 
     <section class="tab {{tabs.history.cssClass}}" data-group="primary" data-tab="history">
-      <h2>{{localize "AFC.House.events"}}</h2>
-      <table class="afc-table">
-        <thead><tr><th>{{localize "AFC.House.event"}}</th><th>{{localize "AFC.House.eventNote"}}</th><th></th></tr></thead>
-        <tbody>
-        {{#each system.events as |ev idx|}}
-        <tr>
-          {{#if @root.editMode}}
-          <td><input type="text" name="system.events.{{idx}}.name" value="{{ev.name}}"></td>
-          <td><input type="text" name="system.events.{{idx}}.note" value="{{ev.note}}"></td>
-          <td class="item-actions"><a class="icon" data-action="removeRow" data-list="events" data-index="{{idx}}"><i class="fa-solid fa-trash"></i></a></td>
-          {{else}}
-          <td class="role">{{ev.name}}</td><td class="effect">{{ev.note}}</td><td></td>
-          {{/if}}
-        </tr>
-        {{else}}
-        <tr><td colspan="3" class="hint">{{localize "AFC.House.noEvent"}}</td></tr>
-        {{/each}}
-        </tbody>
-      </table>
-      {{#if editMode}}<a class="add-item" data-action="addRow" data-list="events"><i class="fa-solid fa-plus"></i> {{localize "AFC.House.addEvent"}}</a>{{/if}}
+      {{> "systems/asoiaf-free-company/templates/actor/parts/events.hbs"}}
       <h2>{{localize "AFC.Sheet.History"}}</h2>
       <prose-mirror name="system.history" value="{{system.history}}" toggled>{{{enrichedHtml}}}</prose-mirror>
     </section>

@@ -128,6 +128,8 @@
     </section>
 
     <section class="tab {{tabs.history.cssClass}}" data-group="primary" data-tab="history">
+      {{> "systems/asoiaf-free-company/templates/actor/parts/events.hbs"}}
+      <h2>{{localize "AFC.Sheet.History"}}</h2>
       <prose-mirror name="system.history" value="{{system.history}}" toggled>{{{enrichedHtml}}}</prose-mirror>
     </section>
   </div>

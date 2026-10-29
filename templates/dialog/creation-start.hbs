@@ -1,0 +1,16 @@
+<div class="afc-test-dialog afc-creation-start">
+  <p class="hint">{{localize "AFC.Creation.Intro"}}</p>
+  <label>{{localize tables.originLabel}}
+    <select name="origin">
+      <option value="">—</option>
+      {{selectOptions origins selected=selected localize=true}}
+    </select>
+  </label>
+  <label>{{localize "AFC.Creation.Founding"}}
+    <select name="founding">
+      <option value="random">{{localize "AFC.Creation.RandomFounding"}}</option>
+      {{selectOptions foundings localize=true}}
+    </select>
+  </label>
+  <p class="hint">{{localize "AFC.Creation.Warning"}}</p>
+</div>

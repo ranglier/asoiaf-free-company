@@ -276,3 +276,18 @@
 .edit-mode .afc-ability-groups .ability-name { flex: 1; }
 .edit-mode .afc-ability-groups .specialties { order: 3; flex-basis: 100%; flex-direction: column; padding-left: 0.8rem; }
 .edit-mode .afc-ability-groups .specialties:empty { display: none; }
+
+/* ---------- Création de Maison / Compagnie ---------- */
+.afc-roll-list { list-style: none; margin: 0; padding: 0; columns: 2; font-size: 17px; }
+.afc-choose { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.2rem 0.8rem; }
+.afc-creation-summary .facts { display: flex; flex-wrap: wrap; gap: 0.3rem 1.2rem; margin: 0; }
+.afc-creation-summary .facts strong { font-family: var(--afc-font-label); font-weight: normal; color: var(--afc-ink-soft); }
+.afc-event-list { margin: 0.3rem 0 0; padding-left: 1.4rem; font-size: 16px; }
+.afc-event-list li { margin: 0.1rem 0; }
+.afc-event-list small { color: var(--afc-ink-soft); }
+.afc-card.creation .creation-resources { display: grid; grid-template-columns: repeat(auto-fit, minmax(70px, 1fr)); gap: 4px; }
+.afc-card.creation .res { display: flex; flex-direction: column; align-items: center; background: var(--afc-paper-light); border: 1px solid var(--afc-line); border-radius: 4px; padding: 2px; }
+.afc-card.creation .res small { font-family: var(--afc-font-label); font-size: 11px; color: var(--afc-ink-soft); }
+.afc-card.creation .res strong { font-family: var(--font-primary, "Signika", sans-serif); font-size: 18px; }
+.afc-card.creation .creation-events { margin: 0; padding-left: 1.2rem; font-size: 14px; }
+.afc-card.creation .creation-events small { color: var(--afc-ink-soft); }

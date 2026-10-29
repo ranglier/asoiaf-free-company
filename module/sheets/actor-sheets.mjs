@@ -1,6 +1,7 @@
 import * as CONFIG_AFC from "../config.mjs";
 import { rollAbilityTest } from "../dice/test-roll.mjs";
 import { rollAttack, weaponProfile, weaponQualities } from "../dice/attack.mjs";
+import { runCreation } from "../creation.mjs";
 
 const { HandlebarsApplicationMixin } = foundry.applications.api;
 const { ActorSheetV2 } = foundry.applications.sheets;
@@ -287,7 +288,7 @@ export class HouseSheet extends AFCActorSheet {
   }
 
   static #onCreateHouse() {
-    ui.notifications.info(game.i18n.localize("AFC.House.CreateSoon"));
+    return runCreation(this.document);
   }
 }
 
@@ -336,6 +337,6 @@ export class CompanySheet extends AFCActorSheet {
   }
 
   static #onCreateCompany() {
-    ui.notifications.info(game.i18n.localize("AFC.Company.CreateSoon"));
+    return runCreation(this.document);
   }
 }
