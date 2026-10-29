@@ -54,7 +54,7 @@ export default class HouseData extends foundry.abstract.TypeDataModel {
     const invested = Object.fromEntries(HOLDING_RESOURCES.map(k => [k, 0]));
     for (const item of this.parent.items) {
       if (item.type === "holding" && item.system.resource in invested) invested[item.system.resource] += item.system.cost;
-      if (item.type === "unit") invested.power += item.system.mightCost;
+      if (item.type === "unit") invested.power += item.system.totalMight;
     }
     for (const key of HOUSE_RESOURCES) {
       const r = this.resources[key];

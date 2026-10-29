@@ -90,12 +90,12 @@ export class CompanyCatalog extends HandlebarsApplicationMixin(ApplicationV2) {
     const root = this.element;
     const refresh = () => {
       const u = this.#readUnit();
-      root.querySelector("[data-unit-manpower]").textContent = u.manpower;
-      root.querySelector("[data-unit-might]").textContent = u.might;
+      root.querySelector("[data-unit-manpower]").textContent = u.totalManpower;
+      root.querySelector("[data-unit-might]").textContent = u.totalMight;
       root.querySelector("[data-unit-discipline]").textContent = u.discipline;
       root.querySelector("[data-unit-notes]").textContent = u.notes.join(" · ");
     };
-    root.querySelectorAll(".builder select").forEach(el => el.addEventListener("change", refresh));
+    root.querySelectorAll(".builder select, .builder input").forEach(el => el.addEventListener("change", refresh));
     refresh();
   }
 
@@ -104,6 +104,7 @@ export class CompanyCatalog extends HandlebarsApplicationMixin(ApplicationV2) {
     const root = this.element;
     const training = root.querySelector('[name="training"]').value;
     const typeKey = root.querySelector('[name="unitType"]').value;
+    const count = Math.max(1, Number(root.querySelector('[name="count"]')?.value) || 1);
     const type = COMPANY_UNIT_TYPES[typeKey];
     const t = UNIT_TRAININGS[training];
     const notes = [];
@@ -119,7 +120,11 @@ export class CompanyCatalog extends HandlebarsApplicationMixin(ApplicationV2) {
     if (typeKey === "garrison") notes.push(loc("AFC.Catalog.NoteGarrison"));
     if (typeKey === "volunteers" || typeKey === "special") notes.push(loc("AFC.CompanyCatalog.NoteSpecial"));
     // La discipline ne descend jamais sous Élémentaire (0).
-    return { training, typeKey, type, notes, manpower: t.manpower, might, discipline: Math.max(0, t.discipline + type.discipline) };
+    return {
+      training, typeKey, type, notes, count, might,
+      manpower: t.manpower, totalManpower: t.manpower * count, totalMight: might * count,
+      discipline: Math.max(0, t.discipline + type.discipline)
+    };
   }
 
   static async #onAddService(event, target) {
@@ -140,12 +145,12 @@ export class CompanyCatalog extends HandlebarsApplicationMixin(ApplicationV2) {
 
   static async #onAddUnit() {
     const u = this.#readUnit();
-    const name = `${loc(`AFC.CompanyCatalog.UnitType.${u.typeKey}`)} (${loc(UNIT_TRAININGS[u.training].label).toLowerCase()})`;
+    const name = `${loc(`AFC.CompanyCatalog.UnitType.${u.typeKey}`)} (${loc(UNIT_TRAININGS[u.training].label).toLowerCase()})${u.count > 1 ? ` ×${u.count}` : ""}`;
     await this.actor.createEmbeddedDocuments("Item", [{
       name, type: "unit",
       system: {
         training: u.training, mightCost: u.might, disciplineMod: u.type.discipline,
-        classes: u.type.classes, men: u.type.men ?? 100,
+        classes: u.type.classes, men: u.type.men ?? 100, count: u.count,
         keyAbilities: u.type.abilities.map(a => loc(ABILITIES[a].label)).join(", "),
         experience: UNIT_TRAININGS[u.training].experience,
         description: u.notes.length ? `<p>${u.notes.join("</p><p>")}</p>` : ""

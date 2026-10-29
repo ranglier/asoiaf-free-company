@@ -245,9 +245,9 @@ const RESOURCE_ICONS = {
 function resourceTiles(resources, keys, prefix) {
   return keys.map(key => ({
     key, value: resources[key].value, label: `${prefix}.${key}`, icon: RESOURCE_ICONS[key],
-    // Ressources d'une Maison où l'on investit : afficher le disponible.
+    // Ressources où l'on investit (possessions de Maison, unités de Compagnie) : afficher le disponible.
     available: resources[key].available,
-    hasBudget: CONFIG_AFC.HOLDING_RESOURCES.includes(key) && resources[key].available !== undefined
+    hasBudget: (CONFIG_AFC.HOLDING_RESOURCES.includes(key) || ["manpower", "might"].includes(key)) && resources[key].available !== undefined
   }));
 }
 
@@ -338,8 +338,9 @@ export class CompanySheet extends AFCActorSheet {
       classes: item.system.classList.map(c => game.i18n.localize(CONFIG_AFC.UNIT_CLASSES[c])).join(", ")
     }));
     context.unitTotals = context.units.reduce((t, u) => ({
-      men: t.men + u.item.system.men, manpower: t.manpower + u.item.system.manpowerCost, might: t.might + u.item.system.mightCost
-    }), { men: 0, manpower: 0, might: 0 });
+      count: t.count + u.item.system.count, men: t.men + u.item.system.totalMen,
+      manpower: t.manpower + u.item.system.totalManpower, might: t.might + u.item.system.totalMight
+    }), { count: 0, men: 0, manpower: 0, might: 0 });
     context.initial = (this.document.name || "?").charAt(0).toUpperCase();
     context.members = this._prepareMembers(context, "members");
     return context;

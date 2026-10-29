@@ -1,5 +1,8 @@
 import { COHESION_TIERS, COMPANY_ORIGINS, COMPANY_RESOURCES, SERVICE_SIZES } from "../config.mjs";
 
+/** Personnes représentées par un point d'Effectif de réserve (non-combattants, recrues, suiveurs). */
+const PEOPLE_PER_RESERVE_POINT = 40;
+
 const { fields } = foundry.data;
 
 const resource = () => new fields.SchemaField({
@@ -47,6 +50,18 @@ export default class CompanyData extends foundry.abstract.TypeDataModel {
       spaceMax: Math.floor(r.organization.value / 10) * 3 + leaderCunning,
       supply: services.reduce((s, i) => s + (SERVICE_SIZES[i.system.size]?.supply ?? 0), 0)
     };
+
+    // Effectif et Puissance investis dans les unités ; le reste de l'Effectif forme la réserve.
+    const units = this.parent.items.filter(i => i.type === "unit");
+    r.manpower.invested = units.reduce((s, i) => s + i.system.totalManpower, 0);
+    r.manpower.available = r.manpower.value - r.manpower.invested;
+    r.might.invested = units.reduce((s, i) => s + i.system.totalMight, 0);
+    r.might.available = r.might.value - r.might.invested;
+
+    // Personnes (indicatif) : hommes des unités + 40 personnes par point d'Effectif de réserve.
+    const inArms = units.reduce((s, i) => s + i.system.totalMen, 0);
+    const reserve = Math.max(0, r.manpower.available) * PEOPLE_PER_RESERVE_POINT;
+    this.people = { inArms, reserve, total: inArms + reserve };
 
     // Entretien mensuel du ravitaillement : Effectif / 2 + entretien des services − 5 par tranche de 10 d'Organisation effective.
     this.monthlySupply = Math.max(0, Math.floor(r.manpower.value / 2) + this.services.supply - Math.floor(this.organization.effective / 10) * 5);

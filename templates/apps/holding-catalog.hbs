@@ -44,13 +44,14 @@
 
     <section class="tab {{tabs.unit.cssClass}} builder" data-group="primary" data-tab="unit">
       <p class="hint">{{localize "AFC.Catalog.UnitHint"}}</p>
-      <div class="grid-2">
+      <div class="grid-3">
         <label>{{localize "AFC.Unit.training"}}
           <select name="training">{{#each trainings as |t|}}<option value="{{t.key}}">{{t.label}} ({{t.cost}})</option>{{/each}}</select>
         </label>
         <label>{{localize "AFC.Catalog.UnitTypeLabel"}}
           <select name="unitType">{{#each unitTypes as |t|}}<option value="{{t.key}}">{{t.label}} (+{{t.cost}})</option>{{/each}}</select>
         </label>
+        <label>{{localize "AFC.Unit.count"}}<input type="number" name="count" value="1" min="1"></label>
       </div>
       <div class="builder-result">
         <span>{{localize "AFC.Catalog.UnitCost"}} <strong data-unit-cost></strong> · {{localize "AFC.Unit.discipline"}} <strong data-unit-discipline></strong> · {{localize "AFC.House.available"}} {{powerAvailable}}</span>

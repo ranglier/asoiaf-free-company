@@ -101,7 +101,9 @@ export class UnitData extends foundry.abstract.TypeDataModel {
       mightCost: int(1, { min: 0 }),
       disciplineMod: int(0),
       keyAbilities: new fields.StringField({ blank: true }),
+      // Hommes par unité (100, 20 cavaliers, 5 navires) et nombre d'unités du bataillon.
       men: int(100, { min: 0 }),
+      count: int(1, { min: 1 }),
       experience: int(0, { min: 0 }),
       description: description()
     };
@@ -109,7 +111,11 @@ export class UnitData extends foundry.abstract.TypeDataModel {
 
   prepareDerivedData() {
     const t = UNIT_TRAININGS[this.training];
+    // Coûts par unité, puis totaux du bataillon (coût × nombre d'unités).
     this.manpowerCost = t?.manpower ?? 0;
+    this.totalMen = this.men * this.count;
+    this.totalManpower = this.manpowerCost * this.count;
+    this.totalMight = this.mightCost * this.count;
     // La discipline ne descend jamais sous Élémentaire (0).
     this.discipline = Math.max(0, (t?.discipline ?? 0) + this.disciplineMod);
     this.classList = this.classes.split(/[ ,]+/).filter(c => c in UNIT_CLASSES);

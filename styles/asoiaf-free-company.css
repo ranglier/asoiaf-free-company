@@ -193,7 +193,7 @@
 .afc .resource-tile .value { font-size: 32px; font-weight: 600; line-height: 1.1; }
 .afc .resource-tile input { width: 3.2em; font-size: 24px; text-align: center; height: 1.5em; }
 
-.afc .company-status { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.afc .company-status { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 .afc table.afc-table td.effect { font-size: 16px; font-style: italic; }
 .afc table.afc-table tfoot td { font-family: var(--afc-font-label); font-size: 16px; border-top: 2px solid var(--afc-border); padding: 0.3rem 0.4rem; }
 .afc .tab-body > h2:first-child, .afc .tab-body > .section-title:first-child h2 { margin-top: 0.2rem; }

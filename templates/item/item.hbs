@@ -61,8 +61,10 @@
     <label>{{localize "AFC.Unit.mightCost"}}<input type="number" name="system.mightCost" value="{{system.mightCost}}" min="0"></label>
     <label>{{localize "AFC.Unit.disciplineMod"}}<input type="number" name="system.disciplineMod" value="{{system.disciplineMod}}"></label>
     <label>{{localize "AFC.Unit.men"}}<input type="number" name="system.men" value="{{system.men}}" min="0"></label>
+    <label>{{localize "AFC.Unit.count"}}<input type="number" name="system.count" value="{{system.count}}" min="1"></label>
     <label>{{localize "AFC.Unit.experience"}}<input type="number" name="system.experience" value="{{system.experience}}" min="0"></label>
     <label class="wide">{{localize "AFC.Unit.keyAbilities"}}<input type="text" name="system.keyAbilities" value="{{system.keyAbilities}}"></label>
+    <p class="wide derived">{{localize "AFC.Unit.totals" men=system.totalMen manpower=system.totalManpower might=system.totalMight}}</p>
     <p class="wide derived">{{localize "AFC.Unit.manpowerCost"}} : {{system.manpowerCost}} · {{localize "AFC.Unit.discipline"}} : {{system.discipline}}</p>
     {{/if}}
   </section>

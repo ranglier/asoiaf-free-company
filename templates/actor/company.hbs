@@ -42,6 +42,11 @@
       <span class="hint">{{localize "AFC.Company.monthlySupply" value=system.monthlySupply}}</span>
     </div>
     <div class="vital">
+      <span class="label">{{localize "AFC.Company.peopleLabel"}}</span>
+      <span class="value">≈ {{system.people.total}}</span>
+      <span class="hint">{{localize "AFC.Company.peopleDetail" inArms=system.people.inArms reserve=system.people.reserve}}</span>
+    </div>
+    <div class="vital">
       <span class="label">{{localize "AFC.Company.serviceSpace"}}</span>
       <div class="bar"><div style="width:{{spacePct}}%"></div></div>
       <span class="value">{{system.services.spaceUsed}} / {{system.services.spaceMax}}</span>
@@ -88,6 +93,7 @@
           <th>{{localize "AFC.Table.unit"}}</th>
           <th>{{localize "AFC.Unit.training"}}</th>
           <th class="center">{{localize "AFC.Unit.discipline"}}</th>
+          <th class="center">{{localize "AFC.Unit.countShort"}}</th>
           <th class="center">{{localize "AFC.Unit.men"}}</th>
           <th class="center">{{localize "AFC.Table.manpowerShort"}}</th>
           <th class="center">{{localize "AFC.Table.mightShort"}}</th>
@@ -101,19 +107,21 @@
             <span class="sub">{{u.classes}}{{#if u.item.system.keyAbilities}} · {{u.item.system.keyAbilities}}{{/if}}</span></div></div></td>
           <td>{{localize u.training}}</td>
           <td class="center big-num">{{u.item.system.discipline}}</td>
-          <td class="center">{{u.item.system.men}}</td>
-          <td class="center">{{u.item.system.manpowerCost}}</td>
-          <td class="center">{{u.item.system.mightCost}}</td>
+          <td class="center">×{{u.item.system.count}}</td>
+          <td class="center">{{u.item.system.totalMen}}</td>
+          <td class="center" data-tooltip="{{u.item.system.manpowerCost}} × {{u.item.system.count}}">{{u.item.system.totalManpower}}</td>
+          <td class="center" data-tooltip="{{u.item.system.mightCost}} × {{u.item.system.count}}">{{u.item.system.totalMight}}</td>
           <td class="center">{{u.item.system.experience}}</td>
           <td class="item-actions">{{#if @root.editable}}<a class="icon" data-action="deleteItem" data-tooltip="{{localize "Delete"}}"><i class="fa-solid fa-trash"></i></a>{{/if}}</td>
         </tr>
         {{else}}
-        <tr><td colspan="8" class="hint">{{localize "AFC.Table.noUnit"}}</td></tr>
+        <tr><td colspan="9" class="hint">{{localize "AFC.Table.noUnit"}}</td></tr>
         {{/each}}
         </tbody>
         {{#if units.length}}
         <tfoot><tr>
           <td colspan="3">{{localize "AFC.Table.total"}}</td>
+          <td class="center">×{{unitTotals.count}}</td>
           <td class="center">{{unitTotals.men}}</td>
           <td class="center">{{unitTotals.manpower}}</td>
           <td class="center">{{unitTotals.might}}</td>

@@ -90,7 +90,7 @@ export class HoldingCatalog extends HandlebarsApplicationMixin(ApplicationV2) {
       root.querySelector("[data-domain-cost]").textContent = domain.cost;
       root.querySelector("[data-domain-name]").textContent = domain.name;
       const unit = this.#readUnit();
-      root.querySelector("[data-unit-cost]").textContent = unit.cost;
+      root.querySelector("[data-unit-cost]").textContent = unit.totalCost;
       root.querySelector("[data-unit-discipline]").textContent = unit.discipline;
       root.querySelector("[data-unit-notes]").textContent = unit.notes.join(" · ");
     };
@@ -115,15 +115,16 @@ export class HoldingCatalog extends HandlebarsApplicationMixin(ApplicationV2) {
     const root = this.element;
     const training = root.querySelector('[name="training"]').value;
     const typeKey = root.querySelector('[name="unitType"]').value;
+    const count = Math.max(1, Number(root.querySelector('[name="count"]')?.value) || 1);
     const type = HOUSE_UNIT_TYPES[typeKey];
     const notes = [];
     if (typeKey === "peasants") notes.push(loc("AFC.Catalog.NotePeasants"));
     if (typeKey === "mercenaries") notes.push(game.i18n.format("AFC.Catalog.NoteMercenaries", { n: MERCENARY_WEALTH[training] }));
     if (typeKey === "warships") notes.push(loc("AFC.Catalog.NoteWarships"));
     if (typeKey === "garrison") notes.push(loc("AFC.Catalog.NoteGarrison"));
+    const cost = HOUSE_UNIT_TRAINING_COSTS[training] + type.cost;
     return {
-      training, typeKey, type, notes,
-      cost: HOUSE_UNIT_TRAINING_COSTS[training] + type.cost,
+      training, typeKey, type, notes, count, cost, totalCost: cost * count,
       discipline: Math.max(0, UNIT_TRAININGS[training].discipline + type.discipline)
     };
   }
@@ -157,12 +158,12 @@ export class HoldingCatalog extends HandlebarsApplicationMixin(ApplicationV2) {
 
   static async #onAddUnit() {
     const u = this.#readUnit();
-    const name = `${loc(`AFC.Catalog.UnitType.${u.typeKey}`)} (${loc(UNIT_TRAININGS[u.training].label).toLowerCase()})`;
+    const name = `${loc(`AFC.Catalog.UnitType.${u.typeKey}`)} (${loc(UNIT_TRAININGS[u.training].label).toLowerCase()})${u.count > 1 ? ` ×${u.count}` : ""}`;
     await this.actor.createEmbeddedDocuments("Item", [{
       name, type: "unit",
       system: {
         training: u.training, mightCost: u.cost, disciplineMod: u.type.discipline,
-        classes: u.type.classes, men: u.type.men ?? 100,
+        classes: u.type.classes, men: u.type.men ?? 100, count: u.count,
         keyAbilities: u.type.abilities.map(a => loc(ABILITIES[a].label)).join(", "),
         experience: UNIT_TRAININGS[u.training].experience,
         description: u.notes.length ? `<p>${u.notes.join("</p><p>")}</p>` : ""

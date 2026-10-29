@@ -88,10 +88,10 @@
           <tbody>
           {{#each g.units as |u|}}
           <tr data-item-id="{{u.item.id}}">
-            <td><div class="item-name"><img src="{{u.item.img}}" alt=""><a data-action="editItem">{{u.item.name}}</a></div></td>
+            <td><div class="item-name"><img src="{{u.item.img}}" alt=""><div><a data-action="editItem">{{u.item.name}}</a><span class="sub">{{u.item.system.totalMen}} {{localize "AFC.Unit.menShort"}}</span></div></div></td>
             <td>{{localize u.training}}</td>
             <td class="center">{{u.item.system.discipline}}</td>
-            <td class="center big-num">{{u.item.system.mightCost}}</td>
+            <td class="center big-num" data-tooltip="{{u.item.system.mightCost}} × {{u.item.system.count}}">{{u.item.system.totalMight}}</td>
             <td class="item-actions">{{#if @root.editable}}<a class="icon" data-action="deleteItem" data-tooltip="{{localize "Delete"}}"><i class="fa-solid fa-trash"></i></a>{{/if}}</td>
           </tr>
           {{/each}}
