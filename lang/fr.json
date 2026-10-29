@@ -51,7 +51,6 @@
       "ModServices": "Services",
       "Keep": "Garder",
       "Reroll": "Relancer",
-      "RerollHint": "Le MJ peut relancer autant de fois qu'il le souhaite.",
       "Action": {
         "none": "Aucune",
         "recruit": "Recruter",

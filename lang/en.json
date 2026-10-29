@@ -51,7 +51,6 @@
       "ModServices": "Services",
       "Keep": "Keep",
       "Reroll": "Reroll",
-      "RerollHint": "The GM may reroll as many times as they like.",
       "Action": {
         "none": "None",
         "recruit": "Recruit",
