@@ -10,7 +10,7 @@ import {
   ANIMALS, ATTITUDES, BIRDS, CHARGE_TYPES, FURS, LINES, METALS, OBJECTS, ORDINARIES, PARTITIONS, PLAIN, PLANTS,
   SUBORDINARIES, TINCTURES
 } from "./heraldry-data.mjs";
-import { canDraw, renderArms } from "./heraldry-render.mjs";
+import { canDraw, canDrawLine, renderArms } from "./heraldry-render.mjs";
 
 const { DialogV2 } = foundry.applications.api;
 const loc = key => game.i18n.localize(key);
@@ -164,7 +164,7 @@ function previewHTML(g, fieldIs) {
   const spec = armsSpec(g, fieldIs);
   const notes = [];
   if (!canDraw(spec.charge)) notes.push(game.i18n.format("AFC.Heraldry.NotDrawn", { name: spec.charge.name }));
-  if (spec.line || spec.charge?.line) notes.push(game.i18n.format("AFC.Heraldry.LineNotDrawn", { line: (spec.line ?? spec.charge.line).toLowerCase() }));
+  if (!canDrawLine(spec)) notes.push(game.i18n.format("AFC.Heraldry.LineNotDrawn", { line: (spec.line ?? spec.charge.line).toLowerCase() }));
   if (g.fur && g.plain) notes.push(loc("AFC.Heraldry.FurUnused"));
   return renderArms(spec, { id: "afc-arms-preview" }) + notes.map(n => `<p class="hint">${esc(n)}</p>`).join("");
 }

@@ -1,10 +1,10 @@
 /**
  * Dessin d'un blason en SVG, dans le style des écus du wiki : écu à bord argenté, champ légèrement
- * texturé et bombé, fond bleu nuit. Prototype : partitions, pièces ordinaires, rebattements,
- * fourrures et charges dessinées (silhouettes de game-icons.net). Les lignes héraldiques (ondé...)
- * et les attitudes des animaux ne sont pas encore dessinées.
+ * texturé et bombé, fond bleu nuit. Partitions, pièces ordinaires, rebattements, fourrures, lignes
+ * héraldiques (sur les partitions droites et les pièces simples) et charges dessinées (silhouettes de
+ * game-icons.net, attitude suggérée par une transformation).
  *
- * Spécification : { partition, colors: [champ, seconde], charge: { type, name, count, color } | null }
+ * Spécification : { partition, line, colors: [champ, seconde], charge: { type, name, count, color, line, attitude } | null }
  * Les couleurs sont des noms du livre (« Sinople », « Or », « Hermine »...).
  */
 import { HERALDRY_ICONS } from "./heraldry-icons.mjs";
@@ -24,47 +24,113 @@ const FURS = {
 const L = 28, R = 228, T = 22, B = 238, C = 128, M = 118, W = R - L, H = B - T;
 const SHIELD = `M${L} ${T}H${R}V120C${R} 180 190 215 ${C} ${B}C66 215 ${L} 180 ${L} 120Z`;
 
-/** Zones de la seconde couleur pour chaque partition, et lignes de division à souligner. */
-const PARTITIONS = {
-  "Tranché": [`M${L} ${T}L${R} ${B}L${L} ${B}Z`],
-  "Taillé": [`M${R} ${T}L${L} ${B}L${R} ${B}Z`],
-  "Coupé": [`M${L} ${M}H${R}V${B}H${L}Z`],
-  "Parti": [`M${C} ${T}H${R}V${B}H${C}Z`],
-  "Écartelé": [`M${C} ${T}H${R}V${M}H${C}Z M${L} ${M}H${C}V${B}H${L}Z`],
-  "Écartelé en six": [(() => {
-    const w = W / 3, h = (B - T) / 2;
-    return [[1, 0], [0, 1], [2, 1]].map(([i, j]) => `M${L + i * w} ${T + j * h}h${w}v${h}h${-w}Z`).join(" ");
-  })()],
-  "Écartelé en sautoir": [`M${L} ${T}L${C} ${M}L${L} ${B}Z M${R} ${T}L${C} ${M}L${R} ${B}Z`],
-  "Chapé": [`M${L} ${T}L${C} ${T}L${L} ${B}Z M${C} ${T}L${R} ${T}L${R} ${B}Z`],
-  "Chapé ployé": [`M${L} ${T}L${C} ${T}Q${L + 25} ${M} ${L} ${B}Z M${C} ${T}L${R} ${T}L${R} ${B}Q${R - 25} ${M} ${C} ${T}Z`],
-  "Chaussé": [`M${L} ${T}L${C} ${B}L${L} ${B}Z M${R} ${T}L${R} ${B}L${C} ${B}Z`],
-  "Chaussé ployé": [`M${L} ${T}Q${L + 25} ${M} ${C} ${B}L${L} ${B}Z M${R} ${T}L${R} ${B}L${C} ${B}Q${R - 25} ${M} ${R} ${T}Z`],
-  "Mantelé": [`M${L} ${B}L${L} 190L${C} 80L${R} 190L${R} ${B}Z`],
-  "Mantelé renversé": [`M${L} ${T}L${L} 60L${C} 170L${R} 60L${R} ${T}Z`],
-  "Mantelé inversé": [`M${L} ${T}H${R}V190L${C} 80L${L} 190Z`],
-  "Pairlé": [`M${L} ${T}L${R} ${T}L${C} ${M}Z`, `M${C} ${M}V${B}`],
-  "Pairlé renversé": [`M${C} 130L${R} ${B}L${L} ${B}Z`, `M${C} ${T}V130`]
+/**
+ * Lignes héraldiques (table 6-12) : un segment droit de p1 à p2 est remplacé par un motif
+ * (vagues, créneaux, dents...). Renvoie les commandes de tracé sans le « M » initial.
+ */
+const LINE_STYLES = {
+  "Ondé": { period: 32, amp: 6 }, "Nébulé": { period: 26, amp: 7 }, "Engrelé": { period: 24, amp: 8 },
+  "Cannelé": { period: 24, amp: 8 }, "Dentelé": { period: 14, amp: 7 }, "Bande fuselée": { period: 40, amp: 11 },
+  "Rayonnant": { period: 14, amp: 8 }, "Crénelé": { period: 30, amp: 9 }, "Écoté": { period: 28, amp: 8 }
 };
+function segment([x1, y1], [x2, y2], line) {
+  const style = LINE_STYLES[line];
+  if (!style) return `L${x2} ${y2}`;
+  const len = Math.hypot(x2 - x1, y2 - y1);
+  const ux = (x2 - x1) / len, uy = (y2 - y1) / len, nx = -uy, ny = ux;
+  const k = Math.max(1, Math.round(len / style.period)), step = len / k, a = style.amp;
+  // Point à la distance t le long du segment, décalé de o perpendiculairement.
+  const P = (t, o = 0) => `${(x1 + ux * t + nx * o).toFixed(1)} ${(y1 + uy * t + ny * o).toFixed(1)}`;
+  let d = "";
+  for (let i = 0; i < k; i++) {
+    const s = i * step;
+    switch (line) {
+      case "Ondé": d += `Q${P(s + step / 4, 2 * a)} ${P(s + step / 2)}Q${P(s + 3 * step / 4, -2 * a)} ${P(s + step)}`; break;
+      case "Nébulé": d += `C${P(s, 1.8 * a)} ${P(s + step / 2, 1.8 * a)} ${P(s + step / 2)}C${P(s + step / 2, -1.8 * a)} ${P(s + step, -1.8 * a)} ${P(s + step)}`; break;
+      case "Engrelé": d += `Q${P(s + step / 2, 2 * a)} ${P(s + step)}`; break;
+      case "Cannelé": d += `Q${P(s + step / 2, -2 * a)} ${P(s + step)}`; break;
+      case "Dentelé": case "Bande fuselée": d += `L${P(s + step / 2, a)}L${P(s + step)}`; break;
+      case "Rayonnant": d += `Q${P(s + step * 0.15, a * 1.4)} ${P(s + step * 0.5, a)}Q${P(s + step * 0.6, 0)} ${P(s + step)}`; break;
+      case "Crénelé": d += `L${P(s, a)}L${P(s + step / 2, a)}L${P(s + step / 2)}L${P(s + step)}`; break;
+      case "Écoté": d += `L${P(s + step * 0.2, a)}L${P(s + step * 0.6, a)}L${P(s + step * 0.4)}L${P(s + step)}`; break;
+    }
+  }
+  return d;
+}
+/** Polygone [[x, y, ligne ?], ...] : les côtés marqués reçoivent la ligne héraldique. */
+function poly(points, line) {
+  let d = `M${points[0][0]} ${points[0][1]}`;
+  points.forEach((p, i) => {
+    const q = points[(i + 1) % points.length];
+    d += p[2] && line ? segment(p, q, line) : `L${q[0]} ${q[1]}`;
+  });
+  return `${d}Z`;
+}
+
+/**
+ * Zones de la seconde couleur pour chaque partition : polygones dont les côtés marqués sont les
+ * lignes de division (elles peuvent recevoir une ligne héraldique), ou tracés courbes fixes.
+ * Second élément facultatif : trait de division supplémentaire (pairlé).
+ */
+const E = 12; // débord hors de l'écu (le reste est masqué)
+const PARTITIONS = {
+  "Tranché": [[[L - E, T - E, 1], [R + E, B + E, 0], [L - E, B + E, 0]]],
+  "Taillé": [[[L - E, B + E, 1], [R + E, T - E, 0], [R + E, B + E, 0]]],
+  "Coupé": [[[R + E, M, 1], [L - E, M, 0], [L - E, B + E, 0], [R + E, B + E, 0]]],
+  "Parti": [[[C, B + E, 1], [C, T - E, 0], [R + E, T - E, 0], [R + E, B + E, 0]]],
+  "Écartelé": [[[C, T - E, 0], [R + E, T - E, 0], [R + E, M, 1], [C, M, 1]], [[L - E, M, 1], [C, M, 1], [C, B + E, 0], [L - E, B + E, 0]]],
+  "Écartelé en six": [[1, 0], [0, 1], [2, 1]].map(([i, j]) => {
+    const w = W / 3, h = H / 2, x = L + i * w, y = T + j * h;
+    return [[x, y, 0], [x + w, y, 0], [x + w, y + h, 0], [x, y + h, 0]];
+  }),
+  "Écartelé en sautoir": [[[L - E, T - E, 1], [C, M, 1], [L - E, B + E, 0]], [[R + E, B + E, 1], [C, M, 1], [R + E, T - E, 0]]],
+  "Chapé": [[[C, T - E, 1], [L - E, B + E, 0], [L - E, T - E, 0]], [[R + E, B + E, 1], [C, T - E, 0], [R + E, T - E, 0]]],
+  "Chapé ployé": `M${L} ${T}L${C} ${T}Q${L + 25} ${M} ${L} ${B}Z M${C} ${T}L${R} ${T}L${R} ${B}Q${R - 25} ${M} ${C} ${T}Z`,
+  "Chaussé": [[[L - E, T - E, 1], [C, B + E, 0], [L - E, B + E, 0]], [[C, B + E, 1], [R + E, T - E, 0], [R + E, B + E, 0]]],
+  "Chaussé ployé": `M${L} ${T}Q${L + 25} ${M} ${C} ${B}L${L} ${B}Z M${R} ${T}L${R} ${B}L${C} ${B}Q${R - 25} ${M} ${R} ${T}Z`,
+  "Mantelé": [[[L - E, 200, 1], [C, 80, 1], [R + E, 200, 0], [R + E, B + E, 0], [L - E, B + E, 0]]],
+  "Mantelé renversé": [[[R + E, 50, 1], [C, 170, 1], [L - E, 50, 0], [L - E, T - E, 0], [R + E, T - E, 0]]],
+  "Mantelé inversé": [[[R + E, 200, 1], [C, 80, 1], [L - E, 200, 0], [L - E, T - E, 0], [R + E, T - E, 0]]],
+  "Pairlé": [[[R + E, T - E, 1], [C, M, 1], [L - E, T - E, 0]]],
+  "Pairlé renversé": [[[L - E, B + E, 1], [C, 130, 1], [R + E, B + E, 0]]]
+};
+/** Traits de division qui ne bordent aucune zone colorée (le pied du pairlé). */
+const EXTRA_LINES = { "Pairlé": [[C, M], [C, B + E]], "Pairlé renversé": [[C, 130], [C, T - E]] };
+
+/** La ligne héraldique est-elle dessinée sur cette partition ou cette pièce ? */
+export function canDrawLine(spec) {
+  if (spec.line) return Array.isArray(PARTITIONS[spec.partition]) && spec.partition !== "Écartelé en six";
+  if (spec.charge?.line) return LINED_ORDINARIES.includes(spec.charge.name);
+  return true;
+}
+const LINED_ORDINARIES = ["Chef", "Pal", "Vergette", "Divise", "Bande", "Barre", "Cotice", "Croix", "Chevron", "Étai", "Canton"];
 
 /** Pièces ordinaires : forme simple dans la couleur de la charge. */
-function ordinary(name, fill) {
+function ordinary(name, fill, line = null) {
   const shape = (d, extra = "") => `<path d="${d}" fill="${fill}" ${extra}/>`;
-  const band = (h, angle) => `<rect x="-220" y="${-h / 2}" width="440" height="${h}" fill="${fill}" transform="translate(${C} 120) rotate(${angle})"/>`;
+  const lined = points => shape(poly(points, line));
+  // Bande : rectangle tourné autour du centre ; ses deux grands côtés reçoivent la ligne.
+  const band = (h, angle) => `<path d="${poly([[-220, -h / 2, 1], [220, -h / 2, 0], [220, h / 2, 1], [-220, h / 2, 0]], line)}" fill="${fill}" transform="translate(${C} 120) rotate(${angle})"/>`;
   const stroke = (d, w) => `<path d="${d}" fill="none" stroke="${fill}" stroke-width="${w}" stroke-linejoin="miter"/>`;
+  // Chevron : bande brisée d'épaisseur t, pointe au centre.
+  const chevron = t => lined([[L - E, 205 - t, 1], [C, 92 - t, 1], [R + E, 205 - t, 0], [R + E, 205 + t, 1], [C, 92 + t, 1], [L - E, 205 + t, 0]]);
   switch (name) {
-    case "Chef": return shape(`M${L} ${T}h${W}v62h${-W}Z`);
-    case "Canton": return shape(`M${L} ${T}h72v72h-72Z`);
+    case "Chef": return lined([[L - E, T - E, 0], [R + E, T - E, 0], [R + E, 84, 1], [L - E, 84, 0]]);
+    case "Canton": return lined([[L - E, T - E, 0], [L + 72, T - E, 1], [L + 72, T + 72, 1], [L - E, T + 72, 0]]);
     case "Bordure": return `<path d="${SHIELD}" fill="none" stroke="${fill}" stroke-width="34"/>`;
-    case "Pal": return shape(`M${C - 30} ${T}h60v${H}h-60Z`);
-    case "Vergette": return shape(`M${C - 11} ${T}h22v${H}h-22Z`);
-    case "Divise": return shape(`M${L} ${M - 11}h${W}v22h${-W}Z`);
+    case "Pal": return lined([[C - 30, T - E, 1], [C - 30, B + E, 0], [C + 30, B + E, 1], [C + 30, T - E, 0]]);
+    case "Vergette": return lined([[C - 11, T - E, 1], [C - 11, B + E, 0], [C + 11, B + E, 1], [C + 11, T - E, 0]]);
+    case "Divise": return lined([[L - E, M - 11, 1], [R + E, M - 11, 0], [R + E, M + 11, 1], [L - E, M + 11, 0]]);
     case "Bande": return band(52, 45);
     case "Barre": return band(52, -45);
     case "Cotice": return band(20, 45);
-    case "Croix": return shape(`M${C - 24} ${T}h48v${H}h-48Z M${L} 82h${W}v48h${-W}Z`);
-    case "Chevron": return stroke(`M${L - 10} 205L${C} 92L${R + 10} 205`, 40);
-    case "Étai": return stroke(`M${L - 10} 205L${C} 92L${R + 10} 205`, 16);
+    case "Croix": {
+      const a = 24, y = 106;
+      return lined([[C - a, T - E, 1], [C - a, y - a, 1], [L - E, y - a, 0], [L - E, y + a, 1], [C - a, y + a, 1], [C - a, B + E, 0],
+        [C + a, B + E, 1], [C + a, y + a, 1], [R + E, y + a, 0], [R + E, y - a, 1], [C + a, y - a, 1], [C + a, T - E, 0]]);
+    }
+    case "Chevron": return chevron(22);
+    case "Étai": return chevron(8);
     case "Pairle": return stroke(`M${L} ${T}L${C} 112L${R} ${T}M${C} 112V${B}`, 34);
     case "Pile": return shape(`M${C - 52} ${T}L${C + 52} ${T}L${C} 205Z`);
     case "Pointe": return shape(`M${C - 70} ${B}L${C} 140L${C + 70} ${B}Z`);
@@ -161,14 +227,24 @@ const LAYOUTS = {
   7: [[C - 34, 56, 0.28], [C + 34, 56, 0.28], [C - 34, 100, 0.28], [C + 34, 100, 0.28], [C - 34, 144, 0.28], [C + 34, 144, 0.28], [C, 190, 0.28]]
 };
 
-/** Charge dessinée (silhouette), ou cercle marqué « ? » si l'icône manque encore. */
-function figure(name, count, fill) {
+/**
+ * Attitudes : chaque silhouette n'a qu'une pose, l'attitude est suggérée par une transformation
+ * (bête dressée inclinée, couchée aplatie, regardant retournée). Les autres gardent la pose de l'icône.
+ */
+const ATTITUDES = {
+  rampant: "rotate(-22)", saillant: "rotate(-34)", accroupi: "translate(0 8) scale(1 0.86)",
+  dormant: "translate(0 18) scale(1.05 0.68)", regardant: "scale(-1 1)"
+};
+
+/** Charge dessinée (silhouette), ou cercle marqué « ? » si l'icône manque. */
+function figure(name, count, fill, attitude) {
   const icon = HERALDRY_ICONS[name];
+  const pose = ATTITUDES[attitude] ?? "";
   return (LAYOUTS[Math.min(7, Math.max(1, count))]).map(([x, y, k]) => {
     const size = 150 * k;
     if (!icon) return `<g transform="translate(${x} ${y})"><circle r="${size / 2.4}" fill="${fill}"/><text y="${size / 7}" text-anchor="middle" font-size="${size / 2.2}" fill="#0008">?</text></g>`;
     const s = size / 512;
-    return `<path d="${icon.d}" fill="${fill}" stroke="#000" stroke-opacity="0.45" stroke-width="${1.2 / s}" transform="translate(${x - size / 2} ${y - size / 2}) scale(${s})"/>`;
+    return `<g transform="translate(${x} ${y}) ${pose}"><path d="${icon.d}" fill="${fill}" stroke="#000" stroke-opacity="0.45" stroke-width="${1.2 / s}" transform="scale(${s}) translate(-256 -256)"/></g>`;
   }).join("");
 }
 
@@ -201,17 +277,20 @@ export function renderArms(spec, { id = "afc-arms" } = {}) {
   const zones = PARTITIONS[spec.partition];
   let field = `<rect x="${L}" y="${T}" width="${W}" height="${H}" fill="${paint(first)}"/>`;
   if (zones && second) {
-    field += `<path d="${zones[0]}" fill="${paint(second)}"/>`;
-    field += zones.map(d => `<path d="${d}" fill="none" stroke="#000" stroke-opacity="0.35" stroke-width="1.5"/>`).join("");
+    const d = Array.isArray(zones) ? zones.map(p => poly(p, spec.line)).join(" ") : zones;
+    const extra = EXTRA_LINES[spec.partition];
+    const lineD = extra ? `M${extra[0][0]} ${extra[0][1]}${segment(extra[0], extra[1], spec.line)}` : "";
+    field += `<path d="${d}" fill="${paint(second)}"/>`;
+    field += `<path d="${d} ${lineD}" fill="none" stroke="#000" stroke-opacity="0.35" stroke-width="1.5"/>`;
   }
 
   let charge = "";
   const c = spec.charge;
   if (c) {
     const fill = paint(c.color);
-    if (c.type === "ordinary") charge = ordinary(c.name, fill) ?? "";
+    if (c.type === "ordinary") charge = ordinary(c.name, fill, c.line) ?? "";
     else if (c.type === "subordinary") charge = subordinary(c.name, fill) ?? "";
-    else charge = figure(c.name, c.count ?? 1, fill);
+    else charge = figure(c.name, c.count ?? 1, fill, c.attitude);
   }
 
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
