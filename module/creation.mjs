@@ -11,7 +11,7 @@
  */
 import {
   COMPANY_EVENTS, COMPANY_FOUNDINGS, COMPANY_ORIGINS, COMPANY_RESOURCES,
-  HOUSE_EVENTS, HOUSE_FOUNDINGS, HOUSE_RESOURCES, REALM_MODIFIERS, REALMS, SYSTEM_ID
+  HOUSE_EVENTS, HOUSE_FOUNDINGS, HOUSE_RESOURCES, REALM_MODIFIERS, REALM_ROLLS, REALMS, SYSTEM_ID
 } from "./config.mjs";
 
 const { DialogV2 } = foundry.applications.api;
@@ -44,6 +44,8 @@ function creationTables(type) {
     originField: "realm",
     originLabel: "AFC.House.realm",
     origins: Object.fromEntries(Object.keys(REALMS).map(k => [k, { label: REALMS[k], mods: REALM_MODIFIERS[k] ?? {} }])),
+    // Région tirée au 3d6 (table 6-1) : premier palier atteint.
+    originRoll: { formula: "3d6", table: REALM_ROLLS },
     foundings: HOUSE_FOUNDINGS,
     events: HOUSE_EVENTS,
     rerollLowest: false
@@ -83,6 +85,12 @@ export async function runCreation(actor) {
     rejectClose: false
   });
   if (!step1) return;
+
+  // Région tirée au hasard (Maison).
+  if (step1.origin === "random" && tables.originRoll) {
+    const total = (await new Roll(tables.originRoll.formula).evaluate()).total;
+    step1.origin = tables.originRoll.table.find(([max]) => total <= max)?.[1] ?? "";
+  }
 
   // Étape 2 : ressources de départ (7d6 + modificateur, minimum 0).
   const mods = tables.origins[step1.origin]?.mods ?? {};

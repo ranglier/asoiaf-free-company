@@ -133,26 +133,32 @@ export const HOUSE_FOUNDINGS = [
   { label: "AFC.House.Founding.new", events: "1d6-2" }
 ];
 
-/** Événements historiques d'une Maison (3d6, table 6-4). */
+/** Événements historiques d'une Maison (3d6, table 6-4 de l'édition française, dont l'ordre diffère de la VO). */
 const houseEvent = (key, values) => ({ label: `AFC.House.Event.${key}`, mods: houseValues(values) });
 export const HOUSE_EVENTS = {
-  3: houseEvent("ascent", ["", "+1d6", "+1d6", "", "", "+1d6", "+1d6"]),
-  4: houseEvent("catastrophe", ["", "", "", "-1d6", "-1d6", "-1d6", "-1d6"]),
-  5: houseEvent("conquest", ["-1d6", "+1d6", "+1d6", "-1d6", "+1d6", "", "+1d6"]),
-  6: houseEvent("defeat", ["-1d6", "-1d6", "-1d6", "", "-1d6", "-1d6", "-1d6"]),
-  7: houseEvent("decline", ["", "-1d6", "-1d6", "", "", "-1d6", "-1d6"]),
-  8: houseEvent("doom", ["-2d6", "-2d6", "-2d6", "-2d6", "-2d6", "-2d6", "-2d6"]),
-  9: houseEvent("favor", ["", "+1d6", "+1d6", "+1d6", "", "+1d6", ""]),
-  10: houseEvent("glory", ["+1d6", "+1d6", "", "+1d6", "", "+1d6", ""]),
+  3: houseEvent("calamity", ["-2d6", "-2d6", "-2d6", "-2d6", "-2d6", "-2d6", "-2d6"]),
+  4: houseEvent("defeat", ["-1d6", "-1d6", "-1d6", "", "-1d6", "-1d6", "-1d6"]),
+  5: houseEvent("catastrophe", ["", "", "", "-1d6", "-1d6", "-1d6", "-1d6"]),
+  6: houseEvent("madness", ["6-2d6", "6-2d6", "6-2d6", "6-2d6", "6-2d6", "6-2d6", "6-2d6"]),
+  7: houseEvent("invasion", ["", "", "", "-2d6", "-1d6", "-1d6", "-1d6"]),
+  8: houseEvent("scandal", ["", "-1d6", "-1d6", "", "", "-1d6", ""]),
+  9: houseEvent("treachery", ["", "-1d6", "", "-1d6", "", "+1d6", ""]),
+  10: houseEvent("decline", ["", "-1d6", "-1d6", "", "", "-1d6", "-1d6"]),
   11: { label: "AFC.House.Event.infrastructure", choose: 2, formula: "1d6" },
-  12: houseEvent("invasion", ["", "", "", "-2d6", "-1d6", "-1d6", "-1d6"]),
-  13: houseEvent("madness", ["6-2d6", "6-2d6", "6-2d6", "6-2d6", "6-2d6", "6-2d6", "6-2d6"]),
-  14: houseEvent("scandal", ["", "-1d6", "-1d6", "", "", "-1d6", ""]),
-  15: houseEvent("treachery", ["", "-1d6", "", "-1d6", "", "+1d6", ""]),
-  16: houseEvent("victory", ["+1d6", "+1d6", "", "", "", "+1d6", ""]),
-  17: houseEvent("villain", ["", "+1d6", "", "-1d6", "-1d6", "+1d6", ""]),
+  12: houseEvent("evolution", ["", "+1d6", "+1d6", "", "", "+1d6", "+1d6"]),
+  13: houseEvent("favor", ["", "+1d6", "+1d6", "+1d6", "", "+1d6", ""]),
+  14: houseEvent("victory", ["+1d6", "+1d6", "", "", "", "+1d6", ""]),
+  15: houseEvent("blackSheep", ["", "+1d6", "", "-1d6", "-1d6", "+1d6", ""]),
+  16: houseEvent("glory", ["+1d6", "+1d6", "", "+1d6", "", "+1d6", ""]),
+  17: houseEvent("conquest", ["-1d6", "+1d6", "+1d6", "-1d6", "+1d6", "", "+1d6"]),
   18: houseEvent("windfall", ["+1d6", "+2d6", "+1d6", "+1d6", "+1d6", "+2d6", "+2d6"])
 };
+
+/** Région de départ tirée au 3d6 (table 6-1). */
+export const REALM_ROLLS = [
+  [3, "kingsLanding"], [4, "dragonstone"], [6, "north"], [7, "ironIslands"], [9, "riverlands"],
+  [11, "mountainsOfTheMoon"], [13, "westerlands"], [15, "reach"], [17, "stormlands"], [18, "dorne"]
+];
 
 
 /** Ressources d'une Compagnie (règles maison). */

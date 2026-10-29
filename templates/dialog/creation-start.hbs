@@ -3,6 +3,7 @@
   <label>{{localize tables.originLabel}}
     <select name="origin">
       <option value="">—</option>
+      {{#if tables.originRoll}}<option value="random">{{localize "AFC.Creation.RandomRealm"}}</option>{{/if}}
       {{selectOptions origins selected=selected localize=true}}
     </select>
   </label>
