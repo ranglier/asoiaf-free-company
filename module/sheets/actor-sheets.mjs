@@ -7,7 +7,7 @@ import { CompanyCatalog } from "../apps/company-catalog.mjs";
 import { runMonthEnd } from "../month-end.mjs";
 import { runConversion } from "../conversion.mjs";
 import { runHouseEvent } from "../house-month.mjs";
-import { runHeraldry } from "../heraldry.mjs";
+import { runHeraldry, saveArmsImage } from "../heraldry.mjs";
 
 const { HandlebarsApplicationMixin } = foundry.applications.api;
 const { ActorSheetV2 } = foundry.applications.sheets;
@@ -314,8 +314,14 @@ export class HouseSheet extends AFCActorSheet {
   }
 
   static async #onHeraldry() {
-    const arms = await runHeraldry();
-    if (arms) await this.document.update({ "system.arms": arms });
+    const result = await runHeraldry();
+    if (!result) return;
+    const update = { "system.arms": result.arms, "system.heraldry": result.spec };
+    if (result.portrait) {
+      const path = await saveArmsImage(this.document, result.svg);
+      if (path) update.img = path;
+    }
+    await this.document.update(update);
   }
 }
 

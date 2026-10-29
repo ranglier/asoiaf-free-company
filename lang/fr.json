@@ -363,6 +363,11 @@
       "FieldIs": "Couleurs",
       "FieldOption": "Champ {field}, charge {charge}",
       "Hint": "Règle du livre : on ne pose jamais un émail (couleur) sur un émail, ni un métal (or, argent) sur un métal. Le champ prend donc l'une des deux couleurs tirées et la charge l'autre. Le texte reste modifiable avant d'appliquer.",
+      "NotDrawn": "Prototype : « {name} » n'est pas encore dessiné (cercle marqué « ? »).",
+      "LineNotDrawn": "Prototype : la ligne « {line} » n'est pas encore dessinée.",
+      "FurUnused": "Champ plain : la fourrure tirée n'est pas utilisée (sur un champ divisé, elle remplace la seconde couleur).",
+      "UseAsPortrait": "Utiliser l'image comme portrait de la Maison",
+      "NoUpload": "Vous n'avez pas le droit d'envoyer des fichiers : seul le texte du blason est appliqué.",
       "Reroll": "Tout relancer",
       "Apply": "Appliquer"
     },

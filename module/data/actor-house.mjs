@@ -19,6 +19,8 @@ export default class HouseData extends foundry.abstract.TypeDataModel {
       head: new fields.StringField({ blank: true }),
       motto: new fields.StringField({ blank: true }),
       arms: new fields.StringField({ blank: true }),
+      // Blason structuré (générateur) : sert à redessiner l'image.
+      heraldry: new fields.ObjectField(),
       founding: new fields.StringField({ blank: true }),
       resources: new fields.SchemaField(Object.fromEntries(HOUSE_RESOURCES.map(k => [k, resource()]))),
       glory: new fields.NumberField({ required: true, integer: true, min: 0, initial: 0 }),

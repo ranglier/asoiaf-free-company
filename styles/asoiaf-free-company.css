@@ -344,3 +344,6 @@
 .afc .afc-heraldry small { color: var(--afc-ink-soft, #6b5a45); }
 .afc .afc-heraldry [data-reroll] { margin-top: 0.4rem; }
 .afc-card.house-event .afc-card-dice { margin: 0.3rem 0; }
+.afc .afc-heraldry .heraldry-top { display: grid; grid-template-columns: 1fr 230px; gap: 0.6rem; align-items: start; }
+.afc .afc-heraldry .heraldry-preview svg { width: 230px; height: 230px; display: block; border-radius: 6px; }
+.afc .afc-heraldry .heraldry-preview .hint { margin: 0.2rem 0 0; font-size: 0.85rem; }

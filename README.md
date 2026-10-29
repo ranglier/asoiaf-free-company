@@ -22,4 +22,4 @@ Projet de fan, sans lien avec Green Ronin Publishing ni avec George R. R. Martin
 
 ## Licence
 
-Code sous licence MIT (voir `LICENSE`). Polices (dossier `fonts/`) : Grenze Gotisch, MedievalSharp et Cormorant Garamond, sous licence SIL Open Font License 1.1 (textes joints).
+Code sous licence MIT (voir `LICENSE`). Polices (dossier `fonts/`) : Grenze Gotisch, MedievalSharp et Cormorant Garamond, sous licence SIL Open Font License 1.1 (textes joints). Charges du générateur de blason : icônes de game-icons.net (https://game-icons.net, auteurs Lorc, Delapouite, Caro Asercion, Cathelineau et autres, voir `module/heraldry-icons.mjs`), sous licence CC BY 3.0.
