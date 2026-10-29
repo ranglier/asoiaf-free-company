@@ -370,3 +370,6 @@ body.detached .application.afc.afc-fill.afc-dialog .window-content { max-height:
 .afc .afc-contract-help ol, .afc .afc-contract-help ul { margin: 0.1rem 0 0.2rem 1.2rem; padding: 0; }
 .afc .afc-contract-help li { margin: 0.1rem 0; }
 .afc .company-status .contract .label a.icon { margin-left: 0.3rem; cursor: pointer; }
+.afc .afc-contract-help table.needs td { padding: 0.15rem 0.4rem; }
+.afc .afc-contract-help table.needs td.role { width: 32%; }
+.afc .afc-contract-help .warn { color: var(--afc-wax); font-weight: 600; }

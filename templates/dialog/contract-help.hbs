@@ -1,6 +1,28 @@
 <div class="afc-test-dialog afc-contract-help">
   <p class="hint">{{localize "AFC.ContractHelp.Intro"}}</p>
 
+  <h3>{{localize "AFC.ContractHelp.NeedsTitle"}}</h3>
+  <table class="afc-table needs">
+    <tbody>
+      <tr><td class="role">{{localize "AFC.ContractHelp.Upkeep"}}</td>
+        <td><strong>{{needs.upkeep}}</strong> {{localize "AFC.Company.supply"}}
+          <small>{{localize "AFC.ContractHelp.UpkeepDetail" manpower=needs.manpower services=needs.services organization=needs.organization}}</small></td></tr>
+      <tr><td class="role">{{localize "AFC.ContractHelp.Breakeven"}}</td>
+        <td><strong>{{needs.wealth}}</strong> {{localize "AFC.Company.Resource.wealth"}} / {{localize "AFC.ContractHelp.Month"}}
+          <small>{{localize "AFC.ContractHelp.Dragons" n=needs.dragons}}</small></td></tr>
+      <tr><td class="role">{{localize "AFC.ContractHelp.Stock"}}</td>
+        <td>{{needs.supply}} {{localize "AFC.Company.supply"}}{{#if needs.upkeep}} <small>{{localize "AFC.ContractHelp.Autonomy" n=needs.autonomy}}</small>{{/if}}</td></tr>
+      <tr><td class="role">{{localize "AFC.ContractHelp.Treasury"}}</td>
+        <td>{{needs.treasury}} {{localize "AFC.Company.Resource.wealth"}} <small>{{localize "AFC.ContractHelp.Dragons" n=needs.treasuryDragons}}</small></td></tr>
+      {{#if needs.hasPay}}
+      <tr><td class="role">{{localize "AFC.ContractHelp.CurrentPay"}}</td>
+        <td>{{needs.pay}} {{localize "AFC.Company.Resource.wealth"}} / {{localize "AFC.ContractHelp.Month"}} <small>{{localize "AFC.ContractHelp.Dragons" n=needs.payDragons}}</small>
+          · {{#if (gte needs.margin 0)}}{{localize "AFC.ContractHelp.Covers" n=needs.margin}}{{else}}<span class="warn">{{localize "AFC.ContractHelp.Short" n=needs.deficit}}</span>{{/if}}</td></tr>
+      {{/if}}
+    </tbody>
+  </table>
+  <p class="hint">{{localize "AFC.ContractHelp.NeedsHint"}}</p>
+
   <h3>{{localize "AFC.ContractHelp.StepsTitle"}}</h3>
   <ol>
     <li>{{localize "AFC.ContractHelp.Step1"}}</li>
@@ -31,6 +53,16 @@
   {{else}}
   <p class="hint">{{localize "AFC.ContractHelp.NoServices"}}</p>
   {{/if}}
+
+  <h3>{{localize "AFC.ContractHelp.RpTitle"}}</h3>
+  <ul>
+    <li>{{localize "AFC.ContractHelp.Rp1"}}</li>
+    <li>{{localize "AFC.ContractHelp.Rp2"}}</li>
+    <li>{{localize "AFC.ContractHelp.Rp3"}}</li>
+    <li>{{localize "AFC.ContractHelp.Rp4"}}</li>
+    <li>{{localize "AFC.ContractHelp.Rp5"}}</li>
+    <li>{{localize "AFC.ContractHelp.Rp6"}}</li>
+  </ul>
 
   <h3>{{localize "AFC.ContractHelp.RemindersTitle"}}</h3>
   <ul>
