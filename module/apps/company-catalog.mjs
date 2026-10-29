@@ -113,9 +113,9 @@ export class CompanyCatalog extends HandlebarsApplicationMixin(ApplicationV2) {
       might = Math.max(0, might - 1);
       notes.push(loc("AFC.CompanyCatalog.NoteHorseMasters"));
     }
-    if (["trained", "veteran", "elite"].includes(training) && !this.#hasCategory("training")) {
-      notes.push(loc("AFC.CompanyCatalog.NoteTraining"));
-    }
+    if (training === "trained" && !this.#hasCategory("training")) notes.push(loc("AFC.CompanyCatalog.NoteTraining"));
+    // Vétérans et élites : recrutement direct ou par l'expérience, au choix du MJ.
+    if (["veteran", "elite"].includes(training)) notes.push(loc("AFC.CompanyCatalog.NoteVeteran"));
     if (typeKey === "garrison") notes.push(loc("AFC.Catalog.NoteGarrison"));
     if (typeKey === "volunteers" || typeKey === "special") notes.push(loc("AFC.CompanyCatalog.NoteSpecial"));
     // La discipline ne descend jamais sous Élémentaire (0).

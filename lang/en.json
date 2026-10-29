@@ -28,6 +28,7 @@
       "NoteHorseMasters": "Horse masters: −1 Might cost (already applied).",
       "NoteTraining": "Recruiting trained troops requires Drill sergeants or Masters-at-arms.",
       "NoteSpecial": "Special conditions on acquisition.",
+      "NoteVeteran": "Direct recruitment or through experience: at the GM's discretion.",
       "Category": {
         "forge": "Forge", "carpentry": "Carpentry", "horses": "Horses", "healing": "Healing", "staff": "Staff",
         "kitchen": "Kitchen", "discipline": "Discipline", "training": "Training", "faith": "Faith",

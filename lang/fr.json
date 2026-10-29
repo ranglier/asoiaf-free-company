@@ -28,6 +28,7 @@
       "NoteHorseMasters": "Maîtres équestres : −1 au coût en Puissance (déjà appliqué).",
       "NoteTraining": "Recruter des troupes entraînées demande des Sergents d'entraînement ou des Maîtres d'armes.",
       "NoteSpecial": "Conditions spéciales lors de l'acquisition.",
+      "NoteVeteran": "Recrutement direct ou par l'expérience : à la discrétion du MJ.",
       "Category": {
         "forge": "Forge", "carpentry": "Charpente", "horses": "Chevaux", "healing": "Soins", "staff": "État-major",
         "kitchen": "Intendance", "discipline": "Discipline", "training": "Entraînement", "faith": "Culte",
