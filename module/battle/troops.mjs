@@ -18,7 +18,7 @@ export function typeLabel(key) {
 
 /**
  * Types d'une unité : champ enregistré, sinon reconnus dans son nom (une unité à plusieurs types,
- * « Infanterie légère, Arbalétriers », cumule leurs traits). Le premier sert pour l'image.
+ * « Infanterie légère, Arbalétriers », cumule leurs traits). Le dernier (« Arbalétriers », « Cavalerie lourde ») donne le symbole.
  */
 export function unitTypesOf(item) {
   if (item.system.unitType) return [item.system.unitType];
@@ -28,8 +28,17 @@ export function unitTypesOf(item) {
     .map(part => byLabel.find(k => part.startsWith(typeLabel(k).toLowerCase()))).filter(Boolean);
 }
 
-/** Image de jeton d'un type d'unité. */
-export const troopIcon = type => `systems/${SYSTEM_ID}/assets/troops/${TYPE_ICONS[type] ?? "infantry"}.svg`;
+/** Symbole du jeton : type d'unité et camp (bleu pour la Compagnie, rouge pour l'ennemi). */
+export const troopIcon = (type, side) =>
+  `systems/${SYSTEM_ID}/assets/troops/${TYPE_ICONS[type] ?? "infantry"}-${side === "company" ? "company" : "enemy"}.svg`;
+
+/** Remet le symbole d'une troupe (acteur et jetons) après un changement de type ou de camp. */
+export async function refreshTroopImage(actor) {
+  const img = troopIcon(actor.system.unitType, actor.system.side);
+  if (actor.img === img) return;
+  await actor.update({ img, "prototypeToken.texture.src": img });
+  for (const token of actor.getActiveTokens(false, true)) await token.update({ "texture.src": img });
+}
 
 /** Dossier « Bataille » des acteurs (créé au besoin). */
 async function battleFolder() {
@@ -48,7 +57,7 @@ function viewPosition() {
 async function createTroop({ name, side, unitType, training, men, discipline = null, traits = null, source = {}, ownership = {}, hidden = false }) {
   if (!canvas.scene) return ui.notifications.warn(loc("AFC.Battle.NoScene"));
   const typeData = COMPANY_UNIT_TYPES[unitType] ?? HOUSE_UNIT_TYPES[unitType] ?? {};
-  const img = troopIcon(unitType);
+  const img = troopIcon(unitType, side);
   const actor = await Actor.create({
     name, type: "troop", img, folder: (await battleFolder()).id, ownership,
     system: {
@@ -58,7 +67,7 @@ async function createTroop({ name, side, unitType, training, men, discipline = n
       cushion: TRAINING_BATTLE[training]?.cushion ?? 0
     },
     prototypeToken: {
-      name, actorLink: true, texture: { src: img },
+      name, actorLink: true, texture: { src: img }, lockRotation: true,
       disposition: side === "company" ? CONST.TOKEN_DISPOSITIONS.FRIENDLY : CONST.TOKEN_DISPOSITIONS.HOSTILE,
       displayName: CONST.TOKEN_DISPLAY_MODES.HOVER
     }
@@ -74,7 +83,7 @@ export async function deployUnit(owner, item) {
   const ownership = Object.fromEntries(Object.entries(owner.ownership).filter(([k]) => k !== "default"));
   ownership.default = CONST.DOCUMENT_OWNERSHIP_LEVELS.LIMITED;
   const actor = await createTroop({
-    name: item.name, side: "company", unitType: types[0] ?? "", training: item.system.training,
+    name: item.name, side: "company", unitType: types.at(-1) ?? "", training: item.system.training,
     traits: [...new Set(types.flatMap(t => TYPE_TRAITS[t] ?? []))],
     men: item.system.totalMen, discipline: item.system.discipline, source: { actor: owner.id, item: item.id }, ownership
   });

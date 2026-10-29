@@ -14,7 +14,7 @@ import { TroopSheet } from "./module/sheets/troop-sheet.mjs";
 import { BattleApp } from "./module/battle/battle-app.mjs";
 import { onRenderBattleCard } from "./module/battle/engagement.mjs";
 import { registerBattleSocket } from "./module/battle/state.mjs";
-import { registerTroopStatuses, syncTroopStatus } from "./module/battle/troops.mjs";
+import { refreshTroopImage, registerTroopStatuses, syncTroopStatus } from "./module/battle/troops.mjs";
 import { evaluateTest, rollAbilityTest, rollTest } from "./module/dice/test-roll.mjs";
 import { onRenderChatMessage, resolveDamage, rollAttack } from "./module/dice/attack.mjs";
 import { registerSettings } from "./module/settings.mjs";
@@ -99,4 +99,6 @@ Hooks.on("updateActor", (actor, changes, options, userId) => {
   BattleApp.refresh();
   // Icônes d'état du jeton, posées par le client qui a fait la modification.
   if (userId === game.user.id && foundry.utils.hasProperty(changes, "system.state")) syncTroopStatus(actor);
+  // Symbole du jeton : suit le type et le camp.
+  if (userId === game.user.id && (foundry.utils.hasProperty(changes, "system.side") || foundry.utils.hasProperty(changes, "system.unitType"))) refreshTroopImage(actor);
 });
