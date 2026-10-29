@@ -103,6 +103,7 @@
       {{/each}}
       {{#if editable}}
       <p class="add-row">
+        <a class="add-item catalog" data-action="openCatalog"><i class="fa-solid fa-book-open"></i> {{localize "AFC.Catalog.Open"}}</a>
         <a class="add-item" data-action="createItem" data-type="holding"><i class="fa-solid fa-plus"></i> {{localize "AFC.Table.addHolding"}}</a>
         <a class="add-item" data-action="createItem" data-type="unit"><i class="fa-solid fa-plus"></i> {{localize "AFC.Table.addUnit"}}</a>
       </p>

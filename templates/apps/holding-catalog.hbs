@@ -1,0 +1,70 @@
+<div class="afc-sheet parchment">
+  {{> "systems/asoiaf-free-company/templates/actor/parts/tabs-nav.hbs"}}
+
+  <div class="tab-body">
+    <section class="tab {{tabs.holdings.cssClass}}" data-group="primary" data-tab="holdings">
+      {{#each groups as |g|}}
+      <div class="section-title">
+        <h2>{{localize g.label}}</h2>
+        <span class="budget {{#if (lt g.available 0)}}over{{/if}}">{{localize "AFC.House.available"}} <strong>{{g.available}}</strong></span>
+      </div>
+      <table class="afc-table">
+        <tbody>
+        {{#each g.holdings as |h|}}
+        <tr class="{{#unless h.affordable}}unequipped{{/unless}}">
+          <td><strong class="role">{{h.name}}</strong>
+            <span class="sub">{{h.effect}}{{#if h.requirement}} · {{localize "AFC.Holding.requirement"}} : {{h.requirement}}{{/if}}{{#if h.buildTime}} · {{h.buildTime}} {{localize "AFC.Catalog.Months"}}{{/if}}</span></td>
+          <td class="center big-num">{{h.cost}}</td>
+          <td class="item-actions"><button type="button" class="attack" data-action="addHolding" data-key="{{h.key}}"><i class="fa-solid fa-plus"></i> {{localize "AFC.Catalog.Add"}}</button></td>
+        </tr>
+        {{/each}}
+        </tbody>
+      </table>
+      {{/each}}
+    </section>
+
+    <section class="tab {{tabs.domain.cssClass}} builder" data-group="primary" data-tab="domain">
+      <p class="hint">{{localize "AFC.Catalog.DomainHint"}}</p>
+      <label>{{localize "AFC.Catalog.TerrainLabel"}}
+        <select name="terrain">{{#each terrains as |t|}}<option value="{{t.key}}">{{t.label}} ({{t.cost}})</option>{{/each}}</select>
+      </label>
+      <h2>{{localize "AFC.Catalog.FeaturesLabel"}}</h2>
+      <div class="afc-choose">
+        {{#each features as |f|}}<label class="checkbox"><input type="checkbox" name="feature" value="{{f.key}}"> {{f.label}} (+{{f.cost}})</label>{{/each}}
+      </div>
+      <label>{{localize "AFC.Catalog.CommunityLabel"}}
+        <select name="community"><option value="">—</option>{{#each communities as |c|}}<option value="{{c.key}}">{{c.label}} (+{{c.cost}})</option>{{/each}}</select>
+      </label>
+      <div class="builder-result">
+        <span data-domain-name></span>
+        <span>{{localize "AFC.Holding.cost"}} <strong data-domain-cost></strong> · {{localize "AFC.House.available"}} {{landsAvailable}}</span>
+        <button type="button" class="attack" data-action="addDomain"><i class="fa-solid fa-plus"></i> {{localize "AFC.Catalog.AddDomain"}}</button>
+      </div>
+    </section>
+
+    <section class="tab {{tabs.unit.cssClass}} builder" data-group="primary" data-tab="unit">
+      <p class="hint">{{localize "AFC.Catalog.UnitHint"}}</p>
+      <div class="grid-2">
+        <label>{{localize "AFC.Unit.training"}}
+          <select name="training">{{#each trainings as |t|}}<option value="{{t.key}}">{{t.label}} ({{t.cost}})</option>{{/each}}</select>
+        </label>
+        <label>{{localize "AFC.Catalog.UnitTypeLabel"}}
+          <select name="unitType">{{#each unitTypes as |t|}}<option value="{{t.key}}">{{t.label}} (+{{t.cost}})</option>{{/each}}</select>
+        </label>
+      </div>
+      <div class="builder-result">
+        <span>{{localize "AFC.Catalog.UnitCost"}} <strong data-unit-cost></strong> · {{localize "AFC.Unit.discipline"}} <strong data-unit-discipline></strong> · {{localize "AFC.House.available"}} {{powerAvailable}}</span>
+        <span class="hint" data-unit-notes></span>
+        <button type="button" class="attack" data-action="addUnit"><i class="fa-solid fa-plus"></i> {{localize "AFC.Catalog.AddUnit"}}</button>
+      </div>
+      <table class="afc-table">
+        <thead><tr><th>{{localize "AFC.Catalog.UnitTypeLabel"}}</th><th class="center">{{localize "AFC.Holding.cost"}}</th><th class="center">{{localize "AFC.Unit.discipline"}}</th><th>{{localize "AFC.Unit.keyAbilities"}}</th></tr></thead>
+        <tbody>
+        {{#each unitTypes as |t|}}
+        <tr><td class="role">{{t.label}}</td><td class="center">+{{t.cost}}</td><td class="center">{{numberFormat t.discipline sign=true}}</td><td class="effect">{{t.abilityNames}}</td></tr>
+        {{/each}}
+        </tbody>
+      </table>
+    </section>
+  </div>
+</div>

@@ -291,3 +291,14 @@
 .afc-card.creation .res strong { font-family: var(--font-primary, "Signika", sans-serif); font-size: 18px; }
 .afc-card.creation .creation-events { margin: 0; padding-left: 1.2rem; font-size: 14px; }
 .afc-card.creation .creation-events small { color: var(--afc-ink-soft); }
+
+/* ---------- Catalogue du patrimoine ---------- */
+.afc-catalog .window-content { background: var(--afc-paper); color: var(--afc-ink); font-family: var(--afc-font-body); font-size: 17px; font-weight: 500; }
+.afc-catalog .builder { display: flex; flex-direction: column; gap: 0.5rem; }
+.afc-catalog .tab-body .tab.builder:not(.active) { display: none; }
+.afc-catalog .builder-result { display: flex; flex-direction: column; gap: 0.3rem; padding: 0.5rem; margin-top: 0.4rem; border: 1px solid var(--afc-wax); border-radius: 5px; background: var(--afc-paper-light); }
+.afc-catalog .builder-result [data-domain-name] { font-family: var(--afc-font-label); font-size: 18px; }
+.afc-catalog .builder-result strong { font-family: var(--font-primary, "Signika", sans-serif); font-size: 20px; color: var(--afc-wax); }
+.afc-catalog .builder-result button { align-self: flex-start; }
+.afc-catalog table.afc-table td { font-size: 16px; }
+.afc .add-item.catalog { color: var(--afc-wax); }

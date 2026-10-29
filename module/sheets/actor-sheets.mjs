@@ -2,6 +2,7 @@ import * as CONFIG_AFC from "../config.mjs";
 import { rollAbilityTest } from "../dice/test-roll.mjs";
 import { rollAttack, weaponProfile, weaponQualities } from "../dice/attack.mjs";
 import { runCreation } from "../creation.mjs";
+import { HoldingCatalog } from "../apps/holding-catalog.mjs";
 
 const { HandlebarsApplicationMixin } = foundry.applications.api;
 const { ActorSheetV2 } = foundry.applications.sheets;
@@ -253,7 +254,7 @@ export class HouseSheet extends AFCActorSheet {
   static DEFAULT_OPTIONS = {
     classes: ["house"],
     position: { width: 860, height: 860 },
-    actions: { createHouse: HouseSheet.#onCreateHouse }
+    actions: { createHouse: HouseSheet.#onCreateHouse, openCatalog: HouseSheet.#onOpenCatalog }
   };
   static PARTS = { sheet: { template: `${TPL}/house.hbs`, scrollable: [".tab-body"] } };
   static TABS = {
@@ -289,6 +290,10 @@ export class HouseSheet extends AFCActorSheet {
 
   static #onCreateHouse() {
     return runCreation(this.document);
+  }
+
+  static #onOpenCatalog() {
+    return new HoldingCatalog(this.document).render(true);
   }
 }
 
