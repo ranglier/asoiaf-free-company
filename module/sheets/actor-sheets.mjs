@@ -9,6 +9,7 @@ import { runConversion } from "../conversion.mjs";
 import { openContractHelp } from "../contract-help.mjs";
 import { runHouseEvent } from "../house-month.mjs";
 import { runHeraldry, saveArmsImage } from "../heraldry.mjs";
+import { deployUnit } from "../battle/troops.mjs";
 
 const { HandlebarsApplicationMixin } = foundry.applications.api;
 const { ActorSheetV2 } = foundry.applications.sheets;
@@ -41,7 +42,8 @@ class AFCActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       setGrip: AFCActorSheet.#onSetGrip,
       addRow: AFCActorSheet.#onAddRow,
       removeRow: AFCActorSheet.#onRemoveRow,
-      openActor: AFCActorSheet.#onOpenActor
+      openActor: AFCActorSheet.#onOpenActor,
+      deployUnit: AFCActorSheet.#onDeployUnit
     }
   };
 
@@ -58,6 +60,7 @@ class AFCActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       system: actor.system,
       config: CONFIG_AFC,
       editable: this.isEditable,
+      isGM: game.user.isGM,
       editMode: this.isEditable && this.editMode,
       htmlField,
       enrichedHtml: await TextEditor.enrichHTML(actor.system[htmlField] ?? "", { relativeTo: actor, secrets: actor.isOwner }),
@@ -197,6 +200,12 @@ class AFCActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
 
   static #onOpenActor(event, target) {
     return game.actors.get(target.dataset.actorId)?.sheet.render(true);
+  }
+
+  /** Déploie une unité sur la scène active, en Troupe (MJ). */
+  static #onDeployUnit(event, target) {
+    const item = this.document.items.get(target.closest("[data-item-id]").dataset.itemId);
+    return item && deployUnit(this.document, item);
   }
 
   static async #onSetGrip(event, target) {

@@ -96,6 +96,8 @@ export class HoldingData extends foundry.abstract.TypeDataModel {
 export class UnitData extends foundry.abstract.TypeDataModel {
   static defineSchema() {
     return {
+      // Type du catalogue (traits de bataille) ; vide pour les anciennes unités (reconnu au nom).
+      unitType: new fields.StringField({ blank: true }),
       training: new fields.StringField({ initial: "green", choices: Object.keys(UNIT_TRAININGS) }),
       classes: new fields.StringField({ initial: "I" }),
       mightCost: int(1, { min: 0 }),

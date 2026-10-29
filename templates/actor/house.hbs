@@ -94,7 +94,7 @@
             <td>{{localize u.training}}</td>
             <td class="center">{{u.item.system.discipline}}</td>
             <td class="center big-num" data-tooltip="{{u.item.system.mightCost}} × {{u.item.system.count}}">{{u.item.system.totalMight}}</td>
-            <td class="item-actions">{{#if @root.editable}}<a class="icon" data-action="deleteItem" data-tooltip="{{localize "Delete"}}"><i class="fa-solid fa-trash"></i></a>{{/if}}</td>
+            <td class="item-actions">{{#if @root.isGM}}<a class="icon" data-action="deployUnit" data-tooltip="AFC.Battle.Deploy"><i class="fa-solid fa-chess-pawn"></i></a>{{/if}}{{#if @root.editable}}<a class="icon" data-action="deleteItem" data-tooltip="{{localize "Delete"}}"><i class="fa-solid fa-trash"></i></a>{{/if}}</td>
           </tr>
           {{/each}}
           </tbody>

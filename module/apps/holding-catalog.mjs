@@ -163,6 +163,7 @@ export class HoldingCatalog extends HandlebarsApplicationMixin(ApplicationV2) {
     await this.actor.createEmbeddedDocuments("Item", [{
       name, type: "unit",
       system: {
+        unitType: u.typeKey,
         training: u.training, mightCost: u.cost, disciplineMod: u.type.discipline,
         classes: u.type.classes, men: u.type.men ?? 100, count: u.count,
         keyAbilities: u.type.abilities.map(a => loc(ABILITIES[a].label)).join(", "),

@@ -1,0 +1,34 @@
+<div class="battle-group" data-group="{{g.id}}">
+  <div class="battle-group-head">
+    <strong>{{g.name}}</strong> <small>· {{g.officerName}}</small>
+    {{#if isGM}}<a class="icon" data-action="deleteGroup" data-tooltip="AFC.Battle.DeleteGroup"><i class="fa-solid fa-xmark"></i></a>{{/if}}
+  </div>
+  {{#if g.tooMany}}<p class="hint warn">{{localize "AFC.Battle.TooMany" n=g.tooMany}}</p>{{/if}}
+  <div class="battle-order">
+    {{#if g.canSet}}
+    <select name="order"><option value="">—</option>{{selectOptions orders selected=g.order localize=true}}</select>
+    <button type="button" data-action="setOrder">{{#if g.counterMode}}{{localize "AFC.Battle.Counter"}}{{else}}{{localize "AFC.Battle.GiveOrder"}}{{/if}}</button>
+    {{else if g.showOrder}}
+    <span class="tag order">{{g.orderText}}</span>
+    {{else}}
+    <span class="tag">{{#if g.pending}}{{localize "AFC.Battle.Waiting"}}{{else}}{{localize "AFC.Battle.OrderGiven"}}{{/if}}</span>
+    {{/if}}
+    {{#if g.countered}}<small>{{localize "AFC.Battle.Countered"}}</small>{{/if}}
+  </div>
+  <ul class="battle-troops">
+    {{#each g.troops as |t|}}
+    <li data-troop="{{t.id}}" class="state-{{t.state}}">
+      <a data-action="openTroop">{{t.name}}</a>{{#if t.hidden}} <i class="fa-solid fa-eye-slash" data-tooltip="AFC.Battle.Hidden"></i>{{/if}}
+      <span class="tag state">{{localize t.stateLabel}}</span>
+      {{#if t.known}}
+      <small>{{localize "AFC.Battle.Cushion"}} {{t.cushion}}/{{t.cushionMax}} · {{localize "AFC.Battle.Disorders"}} {{t.disorders}} · {{localize "AFC.Battle.Rallies"}} {{t.rallies}}/{{t.ralliesMax}} · {{localize "AFC.Battle.Move"}} {{t.move}}{{#if t.range}} · {{localize "AFC.Battle.Range"}} {{t.range}}{{/if}}</small>
+      <small class="traits">{{t.traits}}</small>
+      {{/if}}
+      <span class="troop-actions">
+        {{#if t.canRally}}<a class="icon" data-action="rally" data-tooltip="AFC.Battle.Rally"><i class="fa-solid fa-flag"></i></a>{{/if}}
+        {{#if ../isGM}}<a class="icon" data-action="removeTroop" data-tooltip="AFC.Battle.RemoveTroop"><i class="fa-solid fa-user-minus"></i></a>{{/if}}
+      </span>
+    </li>
+    {{/each}}
+  </ul>
+</div>

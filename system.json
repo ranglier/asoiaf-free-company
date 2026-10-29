@@ -2,7 +2,7 @@
   "id": "asoiaf-free-company",
   "title": "ASOIAF Free Company",
   "description": "Système non officiel pour jouer dans l'univers du Trône de Fer avec une compagnie de mercenaires : personnages, Maisons et Compagnies, tests à réserve de d6.",
-  "version": "0.13.1",
+  "version": "0.14.0",
   "compatibility": {
     "minimum": "14",
     "verified": "14.369"
@@ -11,6 +11,7 @@
     { "name": "Jules" }
   ],
   "esmodules": ["asoiaf-free-company.mjs"],
+  "socket": true,
   "styles": ["styles/asoiaf-free-company.css"],
   "languages": [
     { "lang": "fr", "name": "Français", "path": "lang/fr.json" },
@@ -21,7 +22,8 @@
       "character": { "htmlFields": ["biography"] },
       "npc": { "htmlFields": ["biography"] },
       "house": { "htmlFields": ["history"] },
-      "company": { "htmlFields": ["history"] }
+      "company": { "htmlFields": ["history"] },
+      "troop": {}
     },
     "Item": {
       "weapon": { "htmlFields": ["description"] },

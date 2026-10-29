@@ -120,7 +120,7 @@
           <td class="center" data-tooltip="{{u.item.system.manpowerCost}} × {{u.item.system.count}}">{{u.item.system.totalManpower}}</td>
           <td class="center" data-tooltip="{{u.item.system.mightCost}} × {{u.item.system.count}}">{{u.item.system.totalMight}}</td>
           <td class="center">{{u.item.system.experience}}</td>
-          <td class="item-actions">{{#if @root.editable}}<a class="icon" data-action="deleteItem" data-tooltip="{{localize "Delete"}}"><i class="fa-solid fa-trash"></i></a>{{/if}}</td>
+          <td class="item-actions">{{#if @root.isGM}}<a class="icon" data-action="deployUnit" data-tooltip="AFC.Battle.Deploy"><i class="fa-solid fa-chess-pawn"></i></a>{{/if}}{{#if @root.editable}}<a class="icon" data-action="deleteItem" data-tooltip="{{localize "Delete"}}"><i class="fa-solid fa-trash"></i></a>{{/if}}</td>
         </tr>
         {{else}}
         <tr><td colspan="9" class="hint">{{localize "AFC.Table.noUnit"}}</td></tr>

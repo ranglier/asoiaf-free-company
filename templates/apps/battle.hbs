@@ -1,0 +1,44 @@
+<div class="afc-sheet parchment afc-battle">
+  <header class="battle-head">
+    <h2>{{localize "AFC.Battle.Round"}} {{battle.round}} · {{#if battle.revealed}}{{localize "AFC.Battle.PhaseRevealed"}}{{else}}{{localize "AFC.Battle.PhaseOrders"}}{{/if}}</h2>
+    {{#if isGM}}
+    <label class="weather">{{localize "AFC.Battle.WeatherLabel"}}<select name="weather">{{selectOptions weathers selected=battle.weather localize=true}}</select></label>
+    {{else}}
+    <span class="tag">{{localize "AFC.Battle.WeatherLabel"}} : {{localize weatherLabel}}</span>
+    {{/if}}
+  </header>
+
+  {{#if isGM}}
+  <div class="title-buttons battle-gm">
+    <button type="button" data-action="reveal" {{#if battle.revealed}}disabled{{/if}}><i class="fa-solid fa-eye"></i> {{localize "AFC.Battle.Reveal"}}</button>
+    <button type="button" data-action="endTurn"><i class="fa-solid fa-forward-step"></i> {{localize "AFC.Battle.EndTurn"}}</button>
+    <button type="button" data-action="newGroup"><i class="fa-solid fa-object-group"></i> {{localize "AFC.Battle.NewGroup"}}</button>
+    <button type="button" data-action="newEnemy"><i class="fa-solid fa-skull"></i> {{localize "AFC.Battle.NewEnemy"}}</button>
+    <button type="button" data-action="report"><i class="fa-solid fa-scroll"></i> {{localize "AFC.Battle.Report"}}</button>
+    <button type="button" data-action="reset"><i class="fa-solid fa-trash"></i> {{localize "AFC.Battle.Reset"}}</button>
+  </div>
+  {{/if}}
+
+  <div class="battle-columns">
+    <section>
+      <h3>{{localize "AFC.Battle.Side.company"}}</h3>
+      {{#each company as |g|}}{{> "systems/asoiaf-free-company/templates/apps/battle-group.hbs" g=g orders=@root.orders isGM=@root.isGM}}{{else}}<p class="hint">{{localize "AFC.Battle.NoGroup"}}</p>{{/each}}
+    </section>
+    <section>
+      <h3>{{localize "AFC.Battle.Side.enemy"}}</h3>
+      {{#each enemy as |g|}}{{> "systems/asoiaf-free-company/templates/apps/battle-group.hbs" g=g orders=@root.orders isGM=@root.isGM}}{{else}}<p class="hint">{{localize "AFC.Battle.NoGroup"}}</p>{{/each}}
+    </section>
+  </div>
+
+  {{#if isGM}}
+  <section class="battle-engage">
+    <h3>{{localize "AFC.Battle.Engagement"}}</h3>
+    <p class="hint">{{localize "AFC.Battle.EngageHint"}}</p>
+    <p>{{localize "AFC.Battle.Attacker"}} : <b>{{#if controlled}}{{controlled}}{{else}}—{{/if}}</b> · {{localize "AFC.Battle.Target"}} : <b>{{#if target}}{{target}}{{else}}—{{/if}}</b></p>
+    <div class="title-buttons">
+      <button type="button" data-action="shoot"><i class="fa-solid fa-bullseye"></i> {{localize "AFC.Battle.Shoot"}}</button>
+      <button type="button" data-action="melee"><i class="fa-solid fa-khanda"></i> {{localize "AFC.Battle.Melee"}}</button>
+    </div>
+  </section>
+  {{/if}}
+</div>

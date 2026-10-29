@@ -1,0 +1,45 @@
+<div class="afc-sheet parchment edit-mode">
+  <header class="afc-header">
+    <img class="portrait" src="{{actor.img}}" data-action="editImage" alt="{{actor.name}}">
+    <div class="identity">
+      <input class="name" type="text" name="name" value="{{actor.name}}">
+      <div class="grid-3">
+        <label>{{localize "AFC.Battle.Side.label"}}<select name="system.side">{{selectOptions sides selected=system.side localize=true}}</select></label>
+        <label>{{localize "AFC.Battle.UnitType"}}<select name="system.unitType"><option value=""></option>{{selectOptions types selected=system.unitType}}</select></label>
+        <label>{{localize "AFC.Unit.training"}}<select name="system.training">{{selectOptions trainings selected=system.training localize=true}}</select></label>
+      </div>
+    </div>
+  </header>
+
+  <section class="afc-vitals troop-vitals">
+    <div class="vital"><span class="label">{{localize "AFC.Battle.StateLabel"}}</span>
+      <select name="system.state">{{selectOptions states selected=system.state localize=true}}</select></div>
+    <div class="vital"><span class="label">{{localize "AFC.Battle.Cushion"}}</span>
+      <span class="value"><input type="number" name="system.cushion" value="{{system.cushion}}" min="0"> / {{system.cushionMax}}</span></div>
+    <div class="vital"><span class="label">{{localize "AFC.Battle.Discipline"}}</span>
+      <input type="number" name="system.discipline" value="{{system.discipline}}" min="0"></div>
+    <div class="vital"><span class="label">{{localize "AFC.Battle.Rank"}}</span><span class="value big-num">{{system.rank}}</span></div>
+    <div class="vital"><span class="label">{{localize "AFC.Battle.Move"}}</span><span class="value big-num">{{system.move}}</span></div>
+    <div class="vital"><span class="label">{{localize "AFC.Battle.Range"}}</span><span class="value big-num">{{#if system.range}}{{system.range}}{{else}}—{{/if}}</span></div>
+  </section>
+
+  <section class="afc-vitals troop-vitals">
+    <div class="vital"><span class="label">{{localize "AFC.Battle.Disorders"}}</span><input type="number" name="system.disorders" value="{{system.disorders}}" min="0"></div>
+    <div class="vital"><span class="label">{{localize "AFC.Battle.Rallies"}}</span>
+      <span class="value"><input type="number" name="system.rallies" value="{{system.rallies}}" min="0"> / {{system.ralliesMax}}</span></div>
+    <div class="vital"><span class="label">{{localize "AFC.Battle.Men"}}</span><input type="number" name="system.men" value="{{system.men}}" min="0"></div>
+    <div class="vital"><span class="label">{{localize "AFC.Battle.Loss"}}</span><span class="value">{{system.loss}} % ({{system.lostMen}})</span></div>
+  </section>
+
+  <div class="section-title">
+    <h2>{{localize "AFC.Battle.Traits"}}</h2>
+    {{#if editable}}<a class="add-item" data-action="resetTraits"><i class="fa-solid fa-rotate"></i> {{localize "AFC.Battle.ResetTraits"}}</a>{{/if}}
+  </div>
+  <div class="troop-traits">
+    {{#each traits as |t|}}
+    <label class="checkbox" data-tooltip="{{t.effect}}"><input type="checkbox" name="trait.{{t.key}}" {{checked t.on}}> {{t.label}}</label>
+    {{/each}}
+  </div>
+
+  <label>{{localize "AFC.Battle.Notes"}}<input type="text" name="system.notes" value="{{system.notes}}"></label>
+</div>

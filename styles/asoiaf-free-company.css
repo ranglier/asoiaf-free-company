@@ -380,3 +380,37 @@ body.detached .application.afc.afc-fill.afc-dialog .window-content { max-height:
 .afc .afc-custom-events .custom-event-deltas label { font-size: 0.8rem; }
 .afc .afc-custom-events .custom-event-deltas input { width: 100%; text-align: center; }
 .afc .afc-creation-summary td input[type="number"] { width: 4.5rem; text-align: center; }
+
+/* ---------- Bataille ---------- */
+.afc.afc-battle-app .window-content { padding: 0; overflow: hidden; }
+.afc .afc-battle { height: 100%; overflow-y: auto; padding: 0.6rem 0.8rem; }
+.afc .afc-battle .battle-head { display: flex; justify-content: space-between; align-items: center; gap: 0.6rem; }
+.afc .afc-battle .battle-head h2 { margin: 0; }
+.afc .afc-battle .battle-head .weather { display: flex; align-items: center; gap: 0.4rem; }
+.afc .afc-battle .battle-gm { flex-wrap: wrap; margin: 0.4rem 0; }
+.afc .afc-battle .battle-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; }
+.afc .afc-battle .battle-group { border: 1px solid var(--afc-line); border-radius: 4px; padding: 0.35rem 0.5rem; margin-bottom: 0.5rem; background: var(--afc-paper-light); }
+.afc .afc-battle .battle-group-head { display: flex; gap: 0.3rem; align-items: baseline; }
+.afc .afc-battle .battle-group-head a.icon { margin-left: auto; }
+.afc .afc-battle .battle-order { display: flex; gap: 0.4rem; align-items: center; margin: 0.3rem 0; }
+.afc .afc-battle .battle-order select { flex: 1 1 auto; }
+.afc .afc-battle .tag.order { background: var(--afc-wax); color: var(--afc-wax-text); }
+.afc .afc-battle .battle-troops { list-style: none; margin: 0; padding: 0; }
+.afc .afc-battle .battle-troops li { border-top: 1px dotted var(--afc-line); padding: 0.25rem 0; display: flex; flex-wrap: wrap; gap: 0.3rem; align-items: baseline; }
+.afc .afc-battle .battle-troops li small { flex-basis: 100%; color: var(--afc-ink-soft); }
+.afc .afc-battle .battle-troops .troop-actions { margin-left: auto; display: flex; gap: 0.3rem; }
+.afc .afc-battle .state-shaken .tag.state { background: #c9a227; color: #2b2118; }
+.afc .afc-battle .state-disordered .tag.state { background: #b5651d; color: #fff; }
+.afc .afc-battle .state-routed .tag.state, .afc .afc-battle .state-destroyed .tag.state { background: var(--afc-wax); color: var(--afc-wax-text); }
+.afc .afc-battle .battle-engage { border-top: 2px solid var(--afc-border); margin-top: 0.6rem; padding-top: 0.4rem; }
+.afc .afc-battle-roll .battle-sides { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; }
+.afc .afc-battle-roll .battle-mods { margin: 0.2rem 0 0.4rem 1rem; padding: 0; }
+.afc .afc-battle-roll .warn, .afc-card.battle .warn { color: var(--afc-wax); }
+.afc-card.battle .battle-result { font-weight: 600; margin: 0.3rem 0; }
+.afc-card.battle button { width: 100%; margin-top: 0.3rem; }
+.afc.troop .troop-vitals { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.4rem; margin: 0.4rem 0; }
+.afc.troop .troop-vitals input { width: 4rem; }
+.afc.troop .troop-traits { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.2rem 0.6rem; margin-bottom: 0.6rem; }
+.afc .afc-battle .battle-group, .afc .afc-battle .battle-group-head strong, .afc .afc-battle .battle-group-head small { color: var(--afc-ink); }
+.afc .afc-battle .tag { background: var(--afc-paper); color: var(--afc-ink); border: 1px solid var(--afc-line); border-radius: 3px; padding: 0 0.3rem; font-size: 0.85rem; }
+.afc .afc-battle .battle-group-head strong { font-family: var(--afc-font-label); }
