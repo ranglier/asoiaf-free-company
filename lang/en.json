@@ -432,6 +432,12 @@
       "Reminder3": "Unpaid wages: −10% Cohesion per month; on the second month, desertions then risk of mutiny."
     },
     "Creation": {
+      "CustomEvents": "Customization: choose the historical events instead of rolling them",
+      "CustomTitle": "Historical events (customization)",
+      "CustomIntro": "Pick each event from the table (or roll it on 3d6 with the row's die). Its effects are rolled automatically and can be edited. Handy to enter an existing sheet.",
+      "CustomCount": "Number of events",
+      "CustomRollRow": "Roll this event on 3d6",
+      "CustomChoose": "Your choice: {n} resources at {formula} each, to enter.",
       "Players": "Players (1d6 each)",
       "PlayersCol": "Players",
       "PlayersTitle": "Player modifications",

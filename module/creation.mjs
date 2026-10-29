@@ -83,7 +83,8 @@ export async function runCreation(actor) {
       callback: (event, button) => ({
         origin: button.form.elements.origin.value,
         founding: button.form.elements.founding.value,
-        players: Math.max(0, Number(button.form.elements.players?.value) || 0)
+        players: Math.max(0, Number(button.form.elements.players?.value) || 0),
+        custom: button.form.elements.customEvents.checked
       })
     },
     rejectClose: false
@@ -138,19 +139,25 @@ export async function runCreation(actor) {
   const founding = tables.foundings[foundingIndex];
   const eventCount = founding ? Math.max(1, (await new Roll(founding.events).evaluate()).total) : 0;
 
-  // Étape 4 : événements historiques (3d6), appliqués dans l'ordre (ressources minimum 0).
+  // Étape 4 : événements historiques, tirés au 3d6 ou choisis (customisation), appliqués dans l'ordre
+  // (ressources minimum 0).
   const current = Object.fromEntries(tables.resources.map(k => [k, value(k)]));
+  const picks = step1.custom ? await chooseEvents(tables, eventCount) : null;
+  if (step1.custom && !picks) return;
   const events = [];
-  for (let i = 0; i < eventCount; i++) {
-    const roll = (await new Roll("3d6").evaluate()).total;
+  for (let i = 0; i < (picks ? picks.length : eventCount); i++) {
+    const roll = picks ? picks[i].roll : (await new Roll("3d6").evaluate()).total;
     const event = tables.events[roll];
     if (!event) { events.push({ roll, name: `3d6 = ${roll}`, deltas: {} }); continue; }
-    const deltas = {};
-    if (event.choose) {
-      const chosen = await chooseResources(tables, event, current);
-      for (const key of chosen) deltas[key] = await rollModifier(event.formula);
-    } else {
-      for (const [key, formula] of Object.entries(event.mods ?? {})) deltas[key] = await rollModifier(formula);
+    let deltas = picks?.[i].deltas;
+    if (!deltas) {
+      deltas = {};
+      if (event.choose) {
+        const chosen = await chooseResources(tables, event, current);
+        for (const key of chosen) deltas[key] = await rollModifier(event.formula);
+      } else {
+        for (const [key, formula] of Object.entries(event.mods ?? {})) deltas[key] = await rollModifier(formula);
+      }
     }
     for (const [key, d] of Object.entries(deltas)) {
       const before = current[key];
@@ -165,7 +172,7 @@ export async function runCreation(actor) {
     actor, tables, rerolled, playerBonus: Boolean(tables.playerBonus && step1.players),
     origin: tables.origins[step1.origin] ? game.i18n.localize(tables.origins[step1.origin].label) : null,
     founding: founding ? game.i18n.localize(founding.label) : null,
-    eventCount,
+    eventCount: events.length,
     rows: tables.resources.map(k => ({
       label: resLabel(tables, k), roll: base[k].roll, players: base[k].players, mod: base[k].mod, start: value(k),
       events: current[k] - value(k), final: current[k]
@@ -276,4 +283,81 @@ async function choosePlayerBonus(tables, dice, base) {
   });
   // Fenêtre fermée : répartition par défaut (une ressource différente par dé).
   return chosen ?? dice.map((d, i) => tables.resources[i % tables.resources.length]);
+}
+
+/**
+ * Customisation des événements historiques (utile pour saisir une Maison ou une Compagnie déjà créée) :
+ * nombre d'événements libre, chaque événement choisi dans la table (ou tiré au 3d6 pour cette ligne),
+ * ses effets tirés automatiquement puis modifiables. Renvoie [{ roll, deltas }] ou null si annulé.
+ */
+async function chooseEvents(tables, count) {
+  const loc = key => game.i18n.localize(key);
+  const keys = Object.keys(tables.events).map(Number).sort((a, b) => a - b);
+  const eventOptions = `<option value="">—</option>${keys.map(k => `<option value="${k}">${k} · ${loc(tables.events[k].label)}</option>`).join("")}`;
+  const rows = Array.from({ length: count }, () => ({ roll: "", deltas: {} }));
+
+  // Effets d'un événement : formules tirées ; « au choix » laissé à zéro (à saisir).
+  const rollEffects = async roll => {
+    const event = tables.events[roll];
+    const deltas = {};
+    if (!event?.choose) for (const [key, formula] of Object.entries(event?.mods ?? {})) deltas[key] = await rollModifier(formula);
+    return deltas;
+  };
+  const rowHTML = (row, i) => {
+    const event = tables.events[row.roll];
+    const choose = event?.choose ? `<p class="hint">${game.i18n.format("AFC.Creation.CustomChoose", { n: event.choose, formula: event.formula })}</p>` : "";
+    return `<div class="custom-event" data-row="${i}">
+      <div class="custom-event-head"><strong>${i + 1}.</strong>
+        <select data-event>${eventOptions}</select>
+        <a class="icon" data-roll-row data-tooltip="${loc("AFC.Creation.CustomRollRow")}"><i class="fa-solid fa-dice"></i></a></div>
+      <div class="custom-event-deltas">${tables.resources.map(k => `<label>${resLabel(tables, k)}<input type="number" data-key="${k}" value="${row.deltas[k] ?? 0}"></label>`).join("")}</div>
+      ${choose}</div>`;
+  };
+
+  const result = await DialogV2.prompt({
+    window: { title: loc("AFC.Creation.CustomTitle") },
+    classes: ["afc", "afc-dialog"],
+    position: { width: 760 },
+    content: `<div class="afc-test-dialog afc-custom-events">
+      <p class="hint">${loc("AFC.Creation.CustomIntro")}</p>
+      <label>${loc("AFC.Creation.CustomCount")}<input type="number" name="count" value="${count}" min="0" max="12"></label>
+      <div data-rows></div></div>`,
+    ok: {
+      label: loc("AFC.Creation.Confirm"),
+      callback: () => rows.filter(r => r.roll).map(r => ({ roll: Number(r.roll), deltas: { ...r.deltas } }))
+    },
+    render: (ev, dialog) => {
+      const root = dialog.element ?? dialog;
+      const container = root.querySelector("[data-rows]");
+      const draw = () => {
+        container.innerHTML = rows.map(rowHTML).join("");
+        container.querySelectorAll("[data-row]").forEach(el => { el.querySelector("[data-event]").value = rows[el.dataset.row].roll; });
+      };
+      const setEvent = async (i, roll) => {
+        rows[i] = { roll, deltas: roll ? await rollEffects(roll) : {} };
+        draw();
+      };
+      container.addEventListener("change", event => {
+        const el = event.target.closest("[data-row]");
+        if (!el) return;
+        const i = Number(el.dataset.row);
+        if (event.target.matches("[data-event]")) return setEvent(i, event.target.value);
+        if (event.target.dataset.key) rows[i].deltas[event.target.dataset.key] = Number(event.target.value) || 0;
+      });
+      container.addEventListener("click", async event => {
+        const button = event.target.closest("[data-roll-row]");
+        if (!button) return;
+        setEvent(Number(button.closest("[data-row]").dataset.row), String((await new Roll("3d6").evaluate()).total));
+      });
+      root.querySelector('[name="count"]').addEventListener("change", event => {
+        const n = Math.min(12, Math.max(0, Number(event.target.value) || 0));
+        while (rows.length < n) rows.push({ roll: "", deltas: {} });
+        rows.length = n;
+        draw();
+      });
+      draw();
+    },
+    rejectClose: false
+  });
+  return result ?? null;
 }
