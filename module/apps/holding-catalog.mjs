@@ -29,7 +29,7 @@ export class HoldingCatalog extends HandlebarsApplicationMixin(ApplicationV2) {
   };
 
   static PARTS = {
-    body: { template: `systems/${SYSTEM_ID}/templates/apps/holding-catalog.hbs`, scrollable: [".tab-body"] }
+    body: { template: `systems/${SYSTEM_ID}/templates/apps/holding-catalog.hbs`, scrollable: [""] }
   };
 
   static TABS = {

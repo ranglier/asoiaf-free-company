@@ -28,7 +28,7 @@ export class CompanyCatalog extends HandlebarsApplicationMixin(ApplicationV2) {
   };
 
   static PARTS = {
-    body: { template: `systems/${SYSTEM_ID}/templates/apps/company-catalog.hbs`, scrollable: [".tab-body"] }
+    body: { template: `systems/${SYSTEM_ID}/templates/apps/company-catalog.hbs`, scrollable: [""] }
   };
 
   static TABS = {

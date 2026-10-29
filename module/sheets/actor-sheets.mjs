@@ -216,7 +216,7 @@ const COMBATANT_TABS = (extra = []) => ({
 
 export class CharacterSheet extends AFCActorSheet {
   static DEFAULT_OPTIONS = { classes: ["character"], position: { width: 820, height: 860 } };
-  static PARTS = { sheet: { template: `${TPL}/character.hbs`, scrollable: [".tab-body"] } };
+  static PARTS = { sheet: { template: `${TPL}/character.hbs`, scrollable: [""] } };
   static TABS = COMBATANT_TABS([{ id: "equipment", label: "AFC.Tab.equipment" }]);
 
   async _prepareContext(options) {
@@ -229,7 +229,7 @@ export class CharacterSheet extends AFCActorSheet {
 
 export class NpcSheet extends AFCActorSheet {
   static DEFAULT_OPTIONS = { classes: ["npc"], position: { width: 780, height: 780 } };
-  static PARTS = { sheet: { template: `${TPL}/npc.hbs`, scrollable: [".tab-body"] } };
+  static PARTS = { sheet: { template: `${TPL}/npc.hbs`, scrollable: [""] } };
   static TABS = COMBATANT_TABS();
 }
 
@@ -257,7 +257,7 @@ export class HouseSheet extends AFCActorSheet {
     position: { width: 860, height: 860 },
     actions: { createHouse: HouseSheet.#onCreateHouse, openCatalog: HouseSheet.#onOpenCatalog }
   };
-  static PARTS = { sheet: { template: `${TPL}/house.hbs`, scrollable: [".tab-body"] } };
+  static PARTS = { sheet: { template: `${TPL}/house.hbs`, scrollable: [""] } };
   static TABS = {
     primary: {
       tabs: [
@@ -304,7 +304,7 @@ export class CompanySheet extends AFCActorSheet {
     position: { width: 860, height: 860 },
     actions: { createCompany: CompanySheet.#onCreateCompany, openCatalog: CompanySheet.#onOpenCatalog }
   };
-  static PARTS = { sheet: { template: `${TPL}/company.hbs`, scrollable: [".tab-body"] } };
+  static PARTS = { sheet: { template: `${TPL}/company.hbs`, scrollable: [""] } };
   static TABS = {
     primary: {
       tabs: [

@@ -67,7 +67,11 @@
 .afc .pip.seal.on { background: var(--afc-wax); box-shadow: inset 0 0 0 2px rgba(243, 234, 214, 0.35); }
 
 /* ---------- Fiche de personnage ---------- */
-.afc-sheet { display: flex; flex-direction: column; gap: 0.6rem; height: 100%; }
+/* Une seule zone de défilement par fenêtre : la fiche entière (redimensionnable, défilement si le contenu dépasse). */
+.afc.sheet .window-content { overflow: hidden; }
+.afc.afc-dialog .window-content { overflow-y: auto; max-height: 85vh; }
+.afc-sheet { display: flex; flex-direction: column; gap: 0.6rem; flex: 1 1 auto; min-height: 0; height: 100%; overflow-y: auto; padding-right: 0.3rem; }
+.afc-sheet > * { flex-shrink: 0; }
 .afc-header { display: flex; gap: 0.8rem; align-items: center; border-bottom: 2px solid var(--afc-border); padding-bottom: 0.5rem; }
 .afc-header .portrait { width: 84px; height: 84px; object-fit: cover; border: 2px solid var(--afc-border); border-radius: 50%; cursor: pointer; flex: none; background: var(--afc-ink-soft); }
 .afc-header .identity { flex: 1; display: flex; flex-direction: column; gap: 0.2rem; min-width: 0; }
@@ -94,7 +98,7 @@
 .afc .sheet-tabs { display: flex; gap: 1.2rem; border-bottom: 1px solid var(--afc-border); padding: 0 0.2rem; }
 .afc .sheet-tabs a { font-family: var(--afc-font-title); font-size: 23px; padding: 0 0 2px; color: var(--afc-ink-soft); border-bottom: 2px solid transparent; }
 .afc .sheet-tabs a.active { color: var(--afc-wax); border-bottom-color: var(--afc-wax); text-shadow: none; }
-.afc .tab-body { flex: 1; overflow-y: auto; padding-right: 0.3rem; }
+.afc .tab-body { flex: none; }
 .afc .tab-body .tab:not(.active) { display: none; }
 
 /* Compétences : groupes thématiques en registre */
