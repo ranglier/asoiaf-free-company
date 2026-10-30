@@ -6,9 +6,10 @@
  * Avant la révélation, ordres et flèches ne sont visibles que de qui commande la troupe (et du MJ).
  */
 import { ORDER_ICONS, ORDERS, TROOP_STATES } from "./battle-config.mjs";
+import { SYSTEM_ID } from "../config.mjs";
 import { BOOK_STATUS_CHIP, isBookTargeted } from "./book-config.mjs";
 import { drawBookHealth, fillBookHUD } from "./book.mjs";
-import { plannedEngagements, rallyTroop, resolvePlanned } from "./engagement.mjs";
+import { center, plannedEngagements, rallyTroop, resolvePlanned } from "./engagement.mjs";
 import { isBook } from "./rules.mjs";
 import { canCommand, getBattle, setUnit, unitOf } from "./state.mjs";
 
@@ -195,6 +196,53 @@ export function drawRegionLabels() {
     while (placed.some(p => Math.abs(p.x - at.x) < (p.w + text.width) / 2 && Math.abs(p.y - y) < 16)) y += 17;
     text.position.set(at.x, y);
     placed.push({ x: at.x, y, w: text.width });
+    layer.addChild(text);
+  }
+  canvas.tokens.addChildAt(layer, 0);
+}
+
+/* ---------- Numéros des cases ---------- */
+
+/** Numéros affichés sur cette scène ? (réglage de la fenêtre Bataille, par scène) */
+export const hexNumbersOn = (scene = canvas.scene) => !!scene?.getFlag(SYSTEM_ID, "hexNumbers");
+
+/** Les cases de la scène, ligne par ligne, de gauche à droite : numéro -> centre. */
+function numberedCells() {
+  const rect = canvas.dimensions.sceneRect;
+  const last = canvas.grid.getOffset({ x: rect.right - 1, y: rect.bottom - 1 });
+  const first = canvas.grid.getOffset({ x: rect.x + 1, y: rect.y + 1 });
+  const cells = [];
+  for (let i = first.i; i <= last.i; i++) {
+    for (let j = first.j - 1; j <= last.j + 1; j++) {
+      const at = canvas.grid.getCenterPoint({ i, j });
+      // Seules les cases entières comptent : pas de numéro sur une demi-case au bord de la carte.
+      const w = canvas.grid.sizeX / 2, h = canvas.grid.sizeY / 2;
+      if (at.x - w >= rect.left - 1 && at.x + w <= rect.right + 1 && at.y - h >= rect.top - 1 && at.y + h <= rect.bottom + 1) cells.push({ i, j, at, n: cells.length + 1 });
+    }
+  }
+  return cells;
+}
+
+/** Numéro de la case d'un jeton (null si les numéros sont désactivés sur cette scène). */
+export function hexNumber(token) {
+  if (!hexNumbersOn(token.parent) || token.parent.id !== canvas.scene?.id) return null;
+  const o = canvas.grid.getOffset(center(token));
+  return numberedCells().find(c => c.i === o.i && c.j === o.j)?.n ?? null;
+}
+
+/** Écrit le numéro dans le bas de chaque case, juste sous le symbole du jeton. */
+export function drawHexNumbers() {
+  if (!canvas.ready) return;
+  canvas.tokens.children.filter(c => c.name === "afcHexNumbers").forEach(c => c.destroy({ children: true }));
+  if (!hexNumbersOn()) return;
+  const layer = new PIXI.Container();
+  layer.name = "afcHexNumbers";
+  layer.eventMode = "none";
+  const style = Object.assign(CONFIG.canvasTextStyle.clone(), { fontSize: 16, fill: "#f3ead6", stroke: "#1b140d", strokeThickness: 3 });
+  for (const cell of numberedCells()) {
+    const text = new foundry.canvas.containers.PreciseText(String(cell.n), style);
+    text.anchor.set(0.5, 0.5);
+    text.position.set(cell.at.x, cell.at.y + canvas.grid.sizeY * 0.31);
     layer.addChild(text);
   }
   canvas.tokens.addChildAt(layer, 0);

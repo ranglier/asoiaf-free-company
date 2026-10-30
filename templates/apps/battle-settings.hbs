@@ -2,6 +2,7 @@
   <summary><i class="fa-solid fa-gear"></i> {{localize "AFC.Battle.Rules.settings"}}</summary>
   <div class="battle-toolbar options">
     <label>{{localize "AFC.Battle.Rules.label"}} <select name="battleRules">{{selectOptions ruleOptions selected=rules localize=true}}</select></label>
+    <label class="checkbox"><input type="checkbox" name="hexNumbers" {{checked hexNumbers}}> {{localize "AFC.Battle.Rules.hexNumbers"}}</label>
     {{#if book}}
     <label>{{localize "AFC.BattleBook.Yards"}} <input type="number" name="bookYards" value="{{bookData.yards}}" min="1" step="1"></label>
     <label class="checkbox"><input type="checkbox" name="bookAdvanced" {{checked bookData.advanced}}> {{localize "AFC.BattleBook.AdvancedOrders"}}</label>

@@ -13,7 +13,7 @@ import {
   BOOK_TERRAINS, BOOK_TYPE_MAP, BOOK_UPGRADES, BOOK_WEATHER, BOOK_ABILITIES, bookGlory
 } from "./book-config.mjs";
 import { adjacent, center, distance, terrainKeyOf } from "./engagement.mjs";
-import { startTargetPick } from "./map.mjs";
+import { hexNumber, startTargetPick } from "./map.mjs";
 import { gmHandlers, getBattle, requestGM, resetOrders, saveBattle, unitOf } from "./state.mjs";
 import { isBook } from "./rules.mjs";
 
@@ -973,7 +973,7 @@ export function bookContext(battle, scene, { orderLabel }) {
     const mine = canOrder(token, book);
     const yours = mine && book.phase === "orders" && (isGM || book.turn === s.side);
     return {
-      id: token.id, name: token.name, img: token.texture.src, hidden: token.hidden, side: s.side, known, mine,
+      id: token.id, name: token.name, img: token.texture.src, hex: hexNumber(token), hidden: token.hidden, side: s.side, known, mine,
       status: b.status, chip: BOOK_STATUS_CHIP[b.status], statusLabel: `${L}.Status.${b.status}`,
       health: b.health, left: b.healthLeft, percent: b.health ? Math.round((b.healthLeft / b.health) * 100) : 0,
       defense: defenseOf(token, "melee", book).value, ar: b.ar, damage: b.fightDamage, shoot: b.shoot,

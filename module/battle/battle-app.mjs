@@ -7,7 +7,7 @@ import { ORDERS, TRIANGLE, TROOP_STATES, WEATHER } from "./battle-config.mjs";
 import { bookContext, bookReport, chooseCommanders, freeAttack, giveBookOrder, nextStep, resetBook, switchRules } from "./book.mjs";
 import { battleRules, isBook, RULES } from "./rules.mjs";
 import { battleReport, endTurn, orderLabel, plannedEngagements, rallyTroop, resolveMelee, resolvePlanned, resolveShoot, revealOrders } from "./engagement.mjs";
-import { chooseOfficer, giveOrder, ORDER_ICONS, orderVisible, startTargetPick, TARGETED_ORDERS } from "./map.mjs";
+import { chooseOfficer, giveOrder, hexNumber, hexNumbersOn, ORDER_ICONS, orderVisible, startTargetPick, TARGETED_ORDERS } from "./map.mjs";
 import { canCommand, clearBattle, getBattle, saveBattle, setUnit, unitOf } from "./state.mjs";
 import { createEnemyTroop } from "./troops.mjs";
 
@@ -85,7 +85,7 @@ export class BattleApp extends HandlebarsApplicationMixin(ApplicationV2) {
       const officer = unit.officer ? game.actors.get(unit.officer) : null;
       const known = isGM || s.side === "company";
       return {
-        id: token.id, name: token.name, img: token.texture.src, hidden: token.hidden, side: s.side,
+        id: token.id, name: token.name, img: token.texture.src, hex: hexNumber(token), hidden: token.hidden, side: s.side,
         state: s.state, stateLabel: TROOP_STATES[s.state].label, known, mine,
         order: unit.order, orderText: orderLabel(unit.order),
         orderOptions: ORDERS.map(k => ({ key: k, label: loc(`AFC.Battle.Order.${k}`), selected: k === unit.order })), orderIcon: ORDER_ICONS[unit.order] ?? "fa-flag",
@@ -112,7 +112,7 @@ export class BattleApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
     const context = {
       battle, isGM, hasScene: !!scene, book,
-      rules: scene ? battleRules(scene) : "house", rulesLabel: `AFC.Battle.Rules.${scene ? battleRules(scene) : "house"}`, settingsOpen: this.settingsOpen,
+      rules: scene ? battleRules(scene) : "house", rulesLabel: `AFC.Battle.Rules.${scene ? battleRules(scene) : "house"}`, settingsOpen: this.settingsOpen, hexNumbers: hexNumbersOn(scene),
       ruleOptions: Object.fromEntries(RULES.map(k => [k, `AFC.Battle.Rules.${k}`])),
       orders: ORDERS.map(k => ({ key: k, label: loc(`AFC.Battle.Order.${k}`), icon: ORDER_ICONS[k], help: loc(`AFC.Battle.OrderHelp.${k}`) })),
       triangle: Object.entries(TRIANGLE).map(([a, b]) => ({ a: orderLabel(a), b: orderLabel(b) })),
@@ -144,6 +144,7 @@ export class BattleApp extends HandlebarsApplicationMixin(ApplicationV2) {
     }));
     // Paramètres : restent ouverts d'un affichage à l'autre ; annuler le changement de règles remet le choix en place.
     this.element.querySelector(".battle-settings")?.addEventListener("toggle", event => { this.settingsOpen = event.target.open; });
+    this.element.querySelector('[name="hexNumbers"]')?.addEventListener("change", event => canvas.scene.setFlag(SYSTEM_ID, "hexNumbers", event.target.checked));
     this.element.querySelector('[name="battleRules"]')?.addEventListener("change", async event => {
       await switchRules(event.target.value);
       this.render();

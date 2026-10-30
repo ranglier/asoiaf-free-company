@@ -3,6 +3,7 @@
   <div class="body">
     <div class="line">
       <a class="name" data-action="focus" data-tooltip="AFC.Battle.Focus">{{t.name}}</a>
+      {{#if t.hex}}<span class="tag hex" data-tooltip="AFC.Battle.Rules.hexTip">{{t.hex}}</span>{{/if}}
       {{#if t.hidden}}<i class="fa-solid fa-eye-slash" data-tooltip="AFC.Battle.Hidden"></i>{{/if}}
       <span class="tag state">{{localize t.statusLabel}}</span>
       {{#if t.known}}<a class="icon" data-action="openTroop" data-tooltip="AFC.Battle.OpenSheet"><i class="fa-solid fa-file-lines"></i></a>{{/if}}

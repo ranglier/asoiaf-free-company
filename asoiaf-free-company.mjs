@@ -17,7 +17,7 @@ import { isBook } from "./module/battle/rules.mjs";
 import { onRenderBattleCard } from "./module/battle/engagement.mjs";
 import { migrateBattle, registerBattleSocket } from "./module/battle/state.mjs";
 import { renderBattleBar } from "./module/battle/bar.mjs";
-import { cancelTargetPick, drawPlanArrows, drawRegionLabels, drawTroopMarks, onRenderTokenHUD, refreshOrderBadges, scheduleArrows } from "./module/battle/map.mjs";
+import { cancelTargetPick, drawHexNumbers, drawPlanArrows, drawRegionLabels, drawTroopMarks, onRenderTokenHUD, refreshOrderBadges, scheduleArrows } from "./module/battle/map.mjs";
 import { refreshTroopImage, registerTroopStatuses, syncTroopStatus } from "./module/battle/troops.mjs";
 import { evaluateTest, rollAbilityTest, rollTest } from "./module/dice/test-roll.mjs";
 import { onRenderChatMessage, resolveDamage, rollAttack } from "./module/dice/attack.mjs";
@@ -98,12 +98,14 @@ Hooks.on("getSceneControlButtons", controls => {
 Hooks.on("updateScene", (scene, changes) => {
   if (scene.id !== canvas.scene?.id || !foundry.utils.hasProperty(changes, `flags.${AFC.SYSTEM_ID}`)) return;
   BattleApp.refresh();
+  drawHexNumbers();
   refreshOrderBadges();
   drawPlanArrows();
   renderBattleBar();
 });
 Hooks.on("canvasReady", () => {
   migrateBattle();
+  drawHexNumbers();
   BattleApp.refresh();
   refreshOrderBadges();
   drawPlanArrows();
