@@ -469,27 +469,31 @@ body.detached .application.afc.afc-fill.afc-dialog .window-content { max-height:
 #afc-battle-bar .info { min-width: 5rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 /* Bataille : cartes de chat, sur le modèle des jets de fiche */
-.afc-card.battle.melee > .verdict { padding-top: 0.3rem; border-top: 1px solid var(--afc-line); }
-.afc-card.battle.melee > .verdict strong { color: var(--afc-success); }
-.afc-card.battle .duel { display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem; }
-.afc-card.battle .duel .side { display: flex; flex-direction: column; align-items: center; gap: 0.25rem; min-width: 0; padding: 0.3rem; border: 1px solid var(--afc-line); border-radius: 5px; text-align: center; }
-.afc-card.battle .duel .side.winner { border: 2px solid var(--afc-wax); background: var(--afc-paper-light); }
-.afc-card.battle .duel .troop { font-family: var(--afc-font-label); font-weight: normal; font-size: 16px; line-height: 1.1; }
-.afc-card.battle .duel small { font-size: 13px; color: var(--afc-ink-soft); }
-.afc-card.battle .duel .die { width: 22px; height: 22px; font-size: 13px; }
-.afc-card.battle .duel footer { justify-content: center; width: 100%; }
+.afc-card.battle.melee > .verdict { padding-bottom: 0.35rem; border-bottom: 1px solid var(--afc-line); }
+.afc-card.battle.melee > .verdict strong { color: var(--afc-wax); }
+.afc-card.battle .side { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0.2rem 0.4rem; align-items: center; }
+.afc-card.battle .side .who { display: flex; flex-direction: column; min-width: 0; }
+.afc-card.battle .side .troop { font-family: var(--afc-font-label); font-weight: normal; font-size: 16px; line-height: 1.1; }
+.afc-card.battle .side.winner .troop, .afc-card.battle .side.winner .total { color: var(--afc-wax); }
+.afc-card.battle .side small { font-size: 13px; color: var(--afc-ink-soft); }
+.afc-card.battle .side .total { min-width: 0; border: none; background: none; padding: 0; font-size: 26px; text-align: right; }
+.afc-card.battle .side .dice { grid-column: 1 / 3; justify-content: flex-start; }
+.afc-card.battle .side .die { width: 22px; height: 22px; font-size: 13px; }
+.afc-card.battle .side footer { grid-column: 1 / 3; border-top: none; padding-top: 0; }
+.afc-card.battle .battle-outcome:empty { display: none; }
+.afc-card.battle .battle-outcome { display: flex; flex-wrap: wrap; align-items: center; gap: 0.2rem 0.45rem; border-top: 1px dotted var(--afc-line); padding-top: 0.3rem; }
+.afc-card.battle .battle-outcome .troop { font-family: var(--afc-font-label); font-size: 15px; font-weight: normal; }
+.afc-card.battle .battle-outcome small { font-size: 13px; color: var(--afc-ink-soft); }
+.afc-card.battle .battle-outcome small:last-child:not(:first-child) { width: 100%; }
 .afc-card.battle .orders { list-style: none; margin: 0; padding: 0; font-size: 15px; }
 .afc-card.battle .orders li { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 0.35rem; padding: 0.1rem 0; }
 .afc-card.battle .orders i { width: 1.1rem; text-align: center; color: var(--afc-wax); }
 .afc-card.battle .orders .order { font-style: italic; color: var(--afc-ink-soft); }
 .afc-card.battle h4 { margin: 0.1rem 0 0; font-family: var(--afc-font-label); font-weight: normal; font-size: 16px; border-bottom: 1px dotted var(--afc-line); }
-.afc-card.battle.losses { flex-direction: row; flex-wrap: wrap; align-items: center; gap: 0.3rem 0.45rem; }
-.afc-card.battle.losses .troop { font-family: var(--afc-font-label); font-size: 16px; font-weight: normal; }
 .afc-card.battle .state-chip { margin-left: auto; padding: 0 0.4rem; border-radius: 3px; font-size: 14px; background: var(--afc-paper-light); border: 1px solid var(--afc-line); }
 .afc-card.battle .state-chip.shaken { background: #c9a227; color: #2b2118; border-color: #c9a227; }
 .afc-card.battle .state-chip.disordered { background: #b5651d; color: #fff; border-color: #b5651d; }
 .afc-card.battle .state-chip.routed, .afc-card.battle .state-chip.destroyed { background: var(--afc-wax); color: var(--afc-wax-text); border-color: var(--afc-wax); }
-.afc-card.battle.losses small { width: 100%; font-size: 13px; color: var(--afc-ink-soft); }
 
 /* Bataille : légende des terrains, sous la barre */
 #afc-battle-bar { flex-wrap: wrap; }

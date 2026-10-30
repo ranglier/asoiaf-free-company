@@ -519,6 +519,8 @@
       "CushionWaiting": "{user} is choosing how {name} absorbs…",
       "Card": {
         "Melee": "Melee",
+        "Pending": "Waiting for the absorb choice…",
+        "Cancelled": "Losses not applied.",
         "Shoot": "Shooting",
         "VsOrders": "{a} against {d}",
         "ShootAt": "{a} at {d}",

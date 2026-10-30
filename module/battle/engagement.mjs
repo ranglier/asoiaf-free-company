@@ -215,17 +215,19 @@ export async function resolveMelee(att, def) {
   // Deux troupes qui se visent : une seule mêlée, les deux engagements sont résolus.
   const mutual = unitOf(battle, def.id).target === att.id && ["charge", "attack"].includes(m.dOrder);
   await markEngaged([att.id, def.id], mutual ? [att.id, def.id] : [att.id]);
-  const side = (token, r, mods, p, test) => ({
-    name: token.name, roller: r.name, total: test.total, dice: test.dice, pool: poolLabel(p, test), tags: modTags(mods), winner: winner === token
+  const side = (token, r, mods, p, test, order) => ({
+    name: token.name, roller: r.name, order: orderLabel(order), total: test.total, dice: test.dice,
+    pool: poolLabel(p, test), tags: modTags(mods), winner: winner === token
   });
   const apply = loser && losses > 0 ? { token: loser.id, losses } : null;
+  const sides = [side(att, ra, m.am, pa, ta, m.aOrder), side(def, rd, m.dm, pd, td, m.dOrder)];
+  // Le vainqueur d'abord : le verdict se lit d'une traite.
+  if (winner === def) sides.reverse();
   const content = await renderCard("battle-melee", {
-    orders: fmt("AFC.Battle.Card.VsOrders", { a: orderLabel(m.aOrder), d: orderLabel(m.dOrder) }),
-    sides: [side(att, ra, m.am, pa, ta), side(def, rd, m.dm, pd, td)],
-    degrees,
+    sides, degrees,
     verdict: winner ? fmt("AFC.Battle.Card.Wins", { w: winner.name }) : loc("AFC.Battle.Card.Tie"),
     detail: winner ? [lossLabel(loser.name, losses), ...notes].join(" · ") : loc("AFC.Battle.Card.TieDetail"),
-    apply: opts.auto ? null : apply
+    ...cardApply(apply, opts.auto)
   });
   return postResult({ content, rolls: [ta.roll, td.roll], apply, auto: opts.auto });
 }
@@ -262,16 +264,27 @@ export async function resolveShoot(shooter, target) {
     verdict: degrees ? `${loc("AFC.Battle.Card.Hit")} : ${lossLabel(target.name, losses)}` : loc("AFC.Battle.Card.Miss"),
     detail: fmt("AFC.Battle.Card.Against", { n: m.difficulty, detail: m.diff.map(d => `${d.label} ${d.value}`).join(" + ") }),
     pool: poolLabel(p, test), tags: [r.name, ...modTags(m.mods)],
-    apply: opts.auto ? null : apply
+    ...cardApply(apply, opts.auto)
   });
   return postResult({ content, rolls: [test.roll], apply, auto: opts.auto });
 }
 
-/** Publie la carte du résultat. Pertes appliquées tout de suite (case cochée), sinon bouton pour le MJ. */
+/** Pertes de la carte : appliquées tout de suite (en attendant l'encaissement), ou bouton pour le MJ. */
+const cardApply = (apply, auto) => ({ apply: auto ? null : apply, pending: apply && auto ? loc("AFC.Battle.Card.Pending") : null });
+
+/** Publie la carte du résultat, puis applique les pertes si la case était cochée : la carte se complète. */
 async function postResult({ content, rolls, apply, auto }) {
   const message = await ChatMessage.create({ rolls, content });
-  if (apply && auto) await applyLosses(apply.token, apply.losses);
+  if (apply && auto) await applyLosses(apply.token, apply.losses, message);
   return message;
+}
+
+/** Inscrit le résultat des pertes dans la carte d'origine et retire le bouton. */
+function fillOutcome(message, html) {
+  return message.update({
+    content: message.content.replace(/<div class="battle-outcome">[\s\S]*?<\/div>/, `<div class="battle-outcome">${html}</div>`)
+      .replace(/<button[^>]*data-afc-battle="apply"[\s\S]*?<\/button>/, "")
+  });
 }
 
 /* ---------- Pertes, encaissement, ralliement ---------- */
@@ -305,8 +318,11 @@ async function askCushion(token, losses) {
   return Math.max(0, Math.min(data.cushion, losses, answer ?? 0));
 }
 
-/** Applique des pertes d'états à une troupe, après le choix d'encaissement. */
-export async function applyLosses(tokenId, losses) {
+/**
+ * Applique des pertes d'états à une troupe, après le choix d'encaissement. Le résultat s'inscrit dans
+ * la carte d'origine (message), sinon dans une carte à part.
+ */
+export async function applyLosses(tokenId, losses, message = null) {
   const token = canvas.scene.tokens.get(tokenId);
   const actor = token?.actor;
   if (!actor) return;
@@ -314,7 +330,8 @@ export async function applyLosses(tokenId, losses) {
   let spend = 0;
   if (s.canCushion) {
     spend = await askCushion(token, losses);
-    if (spend === null) return;
+    // Annulé par le MJ : la carte le dit, les pertes ne sont pas appliquées.
+    if (spend === null) return message && fillOutcome(message, `<small>${loc("AFC.Battle.Card.Cancelled")}</small>`);
   }
   const notes = [];
   const before = s.stateIndex;
@@ -334,12 +351,12 @@ export async function applyLosses(tokenId, losses) {
   if (losses - spend > 0) await actor.setFlag(SYSTEM_ID, "firstLoss", true);
   if (state === "routed") notes.push(loc("AFC.Battle.Flee"));
   await actor.update({ "system.state": state, "system.cushion": s.cushion - spend, "system.disorders": disorders });
-  return ChatMessage.create({
-    content: `<div class="afc-card battle losses"><strong class="troop">${esc(token.name)}</strong>
-      ${spend ? `<span class="tag">${fmt("AFC.Battle.Card.Cushioned", { n: spend })}</span>` : ""}
-      <span class="state-chip ${state}">${loc(TROOP_STATES[state].label)}</span>
-      ${notes.length ? `<small>${notes.map(esc).join(" · ")}</small>` : ""}</div>`
-  });
+  const outcome = `<strong class="troop">${esc(token.name)}</strong>
+    ${spend ? `<span class="tag">${fmt("AFC.Battle.Card.Cushioned", { n: spend })}</span>` : ""}
+    <span class="state-chip ${state}">${loc(TROOP_STATES[state].label)}</span>
+    ${notes.length ? `<small>${notes.map(esc).join(" · ")}</small>` : ""}`;
+  if (message) return fillOutcome(message, outcome);
+  return ChatMessage.create({ content: `<div class="afc-card battle"><div class="battle-outcome">${outcome}</div></div>` });
 }
 
 /** Ralliement : test d'Art militaire (Commandement) d'un PJ ou PNJ contre la Discipline de la troupe. */
@@ -492,6 +509,6 @@ export async function battleReport() {
 export function onRenderBattleCard(message, html) {
   html.querySelectorAll('[data-afc-battle="apply"]').forEach(button => {
     if (!game.user.isGM) return button.remove();
-    button.addEventListener("click", () => applyLosses(button.dataset.token, Number(button.dataset.losses)));
+    button.addEventListener("click", () => applyLosses(button.dataset.token, Number(button.dataset.losses), message));
   });
 }

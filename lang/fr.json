@@ -519,6 +519,8 @@
       "CushionWaiting": "{user} choisit l'encaissement de {name}…",
       "Card": {
         "Melee": "Mêlée",
+        "Pending": "Encaissement en attente…",
+        "Cancelled": "Pertes non appliquées.",
         "Shoot": "Tir",
         "VsOrders": "{a} contre {d}",
         "ShootAt": "{a} sur {d}",

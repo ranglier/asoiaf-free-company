@@ -15,5 +15,6 @@
   <ol class="dice">{{#each dice as |d|}}<li class="die d{{d.value}} {{#unless d.kept}}dropped{{/unless}}">{{d.value}}</li>{{/each}}</ol>
 
   <footer><span class="pool">{{pool}}</span>{{#each tags}}<span class="tag">{{this}}</span>{{/each}}</footer>
-  {{#if apply}}<button type="button" data-afc-battle="apply" data-token="{{apply.token}}" data-losses="{{apply.losses}}"><i class="fa-solid fa-heart-crack"></i> {{localize "AFC.Battle.ApplyLosses"}}</button>{{/if}}
+  {{#if pending}}<div class="battle-outcome"><small>{{pending}}</small></div>{{/if}}
+  {{#if apply}}<div class="battle-outcome"></div><button type="button" data-afc-battle="apply" data-token="{{apply.token}}" data-losses="{{apply.losses}}"><i class="fa-solid fa-heart-crack"></i> {{localize "AFC.Battle.ApplyLosses"}}</button>{{/if}}
 </div>
