@@ -93,6 +93,11 @@ export function onRenderTokenHUD(hud, html) {
   const unit = unitOf(battle, token.id);
   const col = html.querySelector(".col.left");
   if (!col) return;
+  // Sur une troupe, on masque ce qui ne sert pas (altitude, barres, verrou, états, cible, combat…) ;
+  // seul le bouton cacher/révéler du MJ reste. Masqués et non retirés : Foundry garde ses repères.
+  for (const el of html.querySelectorAll(".col > *")) {
+    if (el.dataset.action !== "visibility") el.style.display = "none";
+  }
   const button = (icon, tooltip, onClick, { active = false } = {}) => {
     const b = document.createElement("button");
     b.type = "button";
