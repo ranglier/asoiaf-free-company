@@ -15,6 +15,13 @@ const { ApplicationV2, HandlebarsApplicationMixin, DialogV2 } = foundry.applicat
 const loc = key => game.i18n.localize(key);
 const COMMAND = ["commandement", "command"];
 
+/** Applique l'ordre choisi par l'utilisateur ; une troupe qu'il n'a pas encore rangée vient à la fin. */
+function sortTroops(list, side, scene) {
+  const order = scene ? game.user.getFlag(SYSTEM_ID, `troopOrder.${scene.id}.${side}`) ?? [] : [];
+  const rank = id => { const i = order.indexOf(id); return i < 0 ? order.length : i; };
+  return list.map((t, i) => [t, i]).sort((a, b) => rank(a[0].id) - rank(b[0].id) || a[1] - b[1]).map(([t]) => t);
+}
+
 export class BattleApp extends HandlebarsApplicationMixin(ApplicationV2) {
   static DEFAULT_OPTIONS = {
     id: "afc-battle",
@@ -53,7 +60,7 @@ export class BattleApp extends HandlebarsApplicationMixin(ApplicationV2) {
   /** Redessine la fenêtre si elle est ouverte. */
   static refresh() {
     const app = foundry.applications.instances.get("afc-battle");
-    if (app?.rendered) app.render();
+    if (app?.rendered && !app.dragging) app.render();
   }
 
   async _prepareContext() {
@@ -103,7 +110,7 @@ export class BattleApp extends HandlebarsApplicationMixin(ApplicationV2) {
     const targeted = [...game.user.targets][0]?.document;
     const plans = isGM && !book ? plannedEngagements(battle, scene) : [];
 
-    return {
+    const context = {
       battle, isGM, hasScene: !!scene, book,
       rules: scene ? battleRules(scene) : "house", rulesLabel: `AFC.Battle.Rules.${scene ? battleRules(scene) : "house"}`, settingsOpen: this.settingsOpen,
       ruleOptions: Object.fromEntries(RULES.map(k => [k, `AFC.Battle.Rules.${k}`])),
@@ -117,10 +124,14 @@ export class BattleApp extends HandlebarsApplicationMixin(ApplicationV2) {
       target: targeted?.actor?.type === "troop" ? targeted.name : null,
       ...(book ? bookContext(battle, scene, { orderLabel }) : {})
     };
+    context.company = sortTroops(context.company, "company", scene);
+    context.enemy = sortTroops(context.enemy, "enemy", scene);
+    return context;
   }
 
   _onRender(context, options) {
     super._onRender(context, options);
+    this.#enableTroopDrag();
     this.element.querySelector('[name="weather"]')?.addEventListener("change", async event => {
       const battle = getBattle();
       battle.weather = event.target.value;
@@ -150,6 +161,48 @@ export class BattleApp extends HandlebarsApplicationMixin(ApplicationV2) {
     option("bookYards", el => ({ yards: Math.max(1, Number(el.value) || 10) }));
     option("bookAdvanced", el => ({ advanced: el.checked }));
     option("bookFormations", el => ({ formations: el.checked }));
+  }
+
+  /** Glisser-déposer des fiches de troupe : chacun range les troupes de chaque camp à sa façon. */
+  #enableTroopDrag() {
+    const clear = () => this.element.querySelectorAll(".drop-before, .drop-after").forEach(el => el.classList.remove("drop-before", "drop-after"));
+    const after = (card, event) => { const r = card.getBoundingClientRect(); return event.clientY > r.top + r.height / 2; };
+    for (const card of this.element.querySelectorAll(".battle-troop[data-troop]")) {
+      card.draggable = true;
+      card.addEventListener("dragstart", event => {
+        this.dragging = card;
+        event.dataTransfer.effectAllowed = "move";
+        event.dataTransfer.setData("application/x-afc-troop", card.dataset.troop);
+        event.dataTransfer.setDragImage(card, 20, 20);
+        card.classList.add("dragging");
+      });
+      card.addEventListener("dragend", () => {
+        this.dragging = null;
+        card.classList.remove("dragging");
+        clear();
+      });
+      card.addEventListener("dragover", event => {
+        // On range à l'intérieur d'un camp : une troupe ne change pas de colonne.
+        const moved = this.dragging;
+        if (!moved || moved === card || moved.parentElement !== card.parentElement) return;
+        event.preventDefault();
+        clear();
+        card.classList.add(after(card, event) ? "drop-after" : "drop-before");
+      });
+      card.addEventListener("drop", async event => {
+        const moved = this.dragging;
+        if (!moved || moved === card || moved.parentElement !== card.parentElement) return;
+        event.preventDefault();
+        const list = card.parentElement;
+        list.insertBefore(moved, after(card, event) ? card.nextSibling : card);
+        clear();
+        const ids = [...list.querySelectorAll(":scope > .battle-troop")].map(el => el.dataset.troop);
+        const side = moved.classList.contains("side-company") ? "company" : "enemy";
+        this.dragging = null;
+        await game.user.setFlag(SYSTEM_ID, `troopOrder.${canvas.scene.id}.${side}`, ids);
+        this.render();
+      });
+    }
   }
 
   static #token(target) {

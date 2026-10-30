@@ -526,3 +526,8 @@ body.detached .application.afc.afc-fill.afc-dialog .window-content { max-height:
 .afc .afc-battle .battle-toolbar.options select { width: auto; height: 1.6rem; }
 .afc .afc-battle .battle-head .rules-tag { margin-left: 0.3rem; padding: 0 0.35rem; border: 1px solid var(--afc-border); border-radius: 3px; font-family: var(--afc-font-body, inherit); font-size: 0.85rem; font-weight: normal; color: var(--afc-ink); white-space: nowrap; }
 .afc .afc-battle .battle-troop .symbol { align-self: flex-start; background: #2b2118; border-radius: 4px; padding: 1px; object-fit: contain; }
+/* Bataille : ranger les troupes par glisser-déposer */
+.afc .afc-battle .battle-troop[draggable="true"] { cursor: grab; }
+.afc .afc-battle .battle-troop.dragging { opacity: 0.45; }
+.afc .afc-battle .battle-troop.drop-before { box-shadow: 0 -3px 0 0 var(--afc-wax); }
+.afc .afc-battle .battle-troop.drop-after { box-shadow: 0 3px 0 0 var(--afc-wax); }
