@@ -70,12 +70,10 @@ export function renderBattleBar() {
   } else {
     info = count.total ? loc("AFC.Battle.BarCounterPlayer") : loc("AFC.Battle.BarRevealedPlayer");
   }
-  // Règles en cours (elles se changent dans les paramètres de la fenêtre Bataille).
-  const rulesPill = `<span class="rules">${esc(loc(`AFC.Battle.Rules.${book ? "book" : "house"}`))}</span>`;
   actions += `<button type="button" class="icon ${legendOpen ? "primary" : ""}" data-bar="legend" data-tooltip="${esc(loc("AFC.Battle.Legend"))}"><i class="fa-solid fa-map"></i></button>`;
   actions += `<button type="button" class="icon" data-bar="window" data-tooltip="${esc(loc("AFC.Battle.Title"))}"><i class="fa-solid fa-chess-rook"></i></button>`;
   bar.innerHTML = `<span class="round">${esc(loc("AFC.Battle.Round"))} ${battle.round}</span>
-    ${rulesPill}<span class="phase ${revealed ? "revealed" : ""}">${esc(phase)}</span>
+    <span class="phase ${revealed ? "revealed" : ""}">${esc(phase)}</span>
     <span class="info" data-tooltip="${esc(info)}">${info}</span><span class="actions">${actions}</span>
     ${legendOpen ? legendHTML(scene) : ""}`;
 }

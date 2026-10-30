@@ -503,7 +503,6 @@ body.detached .application.afc.afc-fill.afc-dialog .window-content { max-height:
 #afc-battle-bar .legend small { grid-column: 2; color: #cfc2a6; font-size: 0.8rem; line-height: 1.1; }
 
 /* Bataille, règles du livre */
-#afc-battle-bar .rules { padding: 0 0.35rem; border-radius: 3px; border: 1px solid #c9a227; color: #e8cf73; white-space: nowrap; font-size: 0.85rem; }
 #afc-battle-bar { max-width: 80vw; }
 #token-hud .afc-order-palette.book { grid-template-columns: repeat(5, 40px); }
 #token-hud .afc-order-palette.book .control-icon.advanced { background: rgba(142, 27, 27, 0.55); }
