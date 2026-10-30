@@ -6,7 +6,7 @@
  * Avant la révélation, ordres et flèches ne sont visibles que de qui commande la troupe (et du MJ).
  */
 import { ORDERS, TROOP_STATES } from "./battle-config.mjs";
-import { rallyTroop } from "./engagement.mjs";
+import { plannedEngagements, rallyTroop, resolvePlanned } from "./engagement.mjs";
 import { canCommand, getBattle, setUnit, unitOf } from "./state.mjs";
 
 const { DialogV2 } = foundry.applications.api;
@@ -133,6 +133,9 @@ export function onRenderTokenHUD(hud, html) {
       button("fa-crosshairs", unit.target ? loc("AFC.Battle.PlanChange") : loc("AFC.Battle.PlanSet"), () => { hud.close(); startTargetPick(token); });
     }
   }
+  // MJ : résoudre l'engagement de cette troupe directement depuis la carte.
+  const plan = game.user.isGM && battle.revealed ? plannedEngagements(battle).find(p => p.from === token.id) : null;
+  if (plan) button(plan.shoot ? "fa-bullseye" : "fa-khanda", fmt("AFC.Battle.ResolveHud", { d: plan.toName }), () => { hud.close(); resolvePlanned(plan); });
   if (commander) button("fa-user-tie", loc("AFC.Battle.OfficerButton"), () => { hud.close(); chooseOfficer(token); }, { active: !!unit.officer });
   if (commander && token.actor.system.state !== "fresh") button("fa-flag-checkered", loc("AFC.Battle.Rally"), () => rallyTroop(token.id));
   // La fenêtre Bataille : dans la colonne de droite, avec cacher/révéler.

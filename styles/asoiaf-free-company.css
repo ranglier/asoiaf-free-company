@@ -455,3 +455,15 @@ body.detached .application.afc.afc-fill.afc-dialog .window-content { max-height:
 .afc .afc-battle { background: var(--afc-paper); }
 .afc .window-content .afc-battle button.small { display: inline-flex; vertical-align: middle; margin: 0 0.2rem; }
 .afc .afc-battle .battle-plans b, .afc .afc-battle .battle-engage { color: var(--afc-ink); }
+
+/* Barre de bataille sur la carte. */
+#afc-battle-bar { position: fixed; top: 8px; left: 50%; transform: translateX(-50%); z-index: 40; display: flex; align-items: center; gap: 0.6rem; max-width: 60vw; padding: 0.25rem 0.6rem; border: 1px solid #7a5a36; border-radius: 6px; background: rgba(27, 20, 13, 0.92); color: #f3ead6; font-family: "Cormorant Garamond", serif; font-size: 1rem; }
+#afc-battle-bar .round { font-family: "MedievalSharp", serif; white-space: nowrap; }
+#afc-battle-bar .phase { padding: 0 0.35rem; border-radius: 3px; border: 1px solid #b79b70; white-space: nowrap; font-size: 0.85rem; }
+#afc-battle-bar .phase.revealed { background: #8e1b1b; border-color: #8e1b1b; }
+#afc-battle-bar .actions { display: flex; gap: 0.3rem; flex: none; }
+#afc-battle-bar button { width: auto; height: 1.7rem; min-height: 0; padding: 0 0.5rem; font-size: 0.85rem; color: #f3ead6; background: rgba(243, 234, 214, 0.12); border: 1px solid #7a5a36; white-space: nowrap; }
+#afc-battle-bar button.primary { background: #8e1b1b; border-color: #c9a227; }
+#afc-battle-bar button.icon { width: 1.7rem; padding: 0; }
+#afc-battle-bar { max-width: 70vw; }
+#afc-battle-bar .info { min-width: 5rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

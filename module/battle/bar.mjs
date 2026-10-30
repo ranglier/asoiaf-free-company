@@ -1,0 +1,71 @@
+/**
+ * Barre de bataille, posée sur la carte : phase du tour et conduite du tour sans ouvrir la fenêtre.
+ * MJ : révéler, résoudre le prochain engagement, fin de tour. Joueur : où en est le tour et ce qu'il
+ * peut faire. Affichée seulement sur une scène qui contient des troupes.
+ */
+import { endTurn, plannedEngagements, resolvePlanned, revealOrders } from "./engagement.mjs";
+import { canCommand, getBattle, unitOf } from "./state.mjs";
+
+const ID = "afc-battle-bar";
+const loc = key => game.i18n.localize(key);
+const fmt = (key, data) => game.i18n.format(key, data);
+const esc = s => foundry.utils.escapeHTML(String(s ?? ""));
+
+/** Troupes qui doivent recevoir un ordre : pour le MJ toutes, pour un joueur les siennes. */
+function orderCount(battle, scene) {
+  const troops = scene.tokens.filter(t => t.actor?.type === "troop" && !["routed", "destroyed"].includes(t.actor.system.state)
+    && (game.user.isGM || canCommand(t, battle)));
+  return { given: troops.filter(t => unitOf(battle, t.id).order).length, total: troops.length };
+}
+
+const button = (action, icon, label, { disabled = false, primary = false } = {}) =>
+  `<button type="button" data-bar="${action}" class="${primary ? "primary" : ""}" ${disabled ? "disabled" : ""}><i class="fa-solid ${icon}"></i> ${esc(label)}</button>`;
+
+/** Dessine ou met à jour la barre. */
+export function renderBattleBar() {
+  let bar = document.getElementById(ID);
+  const scene = canvas.ready ? canvas.scene : null;
+  const hasTroops = scene?.tokens.some(t => t.actor?.type === "troop");
+  if (!hasTroops) return bar?.remove();
+  if (!bar) {
+    bar = document.createElement("div");
+    bar.id = ID;
+    bar.addEventListener("click", onClick);
+    document.body.append(bar);
+  }
+  const battle = getBattle(scene);
+  const count = orderCount(battle, scene);
+  const phase = battle.revealed ? loc("AFC.Battle.PhaseRevealed") : loc("AFC.Battle.PhaseOrders");
+  let info = "", actions = "";
+  if (game.user.isGM) {
+    if (!battle.revealed) {
+      info = fmt("AFC.Battle.BarOrders", count);
+      actions = button("reveal", "fa-eye", loc("AFC.Battle.Reveal"), { primary: count.given > 0 });
+    } else {
+      const plans = plannedEngagements(battle, scene);
+      const next = plans[0];
+      info = next ? fmt("AFC.Battle.BarNext", { a: esc(next.fromName), o: esc(next.order), d: esc(next.toName), n: plans.length }) : loc("AFC.Battle.BarNoneLeft");
+      if (next) actions += button("resolve", next.shoot ? "fa-bullseye" : "fa-khanda", loc("AFC.Battle.Resolve"), { primary: true });
+      actions += button("endTurn", "fa-forward-step", loc("AFC.Battle.EndTurn"), { primary: !next });
+    }
+  } else if (!battle.revealed) {
+    info = count.total ? fmt("AFC.Battle.BarOrdersPlayer", count) : loc("AFC.Battle.BarWaitingPlayer");
+  } else {
+    info = count.total ? loc("AFC.Battle.BarCounterPlayer") : loc("AFC.Battle.BarRevealedPlayer");
+  }
+  actions += `<button type="button" class="icon" data-bar="window" data-tooltip="${esc(loc("AFC.Battle.Title"))}"><i class="fa-solid fa-chess-rook"></i></button>`;
+  bar.innerHTML = `<span class="round">${esc(loc("AFC.Battle.Round"))} ${battle.round}</span>
+    <span class="phase ${battle.revealed ? "revealed" : ""}">${esc(phase)}</span>
+    <span class="info" data-tooltip="${esc(info)}">${info}</span><span class="actions">${actions}</span>`;
+}
+
+function onClick(event) {
+  const action = event.target.closest("[data-bar]")?.dataset.bar;
+  if (action === "reveal") return revealOrders();
+  if (action === "endTurn") return endTurn();
+  if (action === "window") return game.afc.openBattle();
+  if (action === "resolve") {
+    const next = plannedEngagements()[0];
+    if (next) return resolvePlanned(next);
+  }
+}

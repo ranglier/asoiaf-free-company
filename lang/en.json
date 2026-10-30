@@ -434,6 +434,14 @@
       "Reminder3": "Unpaid wages: −10% Cohesion per month; on the second month, desertions then risk of mutiny."
     },
     "Battle": {
+      "BarOrders": "{given} / {total} orders given",
+      "BarNext": "Next: {a} ({o}) → {d} · {n} to resolve",
+      "BarNoneLeft": "All engagements are resolved.",
+      "BarOrdersPlayer": "Right-click your troops: {given} / {total} orders given",
+      "BarWaitingPlayer": "Orders in progress.",
+      "BarCounterPlayer": "Orders revealed: right-click a troop for a counter-order.",
+      "BarRevealedPlayer": "Orders revealed.",
+      "ResolveHud": "Resolve the engagement against {d}",
       "OrderHelp": {
         "charge": "moves and attacks with momentum (beats Shoot, loses to Hold); designate the target",
         "attack": "moves and fights without momentum, outside the triangle; designate the target",

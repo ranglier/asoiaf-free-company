@@ -22,7 +22,7 @@ function readUnit(token, legacy) {
 /** Bataille de la scène (copie modifiable) ; les troupes sont lues sur leurs acteurs. */
 export function getBattle(scene = canvas.scene) {
   const data = foundry.utils.deepClone(scene?.getFlag(SYSTEM_ID, FLAG) ?? {});
-  const battle = foundry.utils.mergeObject({ round: 1, revealed: false, weather: "clear", engaged: [], reload: [], reloadNext: [] }, data);
+  const battle = foundry.utils.mergeObject({ round: 1, revealed: false, weather: "clear", engaged: [], done: [], reload: [], reloadNext: [] }, data);
   // Anciennes versions : unités ou groupes rangés sur la scène.
   const legacy = {};
   for (const u of data.units ?? []) legacy[u.id] = u;

@@ -198,7 +198,9 @@ export async function resolveMelee(att, def) {
   const notes = [];
   if (winner === att && m.heavyShock) { losses += 1; notes.push(loc("AFC.Battle.Trait.heavyShock.name")); }
   if (loser?.actor.system.has.heavyArmor && degrees >= 2) { losses -= 1; notes.push(loc("AFC.Battle.Trait.heavyArmor.name")); }
-  await markEngaged([att.id, def.id]);
+  // Deux troupes qui se visent : une seule mêlée, les deux engagements sont résolus.
+  const mutual = unitOf(battle, def.id).target === att.id && ["charge", "attack"].includes(m.dOrder);
+  await markEngaged([att.id, def.id], mutual ? [att.id, def.id] : [att.id]);
   const result = !winner ? loc("AFC.Battle.Tie")
     : fmt("AFC.Battle.MeleeResult", { w: winner.name, l: loser.name, n: degrees, losses });
   return postResult({
@@ -235,6 +237,7 @@ export async function resolveShoot(shooter, target) {
   const degrees = test.outcome?.success ? test.outcome.degrees : 0;
   const losses = m.uncapped ? degrees : Math.min(1, degrees);
   if (shooter.actor.system.has.reload) await setReload(shooter.id);
+  await markEngaged([], [shooter.id]);
   return postResult({
     title: fmt("AFC.Battle.ShootTitle", { a: shooter.name, d: target.name }),
     lines: [`${esc(r.name)} : ${diceText(test)} = <b>${test.total}</b> / ${m.difficulty}`],
@@ -345,10 +348,31 @@ export async function rallyTroop(tokenId) {
 
 /* ---------- Suivi du tour ---------- */
 
-async function markEngaged(ids) {
+/** Note les troupes engagées en mêlée et les engagements résolus ce tour-ci. */
+async function markEngaged(ids, done = []) {
   const battle = getBattle();
-  battle.engaged = [...new Set([...(battle.engaged ?? []), ...ids])];
+  battle.engaged = [...new Set([...battle.engaged, ...ids])];
+  battle.done = [...new Set([...battle.done, ...done])];
   await saveBattle(battle);
+}
+
+/**
+ * Engagements encore à résoudre : cibles désignées, tirs d'abord, puis mêlées. Une troupe en déroute
+ * ou détruite n'attaque plus, et une cible retirée de la scène annule l'engagement.
+ */
+export function plannedEngagements(battle = getBattle(), scene = canvas.scene) {
+  return battle.units.filter(u => u.target && ["charge", "attack", "shoot"].includes(u.order) && !battle.done.includes(u.id)).map(u => {
+    const from = scene.tokens.get(u.id), to = scene.tokens.get(u.target);
+    if (!from?.actor || !to?.actor || ["routed", "destroyed"].includes(from.actor.system.state)) return null;
+    return { from: u.id, to: u.target, fromName: from.name, toName: to.name, order: orderLabel(u.order), shoot: u.order === "shoot" };
+  }).filter(Boolean).sort((a, b) => b.shoot - a.shoot);
+}
+
+/** Résout un engagement prévu : tir si l'ordre est Tirer, sinon mêlée. */
+export function resolvePlanned(plan) {
+  const a = canvas.scene.tokens.get(plan.from), d = canvas.scene.tokens.get(plan.to);
+  if (!a || !d) return;
+  return plan.shoot ? resolveShoot(a, d) : resolveMelee(a, d);
 }
 async function setReload(id) {
   const battle = getBattle();
@@ -393,6 +417,7 @@ export async function endTurn() {
   battle.round += 1;
   battle.revealed = false;
   battle.engaged = [];
+  battle.done = [];
   battle.reload = battle.reloadNext ?? [];
   battle.reloadNext = [];
   await saveBattle(battle);

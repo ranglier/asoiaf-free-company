@@ -434,6 +434,14 @@
       "Reminder3": "Solde impayée : −10 % de Cohésion par mois ; au deuxième mois, désertions puis risque de mutinerie."
     },
     "Battle": {
+      "BarOrders": "{given} / {total} ordres donnés",
+      "BarNext": "Prochain : {a} ({o}) → {d} · {n} à résoudre",
+      "BarNoneLeft": "Tous les engagements sont résolus.",
+      "BarOrdersPlayer": "Clic droit sur vos troupes : {given} / {total} ordres donnés",
+      "BarWaitingPlayer": "Ordres en cours.",
+      "BarCounterPlayer": "Ordres révélés : clic droit sur une troupe pour un contre-ordre.",
+      "BarRevealedPlayer": "Ordres révélés.",
+      "ResolveHud": "Résoudre l'engagement contre {d}",
       "OrderHelp": {
         "charge": "se déplace et attaque avec élan (bat Tirer, perd contre Tenir) ; désignez la cible",
         "attack": "se déplace et combat sans élan, hors du triangle ; désignez la cible",

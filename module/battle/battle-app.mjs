@@ -4,7 +4,7 @@
  */
 import { SYSTEM_ID } from "../config.mjs";
 import { ORDERS, TRIANGLE, TROOP_STATES, WEATHER } from "./battle-config.mjs";
-import { battleReport, endTurn, orderLabel, rallyTroop, resolveMelee, resolveShoot, revealOrders } from "./engagement.mjs";
+import { battleReport, endTurn, orderLabel, plannedEngagements, rallyTroop, resolveMelee, resolvePlanned, resolveShoot, revealOrders } from "./engagement.mjs";
 import { chooseOfficer, giveOrder, ORDER_ICONS, orderVisible, startTargetPick, TARGETED_ORDERS } from "./map.mjs";
 import { canCommand, clearBattle, getBattle, saveBattle, setUnit, unitOf } from "./state.mjs";
 import { createEnemyTroop } from "./troops.mjs";
@@ -95,11 +95,7 @@ export class BattleApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
     const controlled = canvas.tokens.controlled[0]?.document;
     const targeted = [...game.user.targets][0]?.document;
-    const plans = isGM ? battle.units.filter(u => u.target && TARGETED_ORDERS.includes(u.order)).map(u => {
-      const from = scene.tokens.get(u.id), to = scene.tokens.get(u.target);
-      if (!from || !to) return null;
-      return { from: u.id, to: u.target, fromName: from.name, toName: to.name, order: orderLabel(u.order), shoot: u.order === "shoot" };
-    }).filter(Boolean).sort((a, b) => b.shoot - a.shoot) : [];
+    const plans = isGM ? plannedEngagements(battle, scene) : [];
 
     return {
       battle, isGM, hasScene: !!scene,
@@ -166,9 +162,7 @@ export class BattleApp extends HandlebarsApplicationMixin(ApplicationV2) {
   /** Engagement prévu : tir si l'ordre est Tirer, sinon mêlée. */
   static #onResolvePlan(event, target) {
     const { from, to, shoot } = target.dataset;
-    const a = canvas.scene.tokens.get(from), d = canvas.scene.tokens.get(to);
-    if (!a || !d) return;
-    return shoot === "true" ? resolveShoot(a, d) : resolveMelee(a, d);
+    return resolvePlanned({ from, to, shoot: shoot === "true" });
   }
 
   static async #onReset() {
