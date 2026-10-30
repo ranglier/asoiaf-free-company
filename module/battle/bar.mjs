@@ -3,13 +3,25 @@
  * MJ : révéler, résoudre le prochain engagement, fin de tour. Joueur : où en est le tour et ce qu'il
  * peut faire. Affichée seulement sur une scène qui contient des troupes.
  */
-import { endTurn, plannedEngagements, resolvePlanned, revealOrders } from "./engagement.mjs";
+import { endTurn, plannedEngagements, resolvePlanned, revealOrders, terrainKeyOf } from "./engagement.mjs";
+import { visibleRegions } from "./map.mjs";
 import { canCommand, getBattle, unitOf } from "./state.mjs";
 
 const ID = "afc-battle-bar";
 const loc = key => game.i18n.localize(key);
 const fmt = (key, data) => game.i18n.format(key, data);
 const esc = s => foundry.utils.escapeHTML(String(s ?? ""));
+let legendOpen = false;
+
+/** Légende : couleur, nom et effet de chaque terrain de la scène (un nom inconnu est un simple repère). */
+function legendHTML(scene) {
+  const rows = visibleRegions(scene).map(r => {
+    const key = terrainKeyOf(r.name);
+    return `<li><span class="swatch" style="background:${r.color?.css ?? "transparent"}"></span><b>${esc(r.name)}</b>
+      <small>${esc(loc(`AFC.Battle.TerrainEffect.${key ?? "landmark"}`))}</small></li>`;
+  }).join("");
+  return `<ul class="legend">${rows || `<li><small>${esc(loc("AFC.Battle.LegendEmpty"))}</small></li>`}</ul>`;
+}
 
 /** Troupes qui doivent recevoir un ordre : pour le MJ toutes, pour un joueur les siennes. */
 function orderCount(battle, scene) {
@@ -53,10 +65,12 @@ export function renderBattleBar() {
   } else {
     info = count.total ? loc("AFC.Battle.BarCounterPlayer") : loc("AFC.Battle.BarRevealedPlayer");
   }
+  actions += `<button type="button" class="icon ${legendOpen ? "primary" : ""}" data-bar="legend" data-tooltip="${esc(loc("AFC.Battle.Legend"))}"><i class="fa-solid fa-map"></i></button>`;
   actions += `<button type="button" class="icon" data-bar="window" data-tooltip="${esc(loc("AFC.Battle.Title"))}"><i class="fa-solid fa-chess-rook"></i></button>`;
   bar.innerHTML = `<span class="round">${esc(loc("AFC.Battle.Round"))} ${battle.round}</span>
     <span class="phase ${battle.revealed ? "revealed" : ""}">${esc(phase)}</span>
-    <span class="info" data-tooltip="${esc(info)}">${info}</span><span class="actions">${actions}</span>`;
+    <span class="info" data-tooltip="${esc(info)}">${info}</span><span class="actions">${actions}</span>
+    ${legendOpen ? legendHTML(scene) : ""}`;
 }
 
 function onClick(event) {
@@ -64,6 +78,10 @@ function onClick(event) {
   if (action === "reveal") return revealOrders();
   if (action === "endTurn") return endTurn();
   if (action === "window") return game.afc.openBattle();
+  if (action === "legend") {
+    legendOpen = !legendOpen;
+    return renderBattleBar();
+  }
   if (action === "resolve") {
     const next = plannedEngagements()[0];
     if (next) return resolvePlanned(next);

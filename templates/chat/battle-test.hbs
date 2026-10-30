@@ -1,0 +1,19 @@
+<div class="afc-card battle {{#if success}}success{{else}}failure{{/if}}">
+  <header>
+    <h3>{{title}}</h3>
+    <span class="subtitle">{{subtitle}}</span>
+  </header>
+
+  <div class="result">
+    <div class="total">{{total}}</div>
+    <div class="verdict">
+      <span class="seal">{{#if success}}{{degrees}}{{else}}<i class="fa-solid fa-xmark"></i>{{/if}}</span>
+      <div><strong>{{verdict}}</strong><small>{{detail}}</small></div>
+    </div>
+  </div>
+
+  <ol class="dice">{{#each dice as |d|}}<li class="die d{{d.value}} {{#unless d.kept}}dropped{{/unless}}">{{d.value}}</li>{{/each}}</ol>
+
+  <footer><span class="pool">{{pool}}</span>{{#each tags}}<span class="tag">{{this}}</span>{{/each}}</footer>
+  {{#if apply}}<button type="button" data-afc-battle="apply" data-token="{{apply.token}}" data-losses="{{apply.losses}}"><i class="fa-solid fa-heart-crack"></i> {{localize "AFC.Battle.ApplyLosses"}}</button>{{/if}}
+</div>

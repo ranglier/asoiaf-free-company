@@ -5,17 +5,14 @@
  * - pastille d'ordre dans le bas du jeton et flèches « troupe → cible ».
  * Avant la révélation, ordres et flèches ne sont visibles que de qui commande la troupe (et du MJ).
  */
-import { ORDERS, TROOP_STATES } from "./battle-config.mjs";
+import { ORDER_ICONS, ORDERS, TROOP_STATES } from "./battle-config.mjs";
 import { plannedEngagements, rallyTroop, resolvePlanned } from "./engagement.mjs";
 import { canCommand, getBattle, setUnit, unitOf } from "./state.mjs";
 
 const { DialogV2 } = foundry.applications.api;
 const loc = key => game.i18n.localize(key);
 const fmt = (key, data) => game.i18n.format(key, data);
-export const ORDER_ICONS = {
-  charge: "fa-horse-head", attack: "fa-hand-fist", hold: "fa-shield-halved",
-  shoot: "fa-bullseye", maneuver: "fa-arrows-up-down-left-right", withdraw: "fa-person-walking-arrow-loop-left"
-};
+export { ORDER_ICONS };
 /** Ordres qui visent une troupe adverse. */
 export const TARGETED_ORDERS = ["charge", "attack", "shoot"];
 
@@ -138,8 +135,63 @@ export function onRenderTokenHUD(hud, html) {
   if (plan) button(plan.shoot ? "fa-bullseye" : "fa-khanda", fmt("AFC.Battle.ResolveHud", { d: plan.toName }), () => { hud.close(); resolvePlanned(plan); });
   if (commander) button("fa-user-tie", loc("AFC.Battle.OfficerButton"), () => { hud.close(); chooseOfficer(token); }, { active: !!unit.officer });
   if (commander && token.actor.system.state !== "fresh") button("fa-flag-checkered", loc("AFC.Battle.Rally"), () => rallyTroop(token.id));
-  // La fenêtre Bataille : dans la colonne de droite, avec cacher/révéler.
-  html.querySelector(".col.right")?.append(button("fa-chess-rook", loc("AFC.Battle.Title"), () => game.afc.openBattle()));
+  // Colonne de droite, avec cacher/révéler : fiche de la troupe et fenêtre Bataille.
+  const right = html.querySelector(".col.right");
+  if (token.actor.testUserPermission(game.user, "OBSERVER")) {
+    right?.append(button("fa-file-lines", loc("AFC.Battle.OpenSheet"), () => { hud.close(); token.actor.sheet.render({ force: true }); }));
+  }
+  right?.append(button("fa-chess-rook", loc("AFC.Battle.Title"), () => game.afc.openBattle()));
+}
+
+/* ---------- Noms des terrains sur la carte ---------- */
+
+/** Régions que l'utilisateur peut voir (le MJ : toutes, y compris un passage encore secret). */
+export const visibleRegions = (scene = canvas.scene) =>
+  scene.regions.filter(r => game.user.isGM || r.visibility === CONST.REGION_VISIBILITY.ALWAYS);
+
+/** Centre d'une forme de région (polygone, rectangle ou ellipse). */
+function shapeCenter(s) {
+  if (s.points?.length) {
+    const n = s.points.length / 2;
+    let x = 0, y = 0;
+    for (let i = 0; i < s.points.length; i += 2) { x += s.points[i]; y += s.points[i + 1]; }
+    return { x: x / n, y: y / n };
+  }
+  return s.width ? { x: s.x + s.width / 2, y: s.y + s.height / 2 } : { x: s.x, y: s.y };
+}
+
+/** Le nom se pose sur la case de la région la plus proche de son milieu : jamais hors de la région. */
+function regionAnchor(region) {
+  const centers = region.shapes.map(shapeCenter);
+  if (!centers.length) return null;
+  const mid = { x: centers.reduce((s, c) => s + c.x, 0) / centers.length, y: centers.reduce((s, c) => s + c.y, 0) / centers.length };
+  return centers.reduce((best, c) => (Math.hypot(c.x - mid.x, c.y - mid.y) < Math.hypot(best.x - mid.x, best.y - mid.y) ? c : best));
+}
+
+/** Écrit le nom de chaque région dans le haut de sa case (le bas du jeton porte l'ordre), sous les jetons. */
+export function drawRegionLabels() {
+  if (!canvas.ready) return;
+  canvas.tokens.children.filter(c => c.name === "afcRegionLabels").forEach(c => c.destroy({ children: true }));
+  if (!canvas.scene.tokens.some(t => t.actor?.type === "troop")) return;
+  const layer = new PIXI.Container();
+  layer.name = "afcRegionLabels";
+  layer.eventMode = "none";
+  const placed = [];
+  for (const region of visibleRegions()) {
+    const at = regionAnchor(region);
+    if (!at) continue;
+    const text = new foundry.canvas.containers.PreciseText(region.name, Object.assign(CONFIG.canvasTextStyle.clone(), {
+      fontSize: 15, fill: "#f3ead6", stroke: "#1b140d", strokeThickness: 3, fontStyle: region.visibility === CONST.REGION_VISIBILITY.ALWAYS ? "normal" : "italic"
+    }));
+    text.anchor.set(0.5, 0.5);
+    let y = at.y - canvas.grid.sizeY * 0.32;
+    // Deux régions sur la même case (village et pieux) : l'un sous l'autre.
+    while (placed.some(p => Math.abs(p.x - at.x) < (p.w + text.width) / 2 && Math.abs(p.y - y) < 16)) y += 17;
+    text.position.set(at.x, y);
+    placed.push({ x: at.x, y, w: text.width });
+    layer.addChild(text);
+  }
+  canvas.tokens.addChildAt(layer, 0);
 }
 
 /* ---------- Pastilles d'ordre ---------- */

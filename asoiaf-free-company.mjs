@@ -15,7 +15,7 @@ import { BattleApp } from "./module/battle/battle-app.mjs";
 import { onRenderBattleCard } from "./module/battle/engagement.mjs";
 import { migrateBattle, registerBattleSocket } from "./module/battle/state.mjs";
 import { renderBattleBar } from "./module/battle/bar.mjs";
-import { cancelTargetPick, drawPlanArrows, drawTroopMarks, onRenderTokenHUD, refreshOrderBadges, scheduleArrows } from "./module/battle/map.mjs";
+import { cancelTargetPick, drawPlanArrows, drawRegionLabels, drawTroopMarks, onRenderTokenHUD, refreshOrderBadges, scheduleArrows } from "./module/battle/map.mjs";
 import { refreshTroopImage, registerTroopStatuses, syncTroopStatus } from "./module/battle/troops.mjs";
 import { evaluateTest, rollAbilityTest, rollTest } from "./module/dice/test-roll.mjs";
 import { onRenderChatMessage, resolveDamage, rollAttack } from "./module/dice/attack.mjs";
@@ -102,8 +102,16 @@ Hooks.on("canvasReady", () => {
   BattleApp.refresh();
   refreshOrderBadges();
   drawPlanArrows();
+  drawRegionLabels();
   renderBattleBar();
 });
+// Noms sur la carte et légende : suivent les régions (un passage découvert apparaît aussitôt).
+for (const hook of ["createRegion", "updateRegion", "deleteRegion"]) {
+  Hooks.on(hook, () => {
+    drawRegionLabels();
+    renderBattleBar();
+  });
+}
 // Les flèches suivent les jetons image par image (déplacements animés), et leur visibilité.
 Hooks.on("refreshToken", (token, flags) => {
   if (flags.refreshPosition || flags.refreshVisibility) scheduleArrows();
@@ -111,6 +119,7 @@ Hooks.on("refreshToken", (token, flags) => {
 for (const hook of ["createToken", "deleteToken"]) {
   Hooks.on(hook, () => {
     scheduleArrows();
+    drawRegionLabels();
     renderBattleBar();
   });
 }

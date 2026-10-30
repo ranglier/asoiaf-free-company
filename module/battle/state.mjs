@@ -87,7 +87,9 @@ async function applyUnit(scene, tokenId, changes, user) {
   const battle = getBattle(scene);
   if (!canCommand(token, battle, user)) return;
   const unit = { ...unitOf(battle, tokenId) };
-  if (battle.revealed && !user.isGM && ("order" in changes || "target" in changes)) {
+  // Désigner la cible juste après le nouvel ordre fait partie du même contre-ordre.
+  const completing = unit.countered && !unit.target && !("order" in changes);
+  if (battle.revealed && !user.isGM && ("order" in changes || "target" in changes) && !completing) {
     if (unit.countered) return ui.notifications.warn(game.i18n.localize("AFC.Battle.AlreadyCountered"));
     unit.countered = true;
   }
@@ -104,9 +106,31 @@ async function applyUnit(scene, tokenId, changes, user) {
   }
 }
 
-/** Écoute du canal : un MJ (le premier connecté) écrit pour le joueur qui commande par son officier. */
+/* ---------- Question posée à un joueur ---------- */
+
+/** Réponses possibles, par type de question (remplies par les modules qui posent les questions). */
+export const askHandlers = {};
+const asks = new Map();
+
+/** Pose une question à un joueur connecté. Renvoie sa réponse, ou undefined s'il n'a pas répondu à temps. */
+export function askUser(userId, kind, data, timeout = 60000) {
+  const id = foundry.utils.randomID();
+  return new Promise(resolve => {
+    const timer = setTimeout(() => { asks.delete(id); resolve(undefined); }, timeout);
+    asks.set(id, answer => { clearTimeout(timer); asks.delete(id); resolve(answer); });
+    game.socket.emit(CHANNEL, { action: "ask", id, kind, data, user: userId });
+  });
+}
+
+/** Écoute du canal : questions aux joueurs, et un MJ (le premier connecté) écrit pour le joueur qui commande par son officier. */
 export function registerBattleSocket() {
-  game.socket.on(CHANNEL, data => {
+  game.socket.on(CHANNEL, async data => {
+    if (data?.action === "ask") {
+      if (data.user !== game.user.id) return;
+      const answer = await askHandlers[data.kind]?.(data.data);
+      return game.socket.emit(CHANNEL, { action: "answer", id: data.id, answer: answer ?? null });
+    }
+    if (data?.action === "answer") return asks.get(data.id)?.(data.answer);
     if (!game.user.isGM || data?.action !== "unit") return;
     // Un seul MJ traite la demande : le premier MJ actif qui a ce code (les autres l'ignorent).
     const gms = game.users.filter(u => u.isGM && u.active).sort((a, b) => a.id.localeCompare(b.id));

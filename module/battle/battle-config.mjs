@@ -97,3 +97,9 @@ export const TERRAINS = {
 
 /** Météo de la bataille. */
 export const WEATHER = { clear: {}, rain: { shoot: 1, noCharge: true }, fog: { rangeHalf: true, sight: 2 } };
+
+/** Icône de chaque ordre (carte, fenêtre Bataille, carte de chat). */
+export const ORDER_ICONS = {
+  charge: "fa-horse-head", attack: "fa-hand-fist", hold: "fa-shield-halved",
+  shoot: "fa-bullseye", maneuver: "fa-arrows-up-down-left-right", withdraw: "fa-person-walking-arrow-loop-left"
+};

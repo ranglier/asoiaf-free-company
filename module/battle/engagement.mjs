@@ -6,9 +6,9 @@ import { SYSTEM_ID } from "../config.mjs";
 import { specialtyBonus } from "../data/actor-character.mjs";
 import { rollDice } from "../dice/test-roll.mjs";
 import {
-  MAX_LOSS, MOVING_ORDERS, STATE_ORDER, TERRAINS, TRIANGLE, TROOP_STATES, WEATHER
+  MAX_LOSS, MOVING_ORDERS, ORDER_ICONS, STATE_ORDER, TERRAINS, TRIANGLE, TROOP_STATES, WEATHER
 } from "./battle-config.mjs";
-import { getBattle, resetOrders, saveBattle, unitOf } from "./state.mjs";
+import { askHandlers, askUser, getBattle, resetOrders, saveBattle, unitOf } from "./state.mjs";
 
 const { DialogV2 } = foundry.applications.api;
 const loc = key => game.i18n.localize(key);
@@ -19,14 +19,18 @@ const COMMAND = ["commandement", "command"];
 
 /* ---------- Carte : terrain, contact, distance ---------- */
 
-const center = token => token.object?.center ?? { x: token.x + (token.width * canvas.grid.sizeX) / 2, y: token.y + (token.height * canvas.grid.sizeY) / 2 };
+// Position enregistrée (_source) : dans un onglet en arrière-plan, l'animation retarde token.x et token.object.
+const center = token => ({ x: token._source.x + (token.width * canvas.grid.sizeX) / 2, y: token._source.y + (token.height * canvas.grid.sizeY) / 2 });
+
+/** Terrain reconnu au nom d'une région (sinon, simple repère sans effet). */
+export const terrainKeyOf = name => Object.entries(TERRAINS).find(([, t]) => t.match.test(name))?.[0];
 
 /** Terrains de la case d'un jeton (régions de la scène reconnues à leur nom). */
 export function terrainAt(token) {
   const point = { ...center(token), elevation: 0 };
   const keys = new Set();
   for (const region of token.parent.regions) {
-    const key = Object.entries(TERRAINS).find(([, t]) => t.match.test(region.name))?.[0];
+    const key = terrainKeyOf(region.name);
     if (key && region.testPoint(point)) keys.add(key);
   }
   return [...keys];
@@ -93,7 +97,8 @@ export function meleeMods(att, def, battle) {
   // Terrain du défenseur.
   if (terrainValue(dTerrain, "defense")) dm.push(mod(loc("AFC.Battle.Terrain.hill"), { b: 1 }));
   if (charging && terrainHas(dTerrain, "chargeUp")) am.push(mod(loc("AFC.Battle.Mod.chargeUp"), { p: 1 }));
-  if (terrainHas(dTerrain, "attackerPenalty")) {
+  // Traverser un gué ou un pont : l'attaquant y est engagé, ou le défenseur l'y attend.
+  if (terrainHas(dTerrain, "attackerPenalty") || terrainHas(aTerrain, "attackerPenalty")) {
     am.push(mod(loc("AFC.Battle.Mod.crossing"), { p: 1 }));
     dm.push(mod(loc("AFC.Battle.Mod.holdCrossing"), { b: 1 }));
   }
@@ -170,7 +175,15 @@ const readExtra = (f, p) => ({ b: Number(f[`${p}b`].value) || 0, p: Number(f[`${
 /** Case « Appliquer les pertes tout de suite » des dialogues de résolution. */
 const autoBox = () => `<label class="checkbox"><input type="checkbox" name="auto" checked> ${loc("AFC.Battle.AutoApply")}</label>`;
 const degreesOf = margin => Math.min(4, Math.floor(margin / 5) + 1);
-const diceText = test => test.dice.map(d => d.kept ? `<b>${d.value}</b>` : `<s>${d.value}</s>`).join(" ");
+
+/* ---------- Cartes de chat ---------- */
+
+const renderCard = (name, data) => foundry.applications.handlebars.renderTemplate(`systems/${SYSTEM_ID}/templates/chat/${name}.hbs`, data);
+/** Réserve de dés, comme sur les jets de fiche : « 4D +2B −1D +3 ». */
+const poolLabel = (p, test) => `${p.rank}D${test.bonus ? ` +${test.bonus}B` : ""}${p.penalty ? ` −${p.penalty}D` : ""}${p.modifier ? ` ${p.modifier > 0 ? "+" : "−"}${Math.abs(p.modifier)}` : ""}`;
+/** Modificateurs affichés en étiquettes : « Flanc (1) +1B ». */
+const modTags = mods => mods.map(m => `${m.label}${m.b ? ` +${m.b}B` : ""}${m.d ? ` +${m.d}D` : ""}${m.p ? ` −${m.p}D` : ""}`);
+const lossLabel = (name, n) => (n > 0 ? fmt(n === 1 ? "AFC.Battle.Card.Lose1" : "AFC.Battle.Card.LoseN", { l: name, n }) : loc("AFC.Battle.Card.NoLoss"));
 
 /** Mêlée entre deux jetons (attaquant : jeton contrôlé ; défenseur : cible). */
 export async function resolveMelee(att, def) {
@@ -189,8 +202,9 @@ export async function resolveMelee(att, def) {
     rejectClose: false
   });
   if (!opts) return;
-  const ta = await rollDice(pool(ra, m.am, opts.a));
-  const td = await rollDice(pool(rd, m.dm, opts.d));
+  const pa = pool(ra, m.am, opts.a), pd = pool(rd, m.dm, opts.d);
+  const ta = await rollDice(pa);
+  const td = await rollDice(pd);
   let winner = null, loser = null, degrees = 0;
   if (ta.total > td.total) { winner = att; loser = def; degrees = degreesOf(ta.total - td.total); }
   else if (td.total > ta.total) { winner = def; loser = att; degrees = degreesOf(td.total - ta.total); }
@@ -201,17 +215,19 @@ export async function resolveMelee(att, def) {
   // Deux troupes qui se visent : une seule mêlée, les deux engagements sont résolus.
   const mutual = unitOf(battle, def.id).target === att.id && ["charge", "attack"].includes(m.dOrder);
   await markEngaged([att.id, def.id], mutual ? [att.id, def.id] : [att.id]);
-  const result = !winner ? loc("AFC.Battle.Tie")
-    : fmt("AFC.Battle.MeleeResult", { w: winner.name, l: loser.name, n: degrees, losses });
-  return postResult({
-    title: fmt("AFC.Battle.MeleeTitle", { a: att.name, d: def.name }),
-    lines: [
-      `${esc(att.name)} (${esc(ra.name)}) : ${diceText(ta)} = <b>${ta.total}</b>`,
-      `${esc(def.name)} (${esc(rd.name)}) : ${diceText(td)} = <b>${td.total}</b>`
-    ],
-    result, notes, rolls: [ta.roll, td.roll],
-    apply: loser && losses > 0 ? { token: loser.id, losses } : null, auto: opts.auto
+  const side = (token, r, mods, p, test) => ({
+    name: token.name, roller: r.name, total: test.total, dice: test.dice, pool: poolLabel(p, test), tags: modTags(mods), winner: winner === token
   });
+  const apply = loser && losses > 0 ? { token: loser.id, losses } : null;
+  const content = await renderCard("battle-melee", {
+    orders: fmt("AFC.Battle.Card.VsOrders", { a: orderLabel(m.aOrder), d: orderLabel(m.dOrder) }),
+    sides: [side(att, ra, m.am, pa, ta), side(def, rd, m.dm, pd, td)],
+    degrees,
+    verdict: winner ? fmt("AFC.Battle.Card.Wins", { w: winner.name }) : loc("AFC.Battle.Card.Tie"),
+    detail: winner ? [lossLabel(loser.name, losses), ...notes].join(" · ") : loc("AFC.Battle.Card.TieDetail"),
+    apply: opts.auto ? null : apply
+  });
+  return postResult({ content, rolls: [ta.roll, td.roll], apply, auto: opts.auto });
 }
 
 /** Tir (tireur : jeton contrôlé ; cible : jeton ciblé). */
@@ -238,33 +254,56 @@ export async function resolveShoot(shooter, target) {
   const losses = m.uncapped ? degrees : Math.min(1, degrees);
   if (shooter.actor.system.has.reload) await setReload(shooter.id);
   await markEngaged([], [shooter.id]);
-  return postResult({
-    title: fmt("AFC.Battle.ShootTitle", { a: shooter.name, d: target.name }),
-    lines: [`${esc(r.name)} : ${diceText(test)} = <b>${test.total}</b> / ${m.difficulty}`],
-    result: degrees ? fmt("AFC.Battle.ShootHit", { n: degrees, losses, d: target.name }) : loc("AFC.Battle.ShootMiss"),
-    notes: [], rolls: [test.roll],
-    apply: losses ? { token: target.id, losses } : null, auto: opts.auto
+  const apply = losses ? { token: target.id, losses } : null;
+  const content = await renderCard("battle-test", {
+    title: loc("AFC.Battle.Card.Shoot"),
+    subtitle: fmt("AFC.Battle.Card.ShootAt", { a: shooter.name, d: target.name }),
+    total: test.total, dice: test.dice, success: degrees > 0, degrees,
+    verdict: degrees ? `${loc("AFC.Battle.Card.Hit")} : ${lossLabel(target.name, losses)}` : loc("AFC.Battle.Card.Miss"),
+    detail: fmt("AFC.Battle.Card.Against", { n: m.difficulty, detail: m.diff.map(d => `${d.label} ${d.value}`).join(" + ") }),
+    pool: poolLabel(p, test), tags: [r.name, ...modTags(m.mods)],
+    apply: opts.auto ? null : apply
   });
+  return postResult({ content, rolls: [test.roll], apply, auto: opts.auto });
 }
 
-/**
- * Carte de chat du résultat. Pertes appliquées tout de suite (case cochée), sinon bouton
- * « Appliquer les pertes » pour le MJ.
- */
-async function postResult({ title, lines, result, notes, rolls, apply, auto }) {
-  const button = apply && !auto ? `<button type="button" data-afc-battle="apply" data-token="${apply.token}" data-losses="${apply.losses}">
-    <i class="fa-solid fa-heart-crack"></i> ${loc("AFC.Battle.ApplyLosses")}</button>` : "";
-  const message = await ChatMessage.create({
-    rolls,
-    content: `<div class="afc-card battle"><header><h3>${esc(title)}</h3></header>
-      <ul class="month-lines">${lines.map(l => `<li>${l}</li>`).join("")}</ul>
-      <p class="battle-result">${esc(result)}${notes.length ? ` <small>(${notes.map(esc).join(", ")})</small>` : ""}</p>${button}</div>`
-  });
+/** Publie la carte du résultat. Pertes appliquées tout de suite (case cochée), sinon bouton pour le MJ. */
+async function postResult({ content, rolls, apply, auto }) {
+  const message = await ChatMessage.create({ rolls, content });
   if (apply && auto) await applyLosses(apply.token, apply.losses);
   return message;
 }
 
 /* ---------- Pertes, encaissement, ralliement ---------- */
+
+/** Combien de points d'encaissement dépenser ? (null si la fenêtre est fermée) */
+function cushionDialog({ name, losses, cushion }) {
+  return DialogV2.prompt({
+    window: { title: fmt("AFC.Battle.CushionTitle", { name }) },
+    classes: ["afc", "afc-dialog"],
+    content: `<div class="afc-test-dialog"><p>${fmt("AFC.Battle.CushionQuestion", { n: losses, c: cushion })}</p>
+      <label>${loc("AFC.Battle.Cushion")}<input type="number" name="spend" value="0" min="0" max="${Math.min(cushion, losses)}"></label></div>`,
+    ok: { label: loc("AFC.Battle.Apply"), callback: (ev, button) => Math.max(0, Math.min(cushion, losses, Number(button.form.elements.spend.value) || 0)) },
+    rejectClose: false
+  });
+}
+askHandlers.cushion = cushionDialog;
+
+/**
+ * Choix d'encaissement : c'est au joueur qui possède la troupe de décider. Sans joueur connecté, ou
+ * sans réponse à temps, la question revient à qui applique les pertes (le MJ).
+ * Le joueur qui ferme sa fenêtre n'encaisse rien ; le MJ qui ferme la sienne annule.
+ */
+async function askCushion(token, losses) {
+  const actor = token.actor;
+  const data = { name: token.name, losses, cushion: actor.system.cushion };
+  const player = game.users.find(u => !u.isGM && u.active && actor.testUserPermission(u, "OWNER"));
+  if (!game.user.isGM || !player) return cushionDialog(data);
+  ui.notifications.info(fmt("AFC.Battle.CushionWaiting", { name: token.name, user: player.name }));
+  const answer = await askUser(player.id, "cushion", data);
+  if (answer === undefined) return cushionDialog(data);
+  return Math.max(0, Math.min(data.cushion, losses, answer ?? 0));
+}
 
 /** Applique des pertes d'états à une troupe, après le choix d'encaissement. */
 export async function applyLosses(tokenId, losses) {
@@ -274,14 +313,7 @@ export async function applyLosses(tokenId, losses) {
   const s = actor.system;
   let spend = 0;
   if (s.canCushion) {
-    spend = await DialogV2.prompt({
-      window: { title: fmt("AFC.Battle.CushionTitle", { name: token.name }) },
-      classes: ["afc", "afc-dialog"],
-      content: `<div class="afc-test-dialog"><p>${fmt("AFC.Battle.CushionQuestion", { n: losses, c: s.cushion })}</p>
-        <label>${loc("AFC.Battle.Cushion")}<input type="number" name="spend" value="0" min="0" max="${Math.min(s.cushion, losses)}"></label></div>`,
-      ok: { label: loc("AFC.Battle.Apply"), callback: (ev, button) => Math.max(0, Math.min(s.cushion, losses, Number(button.form.elements.spend.value) || 0)) },
-      rejectClose: false
-    });
+    spend = await askCushion(token, losses);
     if (spend === null) return;
   }
   const notes = [];
@@ -303,9 +335,10 @@ export async function applyLosses(tokenId, losses) {
   if (state === "routed") notes.push(loc("AFC.Battle.Flee"));
   await actor.update({ "system.state": state, "system.cushion": s.cushion - spend, "system.disorders": disorders });
   return ChatMessage.create({
-    content: `<div class="afc-card battle"><p>${fmt("AFC.Battle.LossesApplied", {
-      name: esc(token.name), n: losses, spend, state: loc(TROOP_STATES[state].label)
-    })}${notes.length ? ` <small>(${notes.map(esc).join(", ")})</small>` : ""}</p></div>`
+    content: `<div class="afc-card battle losses"><strong class="troop">${esc(token.name)}</strong>
+      ${spend ? `<span class="tag">${fmt("AFC.Battle.Card.Cushioned", { n: spend })}</span>` : ""}
+      <span class="state-chip ${state}">${loc(TROOP_STATES[state].label)}</span>
+      ${notes.length ? `<small>${notes.map(esc).join(" · ")}</small>` : ""}</div>`
   });
 }
 
@@ -332,7 +365,8 @@ export async function rallyTroop(tokenId) {
   if (!pick) return;
   const rallier = game.actors.get(pick.id);
   const warfare = rallier.system.abilities.warfare;
-  const test = await rollDice({ rank: warfare.rank, bonus: specialtyBonus(warfare, COMMAND) + pick.b, difficulty: s.discipline });
+  const p = { rank: warfare.rank, bonus: specialtyBonus(warfare, COMMAND) + pick.b };
+  const test = await rollDice({ ...p, difficulty: s.discipline });
   const success = test.outcome?.success;
   if (success) {
     const fromRout = s.state === "routed";
@@ -340,9 +374,14 @@ export async function rallyTroop(tokenId) {
   }
   return ChatMessage.create({
     rolls: [test.roll], speaker: ChatMessage.getSpeaker({ actor: rallier }),
-    content: `<div class="afc-card battle"><header><h3>${fmt("AFC.Battle.RallyTitle", { name: esc(token.name) })}</h3></header>
-      <p>${esc(rallier.name)} : ${diceText(test)} = <b>${test.total}</b> / ${s.discipline}</p>
-      <p class="battle-result">${success ? fmt("AFC.Battle.RallyOk", { state: loc(TROOP_STATES[STATE_ORDER[s.stateIndex - 1]].label) }) : loc("AFC.Battle.RallyFail")}</p></div>`
+    content: await renderCard("battle-test", {
+      title: loc("AFC.Battle.Card.Rally"),
+      subtitle: fmt("AFC.Battle.Card.RallyBy", { who: rallier.name, name: token.name }),
+      total: test.total, dice: test.dice, success, degrees: test.outcome?.degrees,
+      verdict: success ? fmt("AFC.Battle.RallyOk", { state: loc(TROOP_STATES[STATE_ORDER[s.stateIndex - 1]].label) }) : loc("AFC.Battle.RallyFail"),
+      detail: fmt("AFC.Battle.Card.AgainstDiscipline", { d: s.discipline }),
+      pool: poolLabel(p, test), tags: []
+    })
   });
 }
 
@@ -391,13 +430,16 @@ export async function revealOrders() {
   const line = t => {
     const u = unitOf(battle, t.id);
     const target = u.target ? canvas.scene.tokens.get(u.target) : null;
-    return `<li><b>${esc(t.name)}</b> : ${esc(orderLabel(u.order))}${target && !target.hidden ? ` → ${esc(target.name)}` : ""}</li>`;
+    const icon = ORDER_ICONS[u.order] ?? "fa-minus";
+    return `<li><i class="fa-solid ${icon}"></i><b>${esc(t.name)}</b> <span class="order">${esc(orderLabel(u.order))}${target && !target.hidden ? ` → ${esc(target.name)}` : ""}</span></li>`;
   };
-  const troops = side => canvas.scene.tokens.filter(t => t.actor?.type === "troop" && t.actor.system.side === side && !t.hidden);
+  const troops = side => canvas.scene.tokens.filter(t => t.actor?.type === "troop" && t.actor.system.side === side && !t.hidden && alive(t));
+  const group = side => {
+    const list = troops(side);
+    return list.length ? `<h4>${loc(`AFC.Battle.Side.${side}`)}</h4><ul class="orders">${list.map(line).join("")}</ul>` : "";
+  };
   return ChatMessage.create({
-    content: `<div class="afc-card battle"><header><h3>${fmt("AFC.Battle.RevealTitle", { n: battle.round })}</h3></header>
-      <h4>${loc("AFC.Battle.Side.company")}</h4><ul class="month-lines">${troops("company").map(line).join("")}</ul>
-      <h4>${loc("AFC.Battle.Side.enemy")}</h4><ul class="month-lines">${troops("enemy").map(line).join("")}</ul></div>`
+    content: `<div class="afc-card battle"><header><h3>${fmt("AFC.Battle.RevealTitle", { n: battle.round })}</h3></header>${group("company")}${group("enemy")}</div>`
   });
 }
 
