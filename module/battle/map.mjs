@@ -135,7 +135,8 @@ export function onRenderTokenHUD(hud, html) {
   }
   if (commander) button("fa-user-tie", loc("AFC.Battle.OfficerButton"), () => { hud.close(); chooseOfficer(token); }, { active: !!unit.officer });
   if (commander && token.actor.system.state !== "fresh") button("fa-flag-checkered", loc("AFC.Battle.Rally"), () => rallyTroop(token.id));
-  button("fa-chess-rook", loc("AFC.Battle.Title"), () => game.afc.openBattle());
+  // La fenêtre Bataille : dans la colonne de droite, avec cacher/révéler.
+  html.querySelector(".col.right")?.append(button("fa-chess-rook", loc("AFC.Battle.Title"), () => game.afc.openBattle()));
 }
 
 /* ---------- Pastilles d'ordre ---------- */
