@@ -105,7 +105,7 @@ export class BattleApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
     return {
       battle, isGM, hasScene: !!scene, book,
-      rules: scene ? battleRules(scene) : "house", settingsOpen: this.settingsOpen,
+      rules: scene ? battleRules(scene) : "house", rulesLabel: `AFC.Battle.Rules.${scene ? battleRules(scene) : "house"}`, settingsOpen: this.settingsOpen,
       ruleOptions: Object.fromEntries(RULES.map(k => [k, `AFC.Battle.Rules.${k}`])),
       orders: ORDERS.map(k => ({ key: k, label: loc(`AFC.Battle.Order.${k}`), icon: ORDER_ICONS[k], help: loc(`AFC.Battle.OrderHelp.${k}`) })),
       triangle: Object.entries(TRIANGLE).map(([a, b]) => ({ a: orderLabel(a), b: orderLabel(b) })),

@@ -4,6 +4,7 @@
 {{else}}
   <header class="battle-head">
     <h2>{{localize "AFC.Battle.Round"}} {{battle.round}}
+      <span class="rules-tag">{{localize rulesLabel}}</span>
       <span class="phase {{#if battle.revealed}}revealed{{/if}}">{{#if battle.revealed}}{{localize "AFC.Battle.PhaseRevealed"}}{{else}}{{localize "AFC.Battle.PhaseOrders"}}{{/if}}</span></h2>
     {{#if isGM}}
     <label class="weather">{{localize "AFC.Battle.WeatherLabel"}}<select name="weather">{{selectOptions weathers selected=battle.weather localize=true}}</select></label>
