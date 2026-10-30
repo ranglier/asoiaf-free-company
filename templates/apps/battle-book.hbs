@@ -1,0 +1,58 @@
+<header class="battle-head">
+  <h2>{{localize "AFC.Battle.Round"}} {{battle.round}}
+    <span class="phase revealed">{{localize phaseLabel}}</span>
+    {{#if turnLabel}}<small class="turn"><i class="fa-solid fa-hand-point-right"></i> {{localize turnLabel}}</small>{{/if}}</h2>
+  {{#if isGM}}
+  <label class="weather">{{localize "AFC.Battle.WeatherLabel"}}<select name="weather">{{selectOptions weathers selected=battle.weather localize=true}}</select></label>
+  {{else}}
+  <span class="tag">{{localize "AFC.Battle.WeatherLabel"}} : {{localize weatherLabel}}</span>
+  {{/if}}
+</header>
+
+{{#if isGM}}
+<div class="battle-toolbar">
+  <button type="button" data-action="bookNext"><i class="fa-solid fa-forward-step"></i> {{localize "AFC.BattleBook.NextStep"}}</button>
+  <button type="button" data-action="bookCommanders"><i class="fa-solid fa-user-tie"></i> {{localize "AFC.BattleBook.Commanders"}}</button>
+  <button type="button" data-action="newEnemy"><i class="fa-solid fa-skull"></i> {{localize "AFC.Battle.NewEnemy"}}</button>
+  <button type="button" data-action="report"><i class="fa-solid fa-scroll"></i> {{localize "AFC.Battle.Report"}}</button>
+  <button type="button" data-action="reset"><i class="fa-solid fa-rotate-left"></i> {{localize "AFC.Battle.Reset"}}</button>
+  <button type="button" data-action="switchRules"><i class="fa-solid fa-right-left"></i> {{localize "AFC.Battle.Rules.toHouse"}}</button>
+</div>
+<div class="battle-toolbar options">
+  <label>{{localize "AFC.BattleBook.Yards"}} <input type="number" name="bookYards" value="{{bookData.yards}}" min="1" step="1"></label>
+  <label class="checkbox"><input type="checkbox" name="bookAdvanced" {{checked bookData.advanced}}> {{localize "AFC.BattleBook.AdvancedOrders"}}</label>
+  <label class="checkbox"><input type="checkbox" name="bookFormations" {{checked bookData.formations}}> {{localize "AFC.BattleBook.FormationRules"}}</label>
+</div>
+{{/if}}
+
+<div class="battle-scroll">
+  <details class="battle-help">
+    <summary><i class="fa-solid fa-circle-question"></i> {{localize "AFC.BattleBook.HelpTitle"}}</summary>
+    <p>{{localize "AFC.BattleBook.HelpTurn"}}</p>
+    <p>{{localize "AFC.BattleBook.HelpHits"}}</p>
+    <p>{{localize "AFC.BattleBook.HelpPC"}}</p>
+    <ul class="battle-orders-help">
+      {{#each bookOrders as |o|}}<li><i class="fa-solid {{o.icon}}"></i> <b>{{o.label}}</b>{{#if o.mod}} <small>(+{{o.mod}})</small>{{/if}} : {{o.help}}</li>{{/each}}
+    </ul>
+  </details>
+
+  {{#if isGM}}
+  <section class="battle-engage">
+    <p class="hint">{{localize "AFC.BattleBook.FreeAttackHint"}} <b>{{#if controlled}}{{controlled}}{{else}}—{{/if}}</b> → <b>{{#if target}}{{target}}{{else}}—{{/if}}</b>
+      <button type="button" class="small" data-action="bookFree"><i class="fa-solid fa-khanda"></i> {{localize "AFC.BattleBook.FreeAttack"}}</button></p>
+  </section>
+  {{/if}}
+
+  <div class="battle-columns">
+    <section>
+      <h3 class="side company">{{localize "AFC.Battle.Side.company"}}</h3>
+      <p class="battle-commanders">{{#each cmdCompany as |c|}}<span class="tag" data-tooltip="AFC.BattleBook.Role.{{c.role}}"><i class="fa-solid fa-user-tie"></i> {{c.name}} {{c.left}}/{{c.max}}</span>{{else}}<small>{{localize "AFC.BattleBook.NoCommanderYet"}}</small>{{/each}}</p>
+      {{#each company as |t|}}{{> "systems/asoiaf-free-company/templates/apps/battle-book-troop.hbs" t=t}}{{else}}<p class="hint">{{localize "AFC.Battle.NoTroop"}}</p>{{/each}}
+    </section>
+    <section>
+      <h3 class="side enemy">{{localize "AFC.Battle.Side.enemy"}}</h3>
+      <p class="battle-commanders">{{#each cmdEnemy as |c|}}<span class="tag" data-tooltip="AFC.BattleBook.Role.{{c.role}}"><i class="fa-solid fa-user-tie"></i> {{c.name}}{{#if @root.isGM}} {{c.left}}/{{c.max}}{{/if}}</span>{{else}}<small>{{localize "AFC.BattleBook.NoCommanderYet"}}</small>{{/each}}</p>
+      {{#each enemy as |t|}}{{> "systems/asoiaf-free-company/templates/apps/battle-book-troop.hbs" t=t}}{{else}}<p class="hint">{{localize "AFC.Battle.NoTroop"}}</p>{{/each}}
+    </section>
+  </div>
+</div>

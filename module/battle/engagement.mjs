@@ -20,7 +20,7 @@ const COMMAND = ["commandement", "command"];
 /* ---------- Carte : terrain, contact, distance ---------- */
 
 // Position enregistrée (_source) : dans un onglet en arrière-plan, l'animation retarde token.x et token.object.
-const center = token => ({ x: token._source.x + (token.width * canvas.grid.sizeX) / 2, y: token._source.y + (token.height * canvas.grid.sizeY) / 2 });
+export const center = token => ({ x: token._source.x + (token.width * canvas.grid.sizeX) / 2, y: token._source.y + (token.height * canvas.grid.sizeY) / 2 });
 
 /** Terrain reconnu au nom d'une région (sinon, simple repère sans effet). */
 export const terrainKeyOf = name => Object.entries(TERRAINS).find(([, t]) => t.match.test(name))?.[0];

@@ -11,6 +11,15 @@ export function registerSettings() {
     choices: { none: "AFC.Roll.NoDifficulty", ...DIFFICULTIES },
     default: "6"
   });
+  game.settings.register(SYSTEM_ID, "battleRules", {
+    name: "AFC.Settings.battleRules.name",
+    hint: "AFC.Settings.battleRules.hint",
+    scope: "world",
+    config: true,
+    type: String,
+    choices: { house: "AFC.Battle.Rules.house", book: "AFC.Battle.Rules.book" },
+    default: "house"
+  });
 }
 
 /** Difficulté des tests rapides fixée par le MJ (null = sans difficulté). */

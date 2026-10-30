@@ -1,0 +1,18 @@
+<div class="afc-card battle melee book {{#unless success}}failed{{/unless}}">
+  <div class="verdict">
+    <span class="seal">{{{seal}}}</span>
+    <div><strong>{{verdict}}</strong><small>{{detail}}</small></div>
+  </div>
+
+  {{#each rows as |s|}}
+  <div class="side {{#if s.winner}}winner{{/if}}">
+    <div class="who"><strong class="troop">{{s.name}}</strong><small>{{s.sub}}</small></div>
+    <div class="total">{{s.total}}</div>
+    <ol class="dice">{{#each s.dice as |d|}}<li class="die d{{d.value}} {{#unless d.kept}}dropped{{/unless}}">{{d.value}}</li>{{/each}}</ol>
+    <footer><span class="pool">{{s.pool}}</span>{{#each s.tags}}<span class="tag">{{this}}</span>{{/each}}</footer>
+  </div>
+  {{/each}}
+
+  {{#each outcomes}}<div class="battle-outcome">{{{this}}}</div>{{/each}}
+  {{#if note}}<div class="battle-outcome"><small>{{note}}</small></div>{{/if}}
+</div>

@@ -501,3 +501,27 @@ body.detached .application.afc.afc-fill.afc-dialog .window-content { max-height:
 #afc-battle-bar .legend li { display: grid; grid-template-columns: 0.9rem 1fr; column-gap: 0.4rem; align-items: center; }
 #afc-battle-bar .legend .swatch { width: 0.9rem; height: 0.9rem; border: 1px solid #f3ead6; border-radius: 2px; }
 #afc-battle-bar .legend small { grid-column: 2; color: #cfc2a6; font-size: 0.8rem; line-height: 1.1; }
+
+/* Bataille, règles du livre */
+#afc-battle-bar .rules { padding: 0 0.35rem; border-radius: 3px; border: 1px solid #c9a227; color: #e8cf73; white-space: nowrap; font-size: 0.85rem; }
+#afc-battle-bar button.rules { background: transparent; }
+#afc-battle-bar button.rules:hover { background: rgba(201, 162, 39, 0.2); }
+#afc-battle-bar { max-width: 80vw; }
+#token-hud .afc-order-palette.book { grid-template-columns: repeat(5, 40px); }
+#token-hud .afc-order-palette.book .control-icon.advanced { background: rgba(142, 27, 27, 0.55); }
+.afc .afc-battle .battle-head .turn { font-size: 0.9rem; font-weight: normal; margin-left: 0.3rem; color: var(--afc-wax); }
+.afc .afc-battle .battle-toolbar.options { align-items: center; gap: 0.8rem; font-size: 0.9rem; color: var(--afc-ink); }
+.afc .afc-battle .battle-toolbar.options label { display: flex; align-items: center; gap: 0.3rem; }
+.afc .afc-battle .battle-toolbar.options input[type="number"] { width: 3.5rem; height: 1.6rem; }
+.afc .afc-battle .battle-commanders { display: flex; flex-wrap: wrap; gap: 0.25rem; margin: 0.15rem 0 0.35rem; }
+.afc .afc-battle .battle-troop.state-disordered { border-right: 4px solid #b5651d; }
+.afc .afc-battle .book-health { height: 6px; margin: 0.15rem 0; border: 1px solid var(--afc-line); border-radius: 3px; background: rgba(0, 0, 0, 0.12); overflow: hidden; }
+.afc .afc-battle .book-health span { display: block; height: 100%; background: #5f8f3e; }
+.afc .afc-battle .battle-troop.state-disordered .book-health span { background: #b5651d; }
+.afc .afc-battle .battle-troop .stats .warn { color: var(--afc-wax); }
+.afc .book-abilities { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.3rem 0.6rem; margin: 0.4rem 0; }
+.afc .cmd-subs { display: flex; flex-direction: column; max-height: 12rem; overflow-y: auto; }
+.afc-card.battle.book.failed > .verdict strong { color: var(--afc-ink); }
+.afc-card.battle.book .side + .side { border-top: 1px dotted var(--afc-line); padding-top: 0.25rem; }
+.afc .afc-battle .battle-toolbar.options label { flex-direction: row; margin: 0; }
+.afc .book-equip { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 0.3rem; }

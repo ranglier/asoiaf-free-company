@@ -11,6 +11,38 @@
     </div>
   </header>
 
+  {{#if bookRules}}
+  <section class="afc-vitals troop-vitals">
+    <div class="vital"><span class="label">{{localize "AFC.BattleBook.StatusLabel"}}</span><select name="system.book.status">{{selectOptions bookStatuses selected=system.book.status localize=true}}</select></div>
+    <div class="vital"><span class="label">{{localize "AFC.BattleBook.Health"}}</span><span class="value big-num">{{system.book.healthLeft}} / {{system.book.health}}</span></div>
+    <div class="vital"><span class="label">{{localize "AFC.BattleBook.DamageTaken"}}</span><input type="number" name="system.book.damage" value="{{system.book.damage}}" min="0"></div>
+    <div class="vital"><span class="label">{{localize "AFC.BattleBook.Penalties"}}</span><input type="number" name="system.book.penalties" value="{{system.book.penalties}}" min="0"></div>
+    <div class="vital"><span class="label">{{localize "AFC.BattleBook.Discipline"}}</span><input type="number" name="system.discipline" value="{{system.discipline}}" min="0"></div>
+    <div class="vital"><span class="label">{{localize "AFC.BattleBook.Defense"}}</span><span class="value big-num">{{system.book.defense}}</span></div>
+    <div class="vital"><span class="label">{{localize "AFC.BattleBook.ArmorRating"}}</span><span class="value big-num">{{system.book.ar}}</span></div>
+    <div class="vital"><span class="label">{{localize "AFC.BattleBook.FightDamage"}}</span><span class="value big-num">{{system.book.fightDamage}}</span></div>
+    <div class="vital"><span class="label">{{localize "AFC.BattleBook.ShootDamage"}}</span><span class="value big-num">{{#if system.book.shoot}}{{system.book.shoot.damage}}{{else}}—{{/if}}</span></div>
+    <div class="vital"><span class="label">{{localize "AFC.BattleBook.MoveYards"}}</span><span class="value big-num">{{system.book.moveYards}}</span></div>
+  </section>
+
+  <div class="section-title">
+    <h2>{{localize "AFC.BattleBook.UnitTitle"}}</h2>
+    {{#if editable}}<a class="add-item" data-action="resetBook"><i class="fa-solid fa-rotate"></i> {{localize "AFC.BattleBook.ResetUnit"}}</a>{{/if}}
+  </div>
+  <div class="book-equip">
+    <label>{{localize "AFC.BattleBook.TypeLabel"}}<select name="system.book.type">{{selectOptions bookTypes selected=system.book.type localize=true}}</select></label>
+    <label>{{localize "AFC.BattleBook.FormationLabel"}}<select name="system.book.formation">{{selectOptions bookFormations selected=system.book.formation localize=true}}</select></label>
+  </div>
+  <div class="troop-traits">
+    <label class="checkbox"><input type="checkbox" name="system.book.upArmor" {{checked system.book.upArmor}}> {{localize "AFC.BattleBook.UpArmor"}}</label>
+    <label class="checkbox"><input type="checkbox" name="system.book.upFight" {{checked system.book.upFight}}> {{localize "AFC.BattleBook.UpFight"}}</label>
+    <label class="checkbox"><input type="checkbox" name="system.book.upShoot" {{checked system.book.upShoot}}> {{localize "AFC.BattleBook.UpShoot"}}</label>
+  </div>
+  <div class="book-abilities">
+    {{#each bookAbilities as |a|}}<label>{{localize a.label}}<input type="number" name="system.book.abilities.{{a.key}}" value="{{a.value}}" min="1" max="9"></label>{{/each}}
+  </div>
+  <label>{{localize "AFC.Battle.Men"}}<input type="number" name="system.men" value="{{system.men}}" min="0"></label>
+  {{else}}
   <section class="afc-vitals troop-vitals">
     <div class="vital"><span class="label">{{localize "AFC.Battle.StateLabel"}}</span>
       <select name="system.state">{{selectOptions states selected=system.state localize=true}}</select></div>
@@ -40,6 +72,7 @@
     <label class="checkbox" data-tooltip="{{t.effect}}"><input type="checkbox" name="trait.{{t.key}}" {{checked t.on}}> {{t.label}}</label>
     {{/each}}
   </div>
+  {{/if}}
 
   <label>{{localize "AFC.Battle.Notes"}}<input type="text" name="system.notes" value="{{system.notes}}"></label>
 </div>

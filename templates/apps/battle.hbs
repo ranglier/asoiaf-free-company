@@ -1,4 +1,7 @@
 <div class="afc-sheet parchment afc-battle">
+{{#if book}}
+  {{> "systems/asoiaf-free-company/templates/apps/battle-book.hbs"}}
+{{else}}
   <header class="battle-head">
     <h2>{{localize "AFC.Battle.Round"}} {{battle.round}}
       <span class="phase {{#if battle.revealed}}revealed{{/if}}">{{#if battle.revealed}}{{localize "AFC.Battle.PhaseRevealed"}}{{else}}{{localize "AFC.Battle.PhaseOrders"}}{{/if}}</span></h2>
@@ -16,6 +19,7 @@
     <button type="button" data-action="newEnemy"><i class="fa-solid fa-skull"></i> {{localize "AFC.Battle.NewEnemy"}}</button>
     <button type="button" data-action="report"><i class="fa-solid fa-scroll"></i> {{localize "AFC.Battle.Report"}}</button>
     <button type="button" data-action="reset"><i class="fa-solid fa-trash"></i> {{localize "AFC.Battle.Reset"}}</button>
+    <button type="button" data-action="switchRules"><i class="fa-solid fa-right-left"></i> {{localize "AFC.Battle.Rules.toBook"}}</button>
   </div>
   {{/if}}
 
@@ -59,4 +63,5 @@
       </section>
     </div>
   </div>
+{{/if}}
 </div>

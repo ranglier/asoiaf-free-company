@@ -6,7 +6,10 @@
  * Avant la révélation, ordres et flèches ne sont visibles que de qui commande la troupe (et du MJ).
  */
 import { ORDER_ICONS, ORDERS, TROOP_STATES } from "./battle-config.mjs";
+import { BOOK_STATUS_CHIP, isBookTargeted } from "./book-config.mjs";
+import { drawBookHealth, fillBookHUD } from "./book.mjs";
 import { plannedEngagements, rallyTroop, resolvePlanned } from "./engagement.mjs";
+import { isBook } from "./rules.mjs";
 import { canCommand, getBattle, setUnit, unitOf } from "./state.mjs";
 
 const { DialogV2 } = foundry.applications.api;
@@ -18,7 +21,7 @@ export const TARGETED_ORDERS = ["charge", "attack", "shoot"];
 
 /** L'ordre (et la cible) de cette troupe est-il visible pour l'utilisateur ? */
 export function orderVisible(token, battle) {
-  return battle.revealed || canCommand(token, battle);
+  return isBook(token.parent) || battle.revealed || canCommand(token, battle);
 }
 
 /* ---------- Désignation de la cible sur la carte ---------- */
@@ -26,7 +29,7 @@ export function orderVisible(token, battle) {
 let picking = null;
 
 /** Attend un clic sur une troupe visible, puis l'enregistre comme cible (Échap : annuler). */
-export function startTargetPick(token) {
+export function startTargetPick(token, onPick = null) {
   cancelTargetPick();
   const view = canvas.app.view;
   const onDown = event => {
@@ -38,6 +41,7 @@ export function startTargetPick(token) {
     event.preventDefault();
     cancelTargetPick();
     if (!hit) return ui.notifications.info(loc("AFC.Battle.PickCancelled"));
+    if (onPick) return onPick(hit.document);
     setUnit(token.id, { target: hit.document.id });
     ui.notifications.info(fmt("AFC.Battle.PlanSetDone", { a: token.name, d: hit.document.name }));
   };
@@ -105,10 +109,12 @@ export function onRenderTokenHUD(hud, html) {
     col.append(b);
     return b;
   };
+  const book = isBook(token.parent);
+  if (book) fillBookHUD(hud, token, button);
   const commander = canCommand(token, battle);
   const locked = battle.revealed && unit.countered && !game.user.isGM;
 
-  if (commander && !locked) {
+  if (!book && commander && !locked) {
     const palette = document.createElement("div");
     palette.className = "afc-order-palette";
     for (const order of ORDERS) {
@@ -132,9 +138,9 @@ export function onRenderTokenHUD(hud, html) {
   }
   // MJ : résoudre l'engagement de cette troupe directement depuis la carte.
   const plan = game.user.isGM && battle.revealed ? plannedEngagements(battle).find(p => p.from === token.id) : null;
-  if (plan) button(plan.shoot ? "fa-bullseye" : "fa-khanda", fmt("AFC.Battle.ResolveHud", { d: plan.toName }), () => { hud.close(); resolvePlanned(plan); });
-  if (commander) button("fa-user-tie", loc("AFC.Battle.OfficerButton"), () => { hud.close(); chooseOfficer(token); }, { active: !!unit.officer });
-  if (commander && token.actor.system.state !== "fresh") button("fa-flag-checkered", loc("AFC.Battle.Rally"), () => rallyTroop(token.id));
+  if (!book && plan) button(plan.shoot ? "fa-bullseye" : "fa-khanda", fmt("AFC.Battle.ResolveHud", { d: plan.toName }), () => { hud.close(); resolvePlanned(plan); });
+  if (commander) button("fa-user-tie", loc(book ? "AFC.BattleBook.Attach" : "AFC.Battle.OfficerButton"), () => { hud.close(); chooseOfficer(token); }, { active: !!unit.officer });
+  if (!book && commander && token.actor.system.state !== "fresh") button("fa-flag-checkered", loc("AFC.Battle.Rally"), () => rallyTroop(token.id));
   // Colonne de droite, avec cacher/révéler : fiche de la troupe et fenêtre Bataille.
   const right = html.querySelector(".col.right");
   if (token.actor.testUserPermission(game.user, "OBSERVER")) {
@@ -213,7 +219,7 @@ export function drawOrderBadge(token) {
   const bg = new PIXI.Graphics();
   const w = text.width + 14, h = text.height + 4;
   // Sombre : ordre encore secret (vu par son commandant) ; rouge : ordre révélé.
-  bg.beginFill(battle.revealed ? 0x8e1b1b : 0x2b2118, 0.88).drawRoundedRect(-w / 2, -h, w, h, 6).endFill();
+  bg.beginFill(battle.revealed || isBook(doc.parent) ? 0x8e1b1b : 0x2b2118, 0.88).drawRoundedRect(-w / 2, -h, w, h, 6).endFill();
   badge.addChild(bg, text);
   // Dans la bande vide du bas du jeton (le symbole occupe le milieu) : pas de chevauchement entre voisins.
   badge.position.set(token.w / 2, token.h - 2);
@@ -251,12 +257,14 @@ export function drawPlanArrows() {
   const layer = new PIXI.Container();
   layer.name = "afcPlans";
   for (const unit of battle.units) {
-    if (!unit.target || !TARGETED_ORDERS.includes(unit.order)) continue;
+    if (!unit.target || !(TARGETED_ORDERS.includes(unit.order) || isBookTargeted(unit.order))) continue;
+    // Règles du livre : la flèche montre la dernière cible, seulement si l'ordre persiste.
+    if (isBook() && !canvas.scene.tokens.get(unit.id)?.actor?.system.book.active) continue;
     const from = canvas.tokens.get(unit.id), to = canvas.tokens.get(unit.target);
     if (!from?.document.actor || !to) continue;
     if (!orderVisible(from.document, battle)) continue;
     if (!game.user.isGM && (from.document.hidden || to.document.hidden)) continue;
-    const style = ARROWS[unit.order];
+    const style = unit.mode === "shoot" ? ARROWS.shoot : ARROWS[unit.order] ?? ARROWS.attack;
     const color = from.document.actor.system.side === "company" ? 0x4f8fc8 : 0xd04a3f;
     const a = from.center, b = to.center;
     const len = Math.hypot(b.x - a.x, b.y - a.y);
@@ -309,7 +317,7 @@ export async function drawStateMarker(token) {
   token.children.filter(c => c.name === "afcState").forEach(c => c.destroy({ children: true }));
   const actor = token.document.actor;
   if (actor?.type !== "troop") return;
-  const state = actor.system.state;
+  const state = isBook(token.document.parent) ? BOOK_STATUS_CHIP[actor.system.book.status] : actor.system.state;
   const color = STATE_COLORS[state];
   if (!color) return;
   const marker = new PIXI.Container();
@@ -339,4 +347,5 @@ export async function drawStateMarker(token) {
 export function drawTroopMarks(token) {
   drawOrderBadge(token);
   drawStateMarker(token);
+  drawBookHealth(token);
 }

@@ -3,8 +3,10 @@
  * MJ : révéler, résoudre le prochain engagement, fin de tour. Joueur : où en est le tour et ce qu'il
  * peut faire. Affichée seulement sur une scène qui contient des troupes.
  */
+import { bookBar, onBookBar, switchRules } from "./book.mjs";
 import { endTurn, plannedEngagements, resolvePlanned, revealOrders, terrainKeyOf } from "./engagement.mjs";
 import { visibleRegions } from "./map.mjs";
+import { isBook } from "./rules.mjs";
 import { canCommand, getBattle, unitOf } from "./state.mjs";
 
 const ID = "afc-battle-bar";
@@ -18,7 +20,7 @@ function legendHTML(scene) {
   const rows = visibleRegions(scene).map(r => {
     const key = terrainKeyOf(r.name);
     return `<li><span class="swatch" style="background:${r.color?.css ?? "transparent"}"></span><b>${esc(r.name)}</b>
-      <small>${esc(loc(`AFC.Battle.TerrainEffect.${key ?? "landmark"}`))}</small></li>`;
+      <small>${esc(loc(`AFC.Battle.${isBook(scene) ? "TerrainBook" : "TerrainEffect"}.${key ?? "landmark"}`))}</small></li>`;
   }).join("");
   return `<ul class="legend">${rows || `<li><small>${esc(loc("AFC.Battle.LegendEmpty"))}</small></li>`}</ul>`;
 }
@@ -47,9 +49,12 @@ export function renderBattleBar() {
   }
   const battle = getBattle(scene);
   const count = orderCount(battle, scene);
-  const phase = battle.revealed ? loc("AFC.Battle.PhaseRevealed") : loc("AFC.Battle.PhaseOrders");
-  let info = "", actions = "";
-  if (game.user.isGM) {
+  const book = isBook(scene);
+  let phase = battle.revealed ? loc("AFC.Battle.PhaseRevealed") : loc("AFC.Battle.PhaseOrders");
+  let info = "", actions = "", revealed = battle.revealed;
+  if (book) {
+    ({ phase, info, actions, revealed } = bookBar(battle, scene, button));
+  } else if (game.user.isGM) {
     if (!battle.revealed) {
       info = fmt("AFC.Battle.BarOrders", count);
       actions = button("reveal", "fa-eye", loc("AFC.Battle.Reveal"), { primary: count.given > 0 });
@@ -65,16 +70,23 @@ export function renderBattleBar() {
   } else {
     info = count.total ? loc("AFC.Battle.BarCounterPlayer") : loc("AFC.Battle.BarRevealedPlayer");
   }
+  // Règles en cours : le MJ bascule d'un clic.
+  const rules = loc(`AFC.Battle.Rules.${book ? "book" : "house"}`);
+  const rulesPill = game.user.isGM
+    ? `<button type="button" class="rules" data-bar="rules" data-tooltip="${esc(loc("AFC.Battle.Rules.hint"))}"><i class="fa-solid fa-right-left"></i> ${esc(rules)}</button>`
+    : `<span class="rules">${esc(rules)}</span>`;
   actions += `<button type="button" class="icon ${legendOpen ? "primary" : ""}" data-bar="legend" data-tooltip="${esc(loc("AFC.Battle.Legend"))}"><i class="fa-solid fa-map"></i></button>`;
   actions += `<button type="button" class="icon" data-bar="window" data-tooltip="${esc(loc("AFC.Battle.Title"))}"><i class="fa-solid fa-chess-rook"></i></button>`;
   bar.innerHTML = `<span class="round">${esc(loc("AFC.Battle.Round"))} ${battle.round}</span>
-    <span class="phase ${battle.revealed ? "revealed" : ""}">${esc(phase)}</span>
+    ${rulesPill}<span class="phase ${revealed ? "revealed" : ""}">${esc(phase)}</span>
     <span class="info" data-tooltip="${esc(info)}">${info}</span><span class="actions">${actions}</span>
     ${legendOpen ? legendHTML(scene) : ""}`;
 }
 
 function onClick(event) {
   const action = event.target.closest("[data-bar]")?.dataset.bar;
+  if (action?.startsWith("book")) return onBookBar(action);
+  if (action === "rules") return switchRules(isBook() ? "house" : "book");
   if (action === "reveal") return revealOrders();
   if (action === "endTurn") return endTurn();
   if (action === "window") return game.afc.openBattle();

@@ -1,0 +1,45 @@
+<div class="battle-troop side-{{t.side}} state-{{t.chip}}" data-troop="{{t.id}}">
+  <img class="symbol" src="{{t.img}}" alt="" data-action="focus" data-tooltip="AFC.Battle.Focus">
+  <div class="body">
+    <div class="line">
+      <a class="name" data-action="focus" data-tooltip="AFC.Battle.Focus">{{t.name}}</a>
+      {{#if t.hidden}}<i class="fa-solid fa-eye-slash" data-tooltip="AFC.Battle.Hidden"></i>{{/if}}
+      <span class="tag state">{{localize t.statusLabel}}</span>
+      {{#if t.known}}<a class="icon" data-action="openTroop" data-tooltip="AFC.Battle.OpenSheet"><i class="fa-solid fa-file-lines"></i></a>{{/if}}
+    </div>
+
+    <div class="book-health" data-tooltip="AFC.BattleBook.Health"><span style="width:{{t.percent}}%"></span></div>
+
+    <div class="line order">
+      {{#if t.options}}
+      <select data-book-order>
+        <option value="">{{localize "AFC.BattleBook.GiveOrder"}}</option>
+        {{#each t.options as |o|}}<option value="{{o.key}}">{{o.label}}</option>{{/each}}
+      </select>
+      {{/if}}
+      {{#if t.orderText}}<span class="tag order" data-tooltip="AFC.BattleBook.StandingHint"><i class="fa-solid {{t.orderIcon}}"></i> {{t.orderText}}</span>{{/if}}
+      {{#if t.targetName}}<span class="target"><i class="fa-solid fa-arrow-right"></i> {{t.targetName}}</span>{{/if}}
+      {{#if t.acted}}<small>{{localize "AFC.BattleBook.Acted"}}</small>{{/if}}
+      {{#if t.readied}}<small data-tooltip="{{t.readied}}"><i class="fa-solid fa-bell"></i> {{localize "AFC.Battle.Order.ready"}}</small>{{/if}}
+    </div>
+
+    {{#if t.known}}
+    <div class="line officer">
+      <i class="fa-solid fa-user-tie"></i> {{#if t.officerName}}{{t.officerName}} <small>(−3 {{localize "AFC.BattleBook.Discipline"}}, +1D)</small>{{else}}<i>{{localize "AFC.BattleBook.NoAttached"}}</i>{{/if}}
+      {{#if t.mine}}<a class="icon" data-action="officer" data-tooltip="AFC.BattleBook.Attach"><i class="fa-solid fa-pen"></i></a>{{/if}}
+    </div>
+    <div class="line stats">
+      <span data-tooltip="AFC.BattleBook.Health"><i class="fa-solid fa-heart"></i> {{t.left}}/{{t.health}}</span>
+      <span data-tooltip="AFC.BattleBook.Defense"><i class="fa-solid fa-shield"></i> {{t.defense}}</span>
+      <span data-tooltip="AFC.BattleBook.ArmorRating"><i class="fa-solid fa-shirt"></i> {{t.ar}}</span>
+      <span data-tooltip="AFC.BattleBook.DifficultyOrder"><i class="fa-solid fa-bullhorn"></i> {{t.discipline}}</span>
+      <span data-tooltip="AFC.BattleBook.FightDamage"><i class="fa-solid fa-khanda"></i> {{t.damage}}</span>
+      {{#if t.shoot}}<span data-tooltip="AFC.BattleBook.ShootDamage"><i class="fa-solid fa-bullseye"></i> {{t.shoot.damage}} ({{t.range}})</span>{{/if}}
+      <span data-tooltip="AFC.BattleBook.MoveCases"><i class="fa-solid fa-shoe-prints"></i> {{t.move}}/{{t.sprint}}</span>
+      {{#if t.penalties}}<span class="warn" data-tooltip="AFC.BattleBook.Penalties"><i class="fa-solid fa-person-falling"></i> −{{t.penalties}}D</span>{{/if}}
+      {{#if t.priorOrders}}<span data-tooltip="AFC.BattleBook.PriorOrders"><i class="fa-solid fa-repeat"></i> {{t.priorOrders}}</span>{{/if}}
+    </div>
+    {{#if t.formation}}<div class="line traits"><span class="trait">{{localize t.formation}}</span></div>{{/if}}
+    {{/if}}
+  </div>
+</div>

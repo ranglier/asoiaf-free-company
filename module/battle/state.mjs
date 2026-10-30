@@ -96,7 +96,7 @@ async function applyUnit(scene, tokenId, changes, user) {
   const counter = battle.revealed && "order" in changes && changes.order !== unit.order;
   for (const key of ["order", "target", "officer"]) if (key in changes) unit[key] = changes[key] ?? "";
   // Un ordre sans cible n'en garde pas (Tenir, Manœuvrer, Se replier).
-  if (!["charge", "attack", "shoot"].includes(unit.order)) unit.target = "";
+  if ("order" in changes && !["charge", "attack", "shoot"].includes(unit.order)) unit.target = "";
   const { id, ...data } = unit;
   await token.actor.setFlag(SYSTEM_ID, UNIT, data);
   if (counter) {
@@ -122,6 +122,18 @@ export function askUser(userId, kind, data, timeout = 60000) {
   });
 }
 
+/* ---------- Actions exécutées chez le MJ actif (règles du livre) ---------- */
+
+/** Actions, par type (remplies par les modules qui en ont besoin). */
+export const gmHandlers = {};
+
+/** Exécute une action chez le MJ actif : tout de suite si c'est nous, sinon par le canal du système. */
+export function requestGM(kind, data) {
+  if (game.users.activeGM === game.user) return gmHandlers[kind]?.(data);
+  if (!game.users.activeGM) return ui.notifications.warn(game.i18n.localize("AFC.BattleBook.NoGM"));
+  game.socket.emit(CHANNEL, { action: "gm", kind, data });
+}
+
 /** Écoute du canal : questions aux joueurs, et un MJ (le premier connecté) écrit pour le joueur qui commande par son officier. */
 export function registerBattleSocket() {
   game.socket.on(CHANNEL, async data => {
@@ -131,6 +143,10 @@ export function registerBattleSocket() {
       return game.socket.emit(CHANNEL, { action: "answer", id: data.id, answer: answer ?? null });
     }
     if (data?.action === "answer") return asks.get(data.id)?.(data.answer);
+    if (data?.action === "gm") {
+      if (game.users.activeGM === game.user) gmHandlers[data.kind]?.(data.data);
+      return;
+    }
     if (!game.user.isGM || data?.action !== "unit") return;
     // Un seul MJ traite la demande : le premier MJ actif qui a ce code (les autres l'ignorent).
     const gms = game.users.filter(u => u.isGM && u.active).sort((a, b) => a.id.localeCompare(b.id));

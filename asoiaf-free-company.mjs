@@ -12,6 +12,8 @@ import { CharacterSheet, CompanySheet, HouseSheet, NpcSheet } from "./module/she
 import { AFCItemSheet } from "./module/sheets/item-sheet.mjs";
 import { TroopSheet } from "./module/sheets/troop-sheet.mjs";
 import { BattleApp } from "./module/battle/battle-app.mjs";
+import { prepareBookTroop } from "./module/battle/book.mjs";
+import { isBook } from "./module/battle/rules.mjs";
 import { onRenderBattleCard } from "./module/battle/engagement.mjs";
 import { migrateBattle, registerBattleSocket } from "./module/battle/state.mjs";
 import { renderBattleBar } from "./module/battle/bar.mjs";
@@ -57,7 +59,9 @@ Hooks.once("init", () => {
   return foundry.applications.handlebars.loadTemplates([
     ...["abilities", "vitals", "tabs-nav", "weapons", "armor", "qualities", "mode-toggle", "resources", "members", "events"]
       .map(p => `systems/${AFC.SYSTEM_ID}/templates/actor/parts/${p}.hbs`),
-    `systems/${AFC.SYSTEM_ID}/templates/apps/battle-troop.hbs`
+    `systems/${AFC.SYSTEM_ID}/templates/apps/battle-troop.hbs`,
+    `systems/${AFC.SYSTEM_ID}/templates/apps/battle-book.hbs`,
+    `systems/${AFC.SYSTEM_ID}/templates/apps/battle-book-troop.hbs`
   ]);
 });
 
@@ -117,7 +121,9 @@ Hooks.on("refreshToken", (token, flags) => {
   if (flags.refreshPosition || flags.refreshVisibility) scheduleArrows();
 });
 for (const hook of ["createToken", "deleteToken"]) {
-  Hooks.on(hook, () => {
+  Hooks.on(hook, doc => {
+    // Règles du livre : une troupe posée reçoit ses compétences et son équipement.
+    if (hook === "createToken" && game.users.activeGM === game.user && doc.actor?.type === "troop" && isBook(doc.parent)) prepareBookTroop(doc.actor);
     scheduleArrows();
     drawRegionLabels();
     renderBattleBar();
@@ -139,7 +145,7 @@ Hooks.on("updateActor", (actor, changes, options, userId) => {
   }
   // Icônes d'état du jeton, posées par le client qui a fait la modification.
   // État : marqueur au centre du jeton (et retrait des anciennes icônes d'état de Foundry).
-  if (foundry.utils.hasProperty(changes, "system.state")) for (const t of actor.getActiveTokens()) drawTroopMarks(t);
+  if (foundry.utils.hasProperty(changes, "system.state") || foundry.utils.hasProperty(changes, "system.book")) for (const t of actor.getActiveTokens()) drawTroopMarks(t);
   if (userId === game.user.id && foundry.utils.hasProperty(changes, "system.state")) syncTroopStatus(actor);
   // Symbole du jeton : suit le type et le camp.
   if (userId === game.user.id && (foundry.utils.hasProperty(changes, "system.side") || foundry.utils.hasProperty(changes, "system.unitType"))) refreshTroopImage(actor);

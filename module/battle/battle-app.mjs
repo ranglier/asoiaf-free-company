@@ -4,6 +4,8 @@
  */
 import { SYSTEM_ID } from "../config.mjs";
 import { ORDERS, TRIANGLE, TROOP_STATES, WEATHER } from "./battle-config.mjs";
+import { bookContext, bookReport, chooseCommanders, freeAttack, giveBookOrder, nextStep, resetBook, switchRules } from "./book.mjs";
+import { isBook } from "./rules.mjs";
 import { battleReport, endTurn, orderLabel, plannedEngagements, rallyTroop, resolveMelee, resolvePlanned, resolveShoot, revealOrders } from "./engagement.mjs";
 import { chooseOfficer, giveOrder, ORDER_ICONS, orderVisible, startTargetPick, TARGETED_ORDERS } from "./map.mjs";
 import { canCommand, clearBattle, getBattle, saveBattle, setUnit, unitOf } from "./state.mjs";
@@ -33,7 +35,11 @@ export class BattleApp extends HandlebarsApplicationMixin(ApplicationV2) {
       officer: BattleApp.#onOfficer,
       rally: BattleApp.#onRally,
       focus: BattleApp.#onFocus,
-      openTroop: BattleApp.#onOpenTroop
+      openTroop: BattleApp.#onOpenTroop,
+      switchRules: BattleApp.#onSwitchRules,
+      bookNext: BattleApp.#onBookNext,
+      bookCommanders: BattleApp.#onBookCommanders,
+      bookFree: BattleApp.#onBookFree
     }
   };
 
@@ -91,14 +97,15 @@ export class BattleApp extends HandlebarsApplicationMixin(ApplicationV2) {
         canRally: mine && !["fresh", "destroyed"].includes(s.state)
       };
     };
-    const side = key => tokens.filter(t => t.actor.system.side === key && (isGM || key === "company" || !t.hidden)).map(troopView);
+    const book = !!scene && isBook(scene);
+    const side = key => (book ? [] : tokens).filter(t => t.actor.system.side === key && (isGM || key === "company" || !t.hidden)).map(troopView);
 
     const controlled = canvas.tokens.controlled[0]?.document;
     const targeted = [...game.user.targets][0]?.document;
-    const plans = isGM ? plannedEngagements(battle, scene) : [];
+    const plans = isGM && !book ? plannedEngagements(battle, scene) : [];
 
     return {
-      battle, isGM, hasScene: !!scene,
+      battle, isGM, hasScene: !!scene, book,
       orders: ORDERS.map(k => ({ key: k, label: loc(`AFC.Battle.Order.${k}`), icon: ORDER_ICONS[k], help: loc(`AFC.Battle.OrderHelp.${k}`) })),
       triangle: Object.entries(TRIANGLE).map(([a, b]) => ({ a: orderLabel(a), b: orderLabel(b) })),
       company: side("company"), enemy: side("enemy"),
@@ -106,7 +113,8 @@ export class BattleApp extends HandlebarsApplicationMixin(ApplicationV2) {
       weatherLabel: `AFC.Battle.Weather.${battle.weather}`,
       plans,
       controlled: controlled?.actor?.type === "troop" ? controlled.name : null,
-      target: targeted?.actor?.type === "troop" ? targeted.name : null
+      target: targeted?.actor?.type === "troop" ? targeted.name : null,
+      ...(book ? bookContext(battle, scene, { orderLabel }) : {})
     };
   }
 
@@ -122,6 +130,19 @@ export class BattleApp extends HandlebarsApplicationMixin(ApplicationV2) {
       const token = canvas.scene.tokens.get(event.target.closest("[data-troop]").dataset.troop);
       if (token && event.target.value) giveOrder(token, event.target.value);
     }));
+    // Règles du livre : ordre choisi dans la fiche, options de la bataille.
+    this.element.querySelectorAll("select[data-book-order]").forEach(select => select.addEventListener("change", event => {
+      const token = canvas.scene.tokens.get(event.target.closest("[data-troop]").dataset.troop);
+      if (token && event.target.value) giveBookOrder(token, event.target.value);
+    }));
+    const option = (name, read) => this.element.querySelector(`[name="${name}"]`)?.addEventListener("change", async event => {
+      const battle = getBattle();
+      battle.book = { ...battle.book, ...read(event.target) };
+      await saveBattle(battle);
+    });
+    option("bookYards", el => ({ yards: Math.max(1, Number(el.value) || 10) }));
+    option("bookAdvanced", el => ({ advanced: el.checked }));
+    option("bookFormations", el => ({ formations: el.checked }));
   }
 
   static #token(target) {
@@ -130,7 +151,7 @@ export class BattleApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
   static #onReveal() { return revealOrders(); }
   static #onEndTurn() { return endTurn(); }
-  static #onReport() { return battleReport(); }
+  static #onReport() { return isBook() ? bookReport() : battleReport(); }
   static #onNewEnemy() { return createEnemyTroop(); }
   static #onPickTarget(event, target) { const t = BattleApp.#token(target); if (t) startTargetPick(t); }
   static #onClearTarget(event, target) { const t = BattleApp.#token(target); if (t) setUnit(t.id, { target: "" }); }
@@ -165,8 +186,17 @@ export class BattleApp extends HandlebarsApplicationMixin(ApplicationV2) {
     return resolvePlanned({ from, to, shoot: shoot === "true" });
   }
 
+  static #onSwitchRules() { return switchRules(isBook() ? "house" : "book"); }
+  static #onBookNext() { return nextStep(); }
+  static #onBookCommanders() { return chooseCommanders(); }
+  static #onBookFree() { const p = BattleApp.#pair(); return p && freeAttack(...p); }
+
   static async #onReset() {
     const ok = await DialogV2.confirm({ window: { title: loc("AFC.Battle.Reset") }, content: `<p>${loc("AFC.Battle.ResetConfirm")}</p>`, rejectClose: false });
-    if (ok) await clearBattle();
+    if (!ok) return;
+    if (isBook()) return resetBook();
+    const rules = getBattle().rules;
+    await clearBattle();
+    if (rules) await canvas.scene.setFlag(SYSTEM_ID, "battle", { rules });
   }
 }
