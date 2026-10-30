@@ -467,7 +467,7 @@
       "Resolve": "Résoudre",
       "NoPlan": "Aucune cible désignée pour l'instant.",
       "FreeEngage": "Engagement libre (jeton sélectionné → jeton ciblé) :",
-      "NoTroop": "Aucune troupe sur la scène.",
+      "NoTroop": "Aucune troupe visible.",
       "Focus": "Centrer la vue sur la troupe",
       "OpenSheet": "Fiche de la troupe",
       "AutoApply": "Appliquer les pertes tout de suite",

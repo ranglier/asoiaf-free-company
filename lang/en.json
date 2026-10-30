@@ -467,7 +467,7 @@
       "Resolve": "Resolve",
       "NoPlan": "No target designated yet.",
       "FreeEngage": "Free engagement (selected token → targeted token):",
-      "NoTroop": "No troop on the scene.",
+      "NoTroop": "No visible troop.",
       "Focus": "Center the view on the troop",
       "OpenSheet": "Troop sheet",
       "AutoApply": "Apply losses right away",
