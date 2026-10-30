@@ -5,7 +5,7 @@
 import { SYSTEM_ID } from "../config.mjs";
 import { ORDERS, TRIANGLE, TROOP_STATES, WEATHER } from "./battle-config.mjs";
 import { bookContext, bookReport, chooseCommanders, freeAttack, giveBookOrder, nextStep, resetBook, switchRules } from "./book.mjs";
-import { isBook } from "./rules.mjs";
+import { battleRules, isBook, RULES } from "./rules.mjs";
 import { battleReport, endTurn, orderLabel, plannedEngagements, rallyTroop, resolveMelee, resolvePlanned, resolveShoot, revealOrders } from "./engagement.mjs";
 import { chooseOfficer, giveOrder, ORDER_ICONS, orderVisible, startTargetPick, TARGETED_ORDERS } from "./map.mjs";
 import { canCommand, clearBattle, getBattle, saveBattle, setUnit, unitOf } from "./state.mjs";
@@ -36,7 +36,6 @@ export class BattleApp extends HandlebarsApplicationMixin(ApplicationV2) {
       rally: BattleApp.#onRally,
       focus: BattleApp.#onFocus,
       openTroop: BattleApp.#onOpenTroop,
-      switchRules: BattleApp.#onSwitchRules,
       bookNext: BattleApp.#onBookNext,
       bookCommanders: BattleApp.#onBookCommanders,
       bookFree: BattleApp.#onBookFree
@@ -106,6 +105,8 @@ export class BattleApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
     return {
       battle, isGM, hasScene: !!scene, book,
+      rules: scene ? battleRules(scene) : "house", settingsOpen: this.settingsOpen,
+      ruleOptions: Object.fromEntries(RULES.map(k => [k, `AFC.Battle.Rules.${k}`])),
       orders: ORDERS.map(k => ({ key: k, label: loc(`AFC.Battle.Order.${k}`), icon: ORDER_ICONS[k], help: loc(`AFC.Battle.OrderHelp.${k}`) })),
       triangle: Object.entries(TRIANGLE).map(([a, b]) => ({ a: orderLabel(a), b: orderLabel(b) })),
       company: side("company"), enemy: side("enemy"),
@@ -130,6 +131,12 @@ export class BattleApp extends HandlebarsApplicationMixin(ApplicationV2) {
       const token = canvas.scene.tokens.get(event.target.closest("[data-troop]").dataset.troop);
       if (token && event.target.value) giveOrder(token, event.target.value);
     }));
+    // Paramètres : restent ouverts d'un affichage à l'autre ; annuler le changement de règles remet le choix en place.
+    this.element.querySelector(".battle-settings")?.addEventListener("toggle", event => { this.settingsOpen = event.target.open; });
+    this.element.querySelector('[name="battleRules"]')?.addEventListener("change", async event => {
+      await switchRules(event.target.value);
+      this.render();
+    });
     // Règles du livre : ordre choisi dans la fiche, options de la bataille.
     this.element.querySelectorAll("select[data-book-order]").forEach(select => select.addEventListener("change", event => {
       const token = canvas.scene.tokens.get(event.target.closest("[data-troop]").dataset.troop);
@@ -186,7 +193,6 @@ export class BattleApp extends HandlebarsApplicationMixin(ApplicationV2) {
     return resolvePlanned({ from, to, shoot: shoot === "true" });
   }
 
-  static #onSwitchRules() { return switchRules(isBook() ? "house" : "book"); }
   static #onBookNext() { return nextStep(); }
   static #onBookCommanders() { return chooseCommanders(); }
   static #onBookFree() { const p = BattleApp.#pair(); return p && freeAttack(...p); }

@@ -504,8 +504,6 @@ body.detached .application.afc.afc-fill.afc-dialog .window-content { max-height:
 
 /* Bataille, règles du livre */
 #afc-battle-bar .rules { padding: 0 0.35rem; border-radius: 3px; border: 1px solid #c9a227; color: #e8cf73; white-space: nowrap; font-size: 0.85rem; }
-#afc-battle-bar button.rules { background: transparent; }
-#afc-battle-bar button.rules:hover { background: rgba(201, 162, 39, 0.2); }
 #afc-battle-bar { max-width: 80vw; }
 #token-hud .afc-order-palette.book { grid-template-columns: repeat(5, 40px); }
 #token-hud .afc-order-palette.book .control-icon.advanced { background: rgba(142, 27, 27, 0.55); }
@@ -525,3 +523,5 @@ body.detached .application.afc.afc-fill.afc-dialog .window-content { max-height:
 .afc-card.battle.book .side + .side { border-top: 1px dotted var(--afc-line); padding-top: 0.25rem; }
 .afc .afc-battle .battle-toolbar.options label { flex-direction: row; margin: 0; }
 .afc .book-equip { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 0.3rem; }
+.afc .afc-battle .battle-settings .battle-toolbar.options { margin: 0.3rem 0 0.1rem; }
+.afc .afc-battle .battle-toolbar.options select { width: auto; height: 1.6rem; }

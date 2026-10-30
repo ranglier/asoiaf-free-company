@@ -16,13 +16,8 @@
   <button type="button" data-action="newEnemy"><i class="fa-solid fa-skull"></i> {{localize "AFC.Battle.NewEnemy"}}</button>
   <button type="button" data-action="report"><i class="fa-solid fa-scroll"></i> {{localize "AFC.Battle.Report"}}</button>
   <button type="button" data-action="reset"><i class="fa-solid fa-rotate-left"></i> {{localize "AFC.Battle.Reset"}}</button>
-  <button type="button" data-action="switchRules"><i class="fa-solid fa-right-left"></i> {{localize "AFC.Battle.Rules.toHouse"}}</button>
 </div>
-<div class="battle-toolbar options">
-  <label>{{localize "AFC.BattleBook.Yards"}} <input type="number" name="bookYards" value="{{bookData.yards}}" min="1" step="1"></label>
-  <label class="checkbox"><input type="checkbox" name="bookAdvanced" {{checked bookData.advanced}}> {{localize "AFC.BattleBook.AdvancedOrders"}}</label>
-  <label class="checkbox"><input type="checkbox" name="bookFormations" {{checked bookData.formations}}> {{localize "AFC.BattleBook.FormationRules"}}</label>
-</div>
+{{> "systems/asoiaf-free-company/templates/apps/battle-settings.hbs"}}
 {{/if}}
 
 <div class="battle-scroll">

@@ -61,6 +61,7 @@ Hooks.once("init", () => {
       .map(p => `systems/${AFC.SYSTEM_ID}/templates/actor/parts/${p}.hbs`),
     `systems/${AFC.SYSTEM_ID}/templates/apps/battle-troop.hbs`,
     `systems/${AFC.SYSTEM_ID}/templates/apps/battle-book.hbs`,
+    `systems/${AFC.SYSTEM_ID}/templates/apps/battle-settings.hbs`,
     `systems/${AFC.SYSTEM_ID}/templates/apps/battle-book-troop.hbs`
   ]);
 });

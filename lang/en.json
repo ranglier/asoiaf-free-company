@@ -572,7 +572,7 @@
     }
 ,
     "Battle": {
-      "Rules": { "house": "House rules", "book": "Book rules", "hint": "Change the rules for this battle", "toBook": "Switch to book rules", "toHouse": "Switch to house rules", "switchTitle": "Change rules", "switchConfirm": "Switch to {rules}? The battle restarts at round 1 and current orders are cleared. Each ruleset keeps its own troop state.", "switched": "This battle now uses {rules}." },
+      "Rules": { "settings": "Settings", "label": "Rules", "house": "House rules", "book": "Book rules", "switchTitle": "Change rules", "switchConfirm": "Switch to {rules}? The battle restarts at round 1 and current orders are cleared. Each ruleset keeps its own troop state.", "switched": "This battle now uses {rules}." },
       "TerrainBook": { "hill": "Move −10 yards; +1B against lower opponents.", "wood": "Cover +2 Defense (+5 if the name says dense).", "marsh": "Move −10 yards.", "river": "Impassable, except ford or bridge.", "ford": "Move −10 yards.", "bridge": "Move −10 yards.", "road": "Removes terrain slowdown.", "village": "Move −10 yards.", "obstacle": "Temporary fortification: +1 Defense.", "ruins": "Cover +2 Defense (wall: +5, impassable).", "landmark": "Landmark, no effect." },
       "BarOrders": "{given} / {total} orders given",
       "BarNext": "Next: {a} ({o}) → {d} · {n} to resolve",
@@ -852,7 +852,7 @@
     "Settings": {
       "battleRules": {
         "name": "Default battle rules",
-        "hint": "Rules for new battles. The GM can change them per battle, with one click in the battle bar."
+        "hint": "Rules for new battles. The GM can change them per battle, in the Battle window settings."
       },
       "defaultDifficulty": {
         "name": "Quick test difficulty",

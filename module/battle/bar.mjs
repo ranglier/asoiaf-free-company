@@ -3,7 +3,7 @@
  * MJ : révéler, résoudre le prochain engagement, fin de tour. Joueur : où en est le tour et ce qu'il
  * peut faire. Affichée seulement sur une scène qui contient des troupes.
  */
-import { bookBar, onBookBar, switchRules } from "./book.mjs";
+import { bookBar, onBookBar } from "./book.mjs";
 import { endTurn, plannedEngagements, resolvePlanned, revealOrders, terrainKeyOf } from "./engagement.mjs";
 import { visibleRegions } from "./map.mjs";
 import { isBook } from "./rules.mjs";
@@ -70,11 +70,8 @@ export function renderBattleBar() {
   } else {
     info = count.total ? loc("AFC.Battle.BarCounterPlayer") : loc("AFC.Battle.BarRevealedPlayer");
   }
-  // Règles en cours : le MJ bascule d'un clic.
-  const rules = loc(`AFC.Battle.Rules.${book ? "book" : "house"}`);
-  const rulesPill = game.user.isGM
-    ? `<button type="button" class="rules" data-bar="rules" data-tooltip="${esc(loc("AFC.Battle.Rules.hint"))}"><i class="fa-solid fa-right-left"></i> ${esc(rules)}</button>`
-    : `<span class="rules">${esc(rules)}</span>`;
+  // Règles en cours (elles se changent dans les paramètres de la fenêtre Bataille).
+  const rulesPill = `<span class="rules">${esc(loc(`AFC.Battle.Rules.${book ? "book" : "house"}`))}</span>`;
   actions += `<button type="button" class="icon ${legendOpen ? "primary" : ""}" data-bar="legend" data-tooltip="${esc(loc("AFC.Battle.Legend"))}"><i class="fa-solid fa-map"></i></button>`;
   actions += `<button type="button" class="icon" data-bar="window" data-tooltip="${esc(loc("AFC.Battle.Title"))}"><i class="fa-solid fa-chess-rook"></i></button>`;
   bar.innerHTML = `<span class="round">${esc(loc("AFC.Battle.Round"))} ${battle.round}</span>
@@ -86,7 +83,6 @@ export function renderBattleBar() {
 function onClick(event) {
   const action = event.target.closest("[data-bar]")?.dataset.bar;
   if (action?.startsWith("book")) return onBookBar(action);
-  if (action === "rules") return switchRules(isBook() ? "house" : "book");
   if (action === "reveal") return revealOrders();
   if (action === "endTurn") return endTurn();
   if (action === "window") return game.afc.openBattle();
