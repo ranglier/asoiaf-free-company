@@ -138,7 +138,7 @@ export function onRenderTokenHUD(hud, html) {
   }
   // MJ : résoudre l'engagement de cette troupe directement depuis la carte.
   const plan = game.user.isGM && battle.revealed ? plannedEngagements(battle).find(p => p.from === token.id) : null;
-  if (!book && plan) button(plan.shoot ? "fa-bullseye" : "fa-khanda", fmt("AFC.Battle.ResolveHud", { d: plan.toName }), () => { hud.close(); resolvePlanned(plan); });
+  if (!book && plan) button(plan.shoot ? "fa-bullseye" : "fa-swords", fmt("AFC.Battle.ResolveHud", { d: plan.toName }), () => { hud.close(); resolvePlanned(plan); });
   if (commander) button("fa-user-tie", loc(book ? "AFC.BattleBook.Attach" : "AFC.Battle.OfficerButton"), () => { hud.close(); chooseOfficer(token); }, { active: !!unit.officer });
   if (!book && commander && token.actor.system.state !== "fresh") button("fa-flag-checkered", loc("AFC.Battle.Rally"), () => rallyTroop(token.id));
   // Colonne de droite, avec cacher/révéler : fiche de la troupe et fenêtre Bataille.

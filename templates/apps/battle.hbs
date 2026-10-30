@@ -43,13 +43,13 @@
         {{#each plans as |p|}}
         <li><b>{{p.fromName}}</b> <small>({{p.order}})</small> → <b>{{p.toName}}</b>
           <button type="button" data-action="resolvePlan" data-from="{{p.from}}" data-to="{{p.to}}" data-shoot="{{p.shoot}}">
-            <i class="fa-solid {{#if p.shoot}}fa-bullseye{{else}}fa-khanda{{/if}}"></i> {{localize "AFC.Battle.Resolve"}}</button></li>
+            <i class="fa-solid {{#if p.shoot}}fa-bullseye{{else}}fa-swords{{/if}}"></i> {{localize "AFC.Battle.Resolve"}}</button></li>
         {{/each}}
       </ul>
       {{else}}<p class="hint">{{localize "AFC.Battle.NoPlan"}}</p>{{/if}}
       <p class="hint">{{localize "AFC.Battle.FreeEngage"}} <b>{{#if controlled}}{{controlled}}{{else}}—{{/if}}</b> → <b>{{#if target}}{{target}}{{else}}—{{/if}}</b>
         <button type="button" class="small" data-action="shoot"><i class="fa-solid fa-bullseye"></i> {{localize "AFC.Battle.Shoot"}}</button>
-        <button type="button" class="small" data-action="melee"><i class="fa-solid fa-khanda"></i> {{localize "AFC.Battle.Melee"}}</button></p>
+        <button type="button" class="small" data-action="melee"><i class="fa-solid fa-swords"></i> {{localize "AFC.Battle.Melee"}}</button></p>
     </section>
     {{/if}}
 

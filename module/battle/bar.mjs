@@ -62,7 +62,7 @@ export function renderBattleBar() {
       const plans = plannedEngagements(battle, scene);
       const next = plans[0];
       info = next ? fmt("AFC.Battle.BarNext", { a: esc(next.fromName), o: esc(next.order), d: esc(next.toName), n: plans.length }) : loc("AFC.Battle.BarNoneLeft");
-      if (next) actions += button("resolve", next.shoot ? "fa-bullseye" : "fa-khanda", loc("AFC.Battle.Resolve"), { primary: true });
+      if (next) actions += button("resolve", next.shoot ? "fa-bullseye" : "fa-swords", loc("AFC.Battle.Resolve"), { primary: true });
       actions += button("endTurn", "fa-forward-step", loc("AFC.Battle.EndTurn"), { primary: !next });
     }
   } else if (!battle.revealed) {
