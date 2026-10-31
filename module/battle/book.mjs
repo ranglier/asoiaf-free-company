@@ -58,7 +58,9 @@ const activeTroops = (side, scene) => sideTroops(side, scene).filter(t => t.acto
 /** Compétences et équipement du livre, d'après le type et l'entraînement de la troupe. */
 export function bookDataFor(system) {
   const map = BOOK_TYPE_MAP[system.unitType] ?? { type: "infantry" };
-  const keys = (COMPANY_UNIT_TYPES[system.unitType] ?? HOUSE_UNIT_TYPES[system.unitType])?.abilities ?? ["fighting", "endurance", "athletics"];
+  const listed = (COMPANY_UNIT_TYPES[system.unitType] ?? HOUSE_UNIT_TYPES[system.unitType])?.abilities;
+  // Pas de compétences clés : combattant ordinaire (type Spéciale : « trois au choix », à ajuster sur la fiche), sauf le Soutien.
+  const keys = listed?.length || system.unitType === "support" ? listed : ["fighting", "endurance", "athletics"];
   const open = BOOK_ABILITY_PRIORITY.filter(k => keys.includes(k));
   const abilities = Object.fromEntries(BOOK_ABILITIES.map(k => [k, 2]));
   const upgrades = BOOK_UPGRADES[system.training] ?? 3;

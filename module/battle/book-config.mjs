@@ -9,11 +9,11 @@ export const BOOK_STATUS = ["organized", "disorganized", "routed", "destroyed"];
 export const BOOK_STATUS_CHIP = { organized: "fresh", disorganized: "disordered", routed: "routed", destroyed: "destroyed" };
 
 /** Compétences suivies sur une unité (les autres restent au rang 2 et ne servent pas en bataille). */
-export const BOOK_ABILITIES = ["agility", "animalHandling", "athletics", "awareness", "endurance", "fighting", "marksmanship", "stealth", "will"];
+export const BOOK_ABILITIES = ["agility", "animalHandling", "athletics", "awareness", "endurance", "fighting", "marksmanship", "stealth", "survival", "warfare", "will"];
 /** Version du calcul des compétences : une troupe plus ancienne est recalculée. */
-export const TROOP_STATS_VERSION = 2;
+export const TROOP_STATS_VERSION = 3;
 /** Ordre de répartition de l'expérience : le combat d'abord. */
-export const BOOK_ABILITY_PRIORITY = ["fighting", "marksmanship", "endurance", "athletics", "agility", "awareness", "stealth", "animalHandling", "will"];
+export const BOOK_ABILITY_PRIORITY = ["fighting", "marksmanship", "endurance", "athletics", "agility", "awareness", "stealth", "animalHandling", "survival", "warfare", "will"];
 /** Améliorations de compétence selon l'entraînement (20 points d'expérience par rang). */
 export const BOOK_UPGRADES = { support: 0, green: 1, trained: 3, veteran: 5, elite: 7 };
 
