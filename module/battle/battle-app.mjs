@@ -7,8 +7,9 @@ import { ORDERS, TRIANGLE, TROOP_STATES, WEATHER } from "./battle-config.mjs";
 import { bookContext, bookReport, chooseCommanders, freeAttack, giveBookOrder, nextStep, resetBook, switchRules } from "./book.mjs";
 import { battleRules, isBook, RULES } from "./rules.mjs";
 import { TerrainPainter } from "./terrain.mjs";
-import { battleReport, endTurn, orderLabel, plannedEngagements, rallyTroop, resolveMelee, resolvePlanned, resolveShoot, revealOrders } from "./engagement.mjs";
+import { battleReport, endTurn, officerBonus, orderLabel, plannedEngagements, rallyTroop, resolveMelee, resolvePlanned, resolveShoot, revealOrders } from "./engagement.mjs";
 import { chooseOfficer, giveOrder, hexNumber, hexNumbersOn, ORDER_ICONS, orderVisible, startTargetPick, TARGETED_ORDERS } from "./map.mjs";
+import { APPROACH_ORDERS, hasMoved, PATH_ORDERS, startMovePick } from "./moves.mjs";
 import { canCommand, clearBattle, getBattle, saveBattle, setUnit, unitOf } from "./state.mjs";
 import { createEnemyTroop } from "./troops.mjs";
 
@@ -39,6 +40,7 @@ export class BattleApp extends HandlebarsApplicationMixin(ApplicationV2) {
       shoot: BattleApp.#onShoot,
       resolvePlan: BattleApp.#onResolvePlan,
       pickTarget: BattleApp.#onPickTarget,
+      pickMove: BattleApp.#onPickMove,
       clearTarget: BattleApp.#onClearTarget,
       officer: BattleApp.#onOfficer,
       rally: BattleApp.#onRally,
@@ -97,10 +99,13 @@ export class BattleApp extends HandlebarsApplicationMixin(ApplicationV2) {
         countered: unit.countered,
         targeted: TARGETED_ORDERS.includes(unit.order),
         targetName: target && (isGM || !target.hidden) ? target.name : null,
+        canPickMove: mine && !hasMoved(token) && (PATH_ORDERS.includes(unit.order) || (APPROACH_ORDERS.includes(unit.order) && !!unit.target)),
+        moveSet: !!unit.path?.length,
         officerName: officer?.name ?? null,
+        officerBonus: officer?.system.abilities?.warfare ? officerBonus(officer.system.abilities.warfare) : 0,
         overload: officer && officerLoad[unit.officer] > commandMax(unit.officer) ? commandMax(unit.officer) : 0,
         cushion: s.cushion, cushionMax: s.cushionMax, disorders: s.disorders, rallies: s.rallies, ralliesMax: s.ralliesMax,
-        move: s.move, range: s.range, rank: s.rank,
+        move: s.move, range: s.range, melee: s.melee, shootRank: s.shootRank,
         traits: s.traits.map(k => ({ name: loc(`AFC.Battle.Trait.${k}.name`), effect: loc(`AFC.Battle.Trait.${k}.effect`) })),
         canRally: mine && !["fresh", "destroyed"].includes(s.state)
       };
@@ -114,7 +119,7 @@ export class BattleApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
     const context = {
       battle, isGM, hasScene: !!scene, book,
-      rules: scene ? battleRules(scene) : "house", rulesLabel: `AFC.Battle.Rules.${scene ? battleRules(scene) : "house"}`, settingsOpen: this.settingsOpen, hexNumbers: hexNumbersOn(scene),
+      rules: scene ? battleRules(scene) : "house", rulesLabel: `AFC.Battle.Rules.${scene ? battleRules(scene) : "house"}`, settingsOpen: this.settingsOpen, hexNumbers: hexNumbersOn(scene), freeMove: !!battle.freeMove,
       ruleOptions: Object.fromEntries(RULES.map(k => [k, `AFC.Battle.Rules.${k}`])),
       orders: ORDERS.map(k => ({ key: k, label: loc(`AFC.Battle.Order.${k}`), icon: ORDER_ICONS[k], help: loc(`AFC.Battle.OrderHelp.${k}`) })),
       triangle: Object.entries(TRIANGLE).map(([a, b]) => ({ a: orderLabel(a), b: orderLabel(b) })),
@@ -147,6 +152,11 @@ export class BattleApp extends HandlebarsApplicationMixin(ApplicationV2) {
     // Paramètres : restent ouverts d'un affichage à l'autre ; annuler le changement de règles remet le choix en place.
     this.element.querySelector(".battle-settings")?.addEventListener("toggle", event => { this.settingsOpen = event.target.open; });
     this.element.querySelector('[name="hexNumbers"]')?.addEventListener("change", event => canvas.scene.setFlag(SYSTEM_ID, "hexNumbers", event.target.checked));
+    this.element.querySelector('[name="freeMove"]')?.addEventListener("change", async event => {
+      const battle = getBattle();
+      battle.freeMove = event.target.checked;
+      await saveBattle(battle);
+    });
     this.element.querySelector('[name="battleRules"]')?.addEventListener("change", async event => {
       await switchRules(event.target.value);
       this.render();
@@ -217,6 +227,7 @@ export class BattleApp extends HandlebarsApplicationMixin(ApplicationV2) {
   static #onReport() { return isBook() ? bookReport() : battleReport(); }
   static #onNewEnemy() { return createEnemyTroop(); }
   static #onPickTarget(event, target) { const t = BattleApp.#token(target); if (t) startTargetPick(t); }
+  static #onPickMove(event, target) { const t = BattleApp.#token(target); if (t) startMovePick(t); }
   static #onClearTarget(event, target) { const t = BattleApp.#token(target); if (t) setUnit(t.id, { target: "" }); }
   static #onOfficer(event, target) { const t = BattleApp.#token(target); if (t) chooseOfficer(t); }
   static #onRally(event, target) { const t = BattleApp.#token(target); if (t) rallyTroop(t.id); }

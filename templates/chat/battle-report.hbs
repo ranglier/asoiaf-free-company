@@ -1,0 +1,11 @@
+<div class="afc-card battle report">
+  <div class="report-head"><strong>{{verdict}}</strong><small>{{localize "AFC.Battle.ReportCard.Rounds" n=rounds}}</small></div>
+  {{#each sides as |side|}}
+  <div class="report-side"><b>{{side.label}}</b><span>−{{side.lost}}/{{side.men}} ({{side.pct}} %)</span></div>
+  {{#each side.rows as |r|}}
+  <div class="report-row" {{#if r.facts}}data-tooltip="{{r.facts}}"{{/if}}><span class="troop">{{r.name}}</span><span class="state-chip {{r.state}}">{{r.stateLabel}}</span><span class="men">−{{r.lostMen}}</span></div>
+  {{/each}}
+  {{#if side.intact}}<div class="report-row intact">{{localize "AFC.Battle.ReportCard.Intact" n=side.intact}}</div>{{/if}}
+  {{/each}}
+  <button type="button" data-afc-battle="publish"><i class="fa-solid fa-bullhorn"></i> {{localize "AFC.Battle.ReportCard.Publish"}}</button>
+</div>

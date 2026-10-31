@@ -27,19 +27,21 @@
       {{#if t.canSet}}<a class="icon" data-action="pickTarget" data-tooltip="AFC.Battle.PickOnMap"><i class="fa-solid fa-crosshairs"></i></a>
       {{#if t.targetName}}<a class="icon" data-action="clearTarget" data-tooltip="AFC.Battle.ClearTarget"><i class="fa-solid fa-xmark"></i></a>{{/if}}{{/if}}
       {{/if}}{{/if}}
+      {{#if t.canPickMove}}<a class="icon {{#if t.moveSet}}active{{/if}}" data-action="pickMove" data-tooltip="AFC.Battle.Moves.Button"><i class="fa-solid fa-route"></i></a>{{/if}}
       {{#if t.countered}}<small>{{localize "AFC.Battle.Countered"}}</small>{{/if}}
     </div>
 
     {{#if t.known}}
     <div class="line officer">
-      <i class="fa-solid fa-user-tie"></i> {{#if t.officerName}}{{t.officerName}}{{else}}<i>{{localize "AFC.Battle.NoOfficerRank" n=t.rank}}</i>{{/if}}
+      <i class="fa-solid fa-user-tie"></i> {{#if t.officerName}}{{t.officerName}}{{#if t.officerBonus}} <small>(+{{t.officerBonus}}B)</small>{{/if}}{{else}}<i>{{localize "AFC.Battle.NoOfficerRank"}}</i>{{/if}}
       {{#if t.mine}}<a class="icon" data-action="officer" data-tooltip="AFC.Battle.OfficerButton"><i class="fa-solid fa-pen"></i></a>{{/if}}
       {{#if t.overload}}<span class="warn">{{localize "AFC.Battle.TooMany" n=t.overload}}</span>{{/if}}
     </div>
     <div class="line stats">
+      <span data-tooltip="AFC.Ability.fighting"><i class="fa-solid fa-swords"></i> {{t.melee}}</span>
       <span data-tooltip="AFC.Battle.Cushion"><i class="fa-solid fa-shield"></i> {{t.cushion}}/{{t.cushionMax}}</span>
       <span data-tooltip="AFC.Battle.Move"><i class="fa-solid fa-shoe-prints"></i> {{t.move}}</span>
-      {{#if t.range}}<span data-tooltip="AFC.Battle.Range"><i class="fa-solid fa-bullseye"></i> {{t.range}}</span>{{/if}}
+      {{#if t.range}}<span data-tooltip="AFC.Battle.Range"><i class="fa-solid fa-bullseye"></i> {{t.shootRank}}D · {{t.range}}</span>{{/if}}
       <span data-tooltip="AFC.Battle.Disorders"><i class="fa-solid fa-person-falling"></i> {{t.disorders}}</span>
       <span data-tooltip="AFC.Battle.Rallies"><i class="fa-solid fa-flag-checkered"></i> {{t.rallies}}/{{t.ralliesMax}}</span>
       {{#if t.canRally}}<button type="button" class="small" data-action="rally"><i class="fa-solid fa-flag"></i> {{localize "AFC.Battle.Rally"}}</button>{{/if}}

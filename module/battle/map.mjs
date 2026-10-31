@@ -10,6 +10,8 @@ import { SYSTEM_ID } from "../config.mjs";
 import { BOOK_STATUS_CHIP, isBookTargeted } from "./book-config.mjs";
 import { drawBookHealth, fillBookHUD } from "./book.mjs";
 import { center, plannedEngagements, rallyTroop, resolvePlanned } from "./engagement.mjs";
+import { afterPlan, APPROACH_ORDERS, cellCenter, hasMoved, PATH_ORDERS, plannedPath, startMovePick } from "./moves.mjs";
+import { isAutoIcon } from "./troops.mjs";
 import { isBook } from "./rules.mjs";
 import { canCommand, getBattle, setUnit, unitOf } from "./state.mjs";
 
@@ -43,7 +45,7 @@ export function startTargetPick(token, onPick = null) {
     cancelTargetPick();
     if (!hit) return ui.notifications.info(loc("AFC.Battle.PickCancelled"));
     if (onPick) return onPick(hit.document);
-    setUnit(token.id, { target: hit.document.id });
+    setUnit(token.id, { target: hit.document.id }).then(() => afterPlan(token));
     ui.notifications.info(fmt("AFC.Battle.PlanSetDone", { a: token.name, d: hit.document.name }));
   };
   const onKey = event => { if (event.key === "Escape") cancelTargetPick(); };
@@ -82,8 +84,10 @@ export async function chooseOfficer(token) {
 /** Donne un ordre ; pour un ordre offensif, enchaîne sur la désignation de la cible. */
 export async function giveOrder(token, order) {
   await setUnit(token.id, { order });
-  if (TARGETED_ORDERS.includes(order)) startTargetPick(token);
-  else ui.notifications.info(`${token.name} : ${loc(`AFC.Battle.Order.${order}`)}`);
+  if (TARGETED_ORDERS.includes(order)) return startTargetPick(token);
+  if (PATH_ORDERS.includes(order) && !hasMoved(token)) return startMovePick(token);
+  ui.notifications.info(`${token.name} : ${loc(`AFC.Battle.Order.${order}`)}`);
+  afterPlan(token);
 }
 
 /* ---------- Menu du jeton (HUD) ---------- */
@@ -136,12 +140,15 @@ export function onRenderTokenHUD(hud, html) {
     if (TARGETED_ORDERS.includes(unit.order)) {
       button("fa-crosshairs", unit.target ? loc("AFC.Battle.PlanChange") : loc("AFC.Battle.PlanSet"), () => { hud.close(); startTargetPick(token); });
     }
+    // Case d'arrivée : à choisir pour Manœuvrer et Se replier, facultative pour Charger et Attaquer.
+    const movable = PATH_ORDERS.includes(unit.order) || (APPROACH_ORDERS.includes(unit.order) && unit.target);
+    if (movable && !hasMoved(token)) button("fa-route", loc("AFC.Battle.Moves.Button"), () => { hud.close(); startMovePick(token); });
   }
   // MJ : résoudre l'engagement de cette troupe directement depuis la carte.
   const plan = game.user.isGM && battle.revealed ? plannedEngagements(battle).find(p => p.from === token.id) : null;
   if (!book && plan) button(plan.shoot ? "fa-bullseye" : "fa-swords", fmt("AFC.Battle.ResolveHud", { d: plan.toName }), () => { hud.close(); resolvePlanned(plan); });
   if (commander) button("fa-user-tie", loc(book ? "AFC.BattleBook.Attach" : "AFC.Battle.OfficerButton"), () => { hud.close(); chooseOfficer(token); }, { active: !!unit.officer });
-  if (!book && commander && token.actor.system.state !== "fresh") button("fa-flag-checkered", loc("AFC.Battle.Rally"), () => rallyTroop(token.id));
+  if (!book && commander && token.actor.system.state !== "fresh") button("fa-flag-checkered", `${loc("AFC.Battle.Rally")} (${token.actor.system.rallies}/${token.actor.system.ralliesMax})`, () => rallyTroop(token.id));
   // Colonne de droite, avec cacher/révéler : fiche de la troupe et fenêtre Bataille.
   const right = html.querySelector(".col.right");
   if (token.actor.testUserPermission(game.user, "OBSERVER")) {
@@ -336,9 +343,41 @@ export function drawPlanArrows() {
     ]).endFill();
     layer.addChild(g);
   }
+  if (!battle.revealed && !isBook()) for (const unit of battle.units) drawPlannedMove(layer, unit, battle);
   // Au-dessus des jetons, semi-transparentes, pour rester lisibles entre cases voisines.
   layer.alpha = 0.85;
   canvas.tokens.addChild(layer);
+}
+
+/** Mouvement prévu : pointillés clairs le long du chemin et silhouette du jeton à l'arrivée (visible de qui commande). */
+function drawPlannedMove(layer, unit, battle) {
+  const from = canvas.tokens.get(unit.id);
+  if (!from?.document.actor || !orderVisible(from.document, battle)) return;
+  if (!game.user.isGM && from.document.hidden) return;
+  const path = plannedPath(from.document, unit);
+  if (!path.length) return;
+  const color = from.document.actor.system.side === "company" ? 0x4f8fc8 : 0xd04a3f;
+  const g = new PIXI.Graphics();
+  let previous = from.center;
+  for (const key of path) {
+    const next = cellCenter(key);
+    g.lineStyle({ width: 7, color: 0x1b140d, alpha: 0.45 });
+    segment(g, previous, next, [12, 8]);
+    g.lineStyle({ width: 3, color: 0xf3ead6, alpha: 0.95 });
+    segment(g, previous, next, [12, 8]);
+    previous = next;
+  }
+  layer.addChild(g);
+  const texture = from.mesh?.texture;
+  if (!texture) return;
+  const ghost = new PIXI.Sprite(texture);
+  ghost.anchor.set(0.5);
+  ghost.width = from.mesh.width;
+  ghost.height = from.mesh.height;
+  ghost.position.set(previous.x, previous.y);
+  ghost.alpha = 0.6;
+  ghost.tint = color;
+  layer.addChild(ghost);
 }
 
 /** Trait plein ou en pointillés. */
@@ -391,8 +430,52 @@ export async function drawStateMarker(token) {
   token.addChild(marker);
 }
 
+/* ---------- Officier et image personnalisée ---------- */
+
+/** Portrait rond de l'officier, dans le coin haut droit du jeton. Visible de tous. */
+export async function drawOfficerMarker(token) {
+  token.children.filter(c => c.name === "afcOfficer").forEach(c => c.destroy({ children: true }));
+  const doc = token.document;
+  if (doc.actor?.type !== "troop" || !doc.parent) return;
+  const officer = game.actors.get(unitOf(getBattle(doc.parent), doc.id).officer);
+  if (!officer) return;
+  const texture = await foundry.canvas.loadTexture(officer.img).catch(() => null) ?? await foundry.canvas.loadTexture("icons/svg/mystery-man.svg");
+  if (token.destroyed || !texture) return;
+  token.children.filter(c => c.name === "afcOfficer").forEach(c => c.destroy({ children: true }));
+  const r = token.w * 0.17;
+  const marker = new PIXI.Container();
+  marker.name = "afcOfficer";
+  const backing = new PIXI.Graphics().beginFill(0x2b2118).drawCircle(0, 0, r).endFill();
+  const portrait = new PIXI.Sprite(texture);
+  portrait.anchor.set(0.5);
+  const scale = (2 * r) / Math.min(texture.width, texture.height);
+  portrait.scale.set(scale);
+  const mask = new PIXI.Graphics().beginFill(0xffffff).drawCircle(0, 0, r).endFill();
+  portrait.mask = mask;
+  const ring = new PIXI.Graphics().lineStyle({ width: 3, color: 0xd4af37 }).drawCircle(0, 0, r);
+  marker.addChild(backing, portrait, mask, ring);
+  marker.position.set(token.w * 0.8, token.h * 0.27);
+  token.addChild(marker);
+}
+
+/** Une image personnalisée n'a plus les couleurs du camp : un liseré autour du jeton les rend. */
+function drawSideFrame(token) {
+  token.children.filter(c => c.name === "afcSideFrame").forEach(c => c.destroy({ children: true }));
+  const doc = token.document;
+  if (doc.actor?.type !== "troop" || isAutoIcon(doc.texture.src)) return;
+  // L'hexagone de la case, rapporté au coin du jeton.
+  const points = canvas.grid.getVertices(canvas.grid.getOffset(center(doc))).flatMap(v => [v.x - doc._source.x, v.y - doc._source.y]);
+  const frame = new PIXI.Graphics();
+  frame.name = "afcSideFrame";
+  frame.eventMode = "none";
+  frame.lineStyle({ width: 4, color: doc.actor.system.side === "company" ? 0x4f8fc8 : 0xd04a3f, alpha: 0.95 }).drawPolygon(points);
+  token.addChild(frame);
+}
+
 /** Pastille d'ordre et marqueur d'état d'un jeton de troupe. */
 export function drawTroopMarks(token) {
+  drawSideFrame(token);
+  drawOfficerMarker(token);
   drawOrderBadge(token);
   drawStateMarker(token);
   drawBookHealth(token);

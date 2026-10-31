@@ -11,7 +11,7 @@ import { SYSTEM_ID } from "../config.mjs";
 const FLAG = "battle";
 const UNIT = "unit";
 const CHANNEL = `system.${SYSTEM_ID}`;
-const EMPTY_UNIT = { order: "", target: "", officer: "", countered: false };
+const EMPTY_UNIT = { order: "", target: "", officer: "", countered: false, path: [] };
 
 /** Ordre, cible, officier et contre-ordre d'un jeton de troupe. */
 function readUnit(token, legacy) {
@@ -22,7 +22,7 @@ function readUnit(token, legacy) {
 /** Bataille de la scène (copie modifiable) ; les troupes sont lues sur leurs acteurs. */
 export function getBattle(scene = canvas.scene) {
   const data = foundry.utils.deepClone(scene?.getFlag(SYSTEM_ID, FLAG) ?? {});
-  const battle = foundry.utils.mergeObject({ round: 1, revealed: false, weather: "clear", engaged: [], done: [], reload: [], reloadNext: [] }, data);
+  const battle = foundry.utils.mergeObject({ round: 1, revealed: false, weather: "clear", engaged: [], done: [], reload: [], reloadNext: [], moved: [], stats: {} }, data);
   // Anciennes versions : unités ou groupes rangés sur la scène.
   const legacy = {};
   for (const u of data.units ?? []) legacy[u.id] = u;
@@ -95,6 +95,9 @@ async function applyUnit(scene, tokenId, changes, user) {
   }
   const counter = battle.revealed && "order" in changes && changes.order !== unit.order;
   for (const key of ["order", "target", "officer"]) if (key in changes) unit[key] = changes[key] ?? "";
+  // Nouvel ordre ou nouvelle cible : le mouvement prévu repart de zéro.
+  if ("order" in changes || "target" in changes) unit.path = [];
+  if ("path" in changes) unit.path = changes.path ?? [];
   // Un ordre sans cible n'en garde pas (Tenir, Manœuvrer, Se replier).
   if ("order" in changes && !["charge", "attack", "shoot"].includes(unit.order)) unit.target = "";
   const { id, ...data } = unit;

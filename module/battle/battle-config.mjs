@@ -15,13 +15,13 @@ export const STATE_ORDER = Object.keys(TROOP_STATES);
 export const DISORDER_LOSS = 5;
 export const MAX_LOSS = 70;
 
-/** Entraînement : rang de test sans officier et réserve d'encaissement. */
+/** Entraînement : réserve d'encaissement. */
 export const TRAINING_BATTLE = {
-  support: { rank: 1, cushion: 0 },
-  green: { rank: 2, cushion: 0 },
-  trained: { rank: 3, cushion: 1 },
-  veteran: { rank: 4, cushion: 2 },
-  elite: { rank: 5, cushion: 3 }
+  support: { cushion: 0 },
+  green: { cushion: 0 },
+  trained: { cushion: 1 },
+  veteran: { cushion: 2 },
+  elite: { cushion: 3 }
 };
 
 /** Ordres. Triangle : Charger bat Tirer, Tirer bat Tenir, Tenir bat Charger (Attaquer est neutre). */

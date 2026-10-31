@@ -32,12 +32,24 @@ export function unitTypesOf(item) {
 export const troopIcon = (type, side) =>
   `systems/${SYSTEM_ID}/assets/troops/${TYPE_ICONS[type] ?? "infantry"}-${side === "company" ? "company" : "enemy"}.svg`;
 
-/** Remet le symbole d'une troupe (acteur et jetons) après un changement de type ou de camp. */
+/** L'image est-elle un symbole du système (et non une image choisie par le joueur) ? */
+export const isAutoIcon = img => !img || img.startsWith(`systems/${SYSTEM_ID}/assets/troops/`);
+
+/** Change l'image d'une troupe : fiche, prochains jetons et jetons déjà posés. */
+export async function setTroopImage(actor, img) {
+  await actor.update({ img, "prototypeToken.texture.src": img });
+  // Toutes les scènes : la troupe peut être posée ailleurs que sur la scène affichée.
+  for (const scene of game.scenes) {
+    const updates = scene.tokens.filter(t => t.actorId === actor.id && t.actorLink).map(t => ({ _id: t.id, "texture.src": img }));
+    if (updates.length) await scene.updateEmbeddedDocuments("Token", updates);
+  }
+}
+
+/** Le symbole suit le type et le camp ; une image choisie par le joueur reste en place. */
 export async function refreshTroopImage(actor) {
   const img = troopIcon(actor.system.unitType, actor.system.side);
-  if (actor.img === img) return;
-  await actor.update({ img, "prototypeToken.texture.src": img });
-  for (const token of actor.getActiveTokens(false, true)) await token.update({ "texture.src": img });
+  if (actor.img === img || !isAutoIcon(actor.img)) return;
+  return setTroopImage(actor, img);
 }
 
 /** Dossier « Bataille » des acteurs (créé au besoin). */

@@ -33,6 +33,7 @@ export default class TroopData extends foundry.abstract.TypeDataModel {
       // Règles du livre : données à part (basculer de règles ne perd rien).
       book: new fields.SchemaField({
         ready: new fields.BooleanField({ initial: false }),
+        v: int(0, { min: 0 }),
         type: new fields.StringField({ initial: "infantry", choices: Object.keys(BOOK_EQUIPMENT) }),
         abilities: new fields.SchemaField(Object.fromEntries(BOOK_ABILITIES.map(k => [k, int(2, { min: 1 })]))),
         upArmor: new fields.BooleanField({ initial: false }),
@@ -53,10 +54,14 @@ export default class TroopData extends foundry.abstract.TypeDataModel {
 
   prepareDerivedData() {
     const t = TRAINING_BATTLE[this.training] ?? TRAINING_BATTLE.trained;
-    this.rank = t.rank;
     this.cushionMax = t.cushion;
     this.ralliesMax = t.cushion + 1;
     this.has = Object.fromEntries(this.traits.map(k => [k, true]));
+    // Compétences de l'unité (type + entraînement) : Corps à corps en mêlée, Tir ou Athlétisme (armes de jet) au tir.
+    const skills = this.book.abilities;
+    this.melee = skills.fighting;
+    this.shootSkill = this.has.javelins && !this.has.bows && !this.has.crossbows && !this.has.slings ? "athletics" : "marksmanship";
+    this.shootRank = skills[this.shootSkill];
     // Déplacement : infanterie 1, Léger +1, Monté 3 (2 en Armure lourde), minimum 1.
     let move = this.has.mounted ? (this.has.heavyArmor ? 2 : 3) : 1;
     if (this.has.light) move += 1;

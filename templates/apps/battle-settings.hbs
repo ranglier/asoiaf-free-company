@@ -3,6 +3,7 @@
   <div class="battle-toolbar options">
     <label>{{localize "AFC.Battle.Rules.label"}} <select name="battleRules">{{selectOptions ruleOptions selected=rules localize=true}}</select></label>
     <label class="checkbox"><input type="checkbox" name="hexNumbers" {{checked hexNumbers}}> {{localize "AFC.Battle.Rules.hexNumbers"}}</label>
+    {{#unless book}}<label class="checkbox" data-tooltip="AFC.Battle.FreeMoveHint"><input type="checkbox" name="freeMove" {{checked freeMove}}> {{localize "AFC.Battle.FreeMove"}}</label>{{/unless}}
     <button type="button" class="small" data-action="terrainPainter"><i class="fa-solid fa-paintbrush"></i> {{localize "AFC.Battle.Painter.Open"}}</button>
     {{#if book}}
     <label>{{localize "AFC.BattleBook.Yards"}} <input type="number" name="bookYards" value="{{bookData.yards}}" min="1" step="1"></label>

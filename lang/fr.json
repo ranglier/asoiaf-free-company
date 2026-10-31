@@ -572,6 +572,15 @@
     }
 ,
     "Battle": {
+      "Moves": { "Button": "Choisir la case d'arrivée", "Pick": "{name} : cliquez sur la case d'arrivée (la troupe elle-même pour rester sur place, Échap pour annuler).", "Nowhere": "{name} ne peut aller nulle part.", "OutOfRange": "Case hors de portée.", "NeedTarget": "Désignez d'abord la cible.", "NotReached": "{a} n'atteint pas {d} ce tour.", "Locked": "Pendant les ordres, vos troupes bougent par leur ordre : elles se déplaceront à la révélation." },
+      "ReportCard": { "Rounds": "{n} tours", "Lost": "{lost} hommes perdus sur {men} ({pct} %)", "NoLoss": "aucune perte", "Advantage": "Avantage : {side}", "Undecided": "Issue indécise", "Won1": "{n} mêlée gagnée", "WonN": "{n} mêlées gagnées", "Lost1": "{n} perdue", "LostN": "{n} perdues", "Shots": "{hits}/{shots} tirs au but", "Rally1": "{n} ralliement", "RallyN": "{n} ralliements", "Disorder1": "{n} désorganisation", "DisorderN": "{n} désorganisations", "Best": "Fait d'armes : {name}, {n} états infligés", "Intact": "{n} intacte(s)", "Publish": "Montrer aux joueurs" },
+      "Skills": "Compétences",
+      "SkillsHint": "Type et entraînement. Corps à corps sert en mêlée ; Tir au tir (Athlétisme pour les armes de jet). Les autres servent aux jets que le MJ demande.",
+      "ChangeImage": "Changer l'image",
+      "ResetImage": "Remettre le symbole",
+      "NoBrowse": "Votre rôle ne permet pas de parcourir les fichiers : demandez au MJ.",
+      "FreeMove": "Déploiement libre",
+      "FreeMoveHint": "Les joueurs peuvent déplacer leurs jetons à la main pendant les ordres.",
       "Painter": { "Color": "Couleur", "Delete": "Supprimer ce terrain", "DeleteConfirm": "Supprimer le terrain {name} ?", "Hint": "Choisissez un terrain, puis cliquez ou glissez sur les cases de la carte. Un clic sur une case déjà peinte la retire. Le clic droit déplace toujours la vue.", "Name": "Nom sur la carte", "New": "Nouveau terrain", "None": "Aucun terrain sur cette scène.", "Open": "Peindre les terrains", "Secret": "Caché aux joueurs", "Title": "Terrains", "TypeLabel": "Effet", "Type": { "bridge": "Pont", "ford": "Gué", "hill": "Colline", "landmark": "Repère (sans effet)", "marsh": "Marais", "obstacle": "Obstacle", "river": "Rivière", "road": "Route", "ruins": "Ruines, fortification", "village": "Village, ferme", "wood": "Bois" } },
       "Rules": { "hexNumbers": "Numéros des cases", "hexTip": "Numéro de la case", "settings": "Paramètres", "label": "Règles", "house": "Règles maison", "book": "Règles du livre", "switchTitle": "Changer de règles", "switchConfirm": "Passer aux {rules} ? La bataille repart au tour 1 et les ordres en cours sont effacés. L'état des troupes de chaque jeu de règles est conservé.", "switched": "Cette bataille se joue maintenant avec les {rules}." },
       "TerrainBook": { "hill": "Déplacement −10 m ; +1B en attaquant un adversaire plus bas.", "wood": "Couvert +2 en Défense (+5 si le nom dit « dense »).", "marsh": "Déplacement −10 m.", "river": "Infranchissable, sauf gué ou pont.", "ford": "Déplacement −10 m.", "bridge": "Déplacement −10 m.", "road": "Annule le ralentissement du terrain.", "village": "Déplacement −10 m.", "obstacle": "Fortification de fortune : +1 en Défense.", "ruins": "Couvert +2 en Défense (muraille ou rempart : +5, infranchissable).", "landmark": "Repère, sans effet." },
@@ -607,12 +616,12 @@
         "splitAttack": "répartit ses dés entre plusieurs cibles : utilisez l'attaque libre pour chacune",
         "suppress": "archers : tir sans dégât (sauf à partir de 2 degrés) ; ordres sur la cible +3, +1 par degré en plus",
         "trample": "cavalerie : sprint en ligne droite, attaque chaque ennemi sur la route, 5 dégâts de plus, −1D après la première",
-        "charge": "se déplace et attaque avec élan (bat Tirer, perd contre Tenir) ; désignez la cible",
+        "charge": "se déplace et attaque avec élan (bat Tirer, perd contre Tenir) ; désignez la cible, le jeton la rejoint à la révélation",
         "attack": "se déplace et combat sans élan, hors du triangle ; désignez la cible",
         "hold": "reste en place et défend (bat Charger) ; se réorganise s'il n'est pas attaqué",
         "shoot": "tire sur une cible visible à portée (bat Tenir) ; désignez la cible",
-        "maneuver": "se déplace sans combattre (cavalerie et Léger : +1 case, flanc au tour suivant)",
-        "withdraw": "recule d'une case et limite les pertes"
+        "maneuver": "se déplace sans combattre (cavalerie et Léger : +1 case, flanc au tour suivant) ; choisissez la case d'arrivée, le jeton bouge à la révélation",
+        "withdraw": "recule d'une case et limite les pertes ; choisissez la case, le jeton bouge à la révélation"
       },
       "PickTarget": "{name} : cliquez sur la troupe visée (Échap pour annuler).",
       "PickCancelled": "Désignation annulée.",
@@ -620,9 +629,9 @@
       "ClearTarget": "Effacer la cible",
       "NoTarget": "cible à désigner",
       "OfficerTitle": "Officier : {name}",
-      "OfficerHint": "L'officier lance l'Art militaire (Tactiques) de la troupe. Sans officier, la troupe utilise son propre rang.",
+      "OfficerHint": "La troupe lance sa propre compétence. Son officier lui donne des dés de bonus : 1 par tranche de 2 rangs d'Art militaire (Tactiques compte), au moins 1.",
       "OfficerButton": "Choisir l'officier",
-      "NoOfficerRank": "sans officier (rang {n})",
+      "NoOfficerRank": "sans officier",
       "HelpTitle": "Aide-mémoire",
       "HelpHowTo": "Clic droit sur une troupe : ordres, cible, officier, ralliement. Un ordre offensif demande ensuite de cliquer sur la troupe visée. Les ordres restent secrets jusqu'à leur révélation par le MJ.",
       "TriangleLabel": "Triangle",
@@ -668,7 +677,7 @@
       "Legend": "Légende des terrains",
       "LegendEmpty": "Aucun terrain nommé sur cette carte.",
       "TerrainEffect": {
-        "hill": "+1B en défense et au tir pour qui l'occupe ; charger vers le haut : −1D.",
+        "hill": "+1B en défense et au tir contre un adversaire plus bas ; charger vers le haut : −1D. Aucun effet si les deux sont sur la colline.",
         "wood": "Cavalerie −1D ; couvert contre les tirs (+3).",
         "marsh": "Déplacement −1, pas de Charge, cavalerie −1D.",
         "river": "Infranchissable, sauf gué ou pont.",
@@ -700,7 +709,8 @@
         "AgainstDiscipline": "Contre la Discipline ({d})",
         "Cushioned": "{n} encaissé(s)",
         "Rally": "Ralliement",
-        "RallyBy": "{who} rallie {name}"
+        "RallyBy": "{who} rallie {name}",
+        "RallyCount": "{n}/{max} ralliements"
       },
       "Terrain": { "hill": "Colline", "obstacle": "Obstacles", "village": "Village" },
       "Mod": {
@@ -815,12 +825,12 @@
       "Flee": "fuit de 2 cases",
       "Rally": "Rallier",
       "RallyTitle": "Ralliement : {name}",
-      "RallyIntro": "Test d'Art militaire (Commandement) contre la Discipline de la troupe ({d}).",
+      "RallyIntro": "Test d'Art militaire (Commandement) contre la Discipline de la troupe ({d}). Ralliements utilisés : {n}/{max}.",
       "Rallier": "Qui rallie",
       "RallyOk": "Ralliée : {state}.",
       "RallyFail": "Le ralliement échoue.",
       "RallyFresh": "Cette troupe est fraîche.",
-      "RallyLimit": "Limite de ralliements atteinte : la troupe quitte le champ de bataille.",
+      "RallyLimit": "Limite de ralliements atteinte pour cette troupe.",
       "NoRallier": "Aucun personnage avec Art militaire disponible."
     },
     "Creation": {

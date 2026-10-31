@@ -18,6 +18,8 @@ import { TerrainPainter } from "./module/battle/terrain.mjs";
 import { onRenderBattleCard } from "./module/battle/engagement.mjs";
 import { migrateBattle, registerBattleSocket } from "./module/battle/state.mjs";
 import { renderBattleBar } from "./module/battle/bar.mjs";
+import { cancelMovePick } from "./module/battle/moves.mjs";
+import { getBattle } from "./module/battle/state.mjs";
 import { cancelTargetPick, drawHexNumbers, drawPlanArrows, drawRegionLabels, drawTroopMarks, onRenderTokenHUD, refreshOrderBadges, scheduleArrows } from "./module/battle/map.mjs";
 import { refreshTroopImage, registerTroopStatuses, syncTroopStatus } from "./module/battle/troops.mjs";
 import { evaluateTest, rollAbilityTest, rollTest } from "./module/dice/test-roll.mjs";
@@ -105,6 +107,8 @@ Hooks.on("updateScene", (scene, changes) => {
   renderBattleBar();
 });
 Hooks.on("canvasReady", () => {
+  // Compétences des troupes posées avant leur introduction, ou calculées autrement.
+  if (game.users.activeGM === game.user) for (const t of canvas.scene?.tokens ?? []) if (t.actor?.type === "troop") prepareBookTroop(t.actor);
   TerrainPainter.refresh();
   migrateBattle();
   drawHexNumbers();
@@ -128,20 +132,40 @@ Hooks.on("refreshToken", (token, flags) => {
 });
 for (const hook of ["createToken", "deleteToken"]) {
   Hooks.on(hook, doc => {
-    // Règles du livre : une troupe posée reçoit ses compétences et son équipement.
-    if (hook === "createToken" && game.users.activeGM === game.user && doc.actor?.type === "troop" && isBook(doc.parent)) prepareBookTroop(doc.actor);
+    // Une troupe posée reçoit ses compétences et son équipement.
+    if (hook === "createToken" && game.users.activeGM === game.user && doc.actor?.type === "troop") prepareBookTroop(doc.actor);
     scheduleArrows();
     drawRegionLabels();
     renderBattleBar();
   });
 }
-Hooks.on("canvasTearDown", () => cancelTargetPick());
+Hooks.on("canvasTearDown", () => { cancelTargetPick(); cancelMovePick(); });
+// Règles maison : pendant les ordres, un joueur ne déplace pas ses jetons (ils bougent à la révélation), sauf au déploiement.
+Hooks.on("preUpdateToken", (doc, changes) => {
+  if (game.user.isGM || doc.actor?.type !== "troop" || !("x" in changes || "y" in changes) || isBook(doc.parent)) return;
+  const battle = getBattle(doc.parent);
+  if (battle.revealed || battle.freeMove) return;
+  ui.notifications.warn(game.i18n.localize("AFC.Battle.Moves.Locked"));
+  return false;
+});
+// Une troupe déplacée peut ouvrir ou fermer un engagement ; une image changée redessine ses marques.
+Hooks.on("updateToken", (doc, changes) => {
+  if (doc.object && "texture" in changes) drawTroopMarks(doc.object);
+  if (doc.actor?.type !== "troop" || !("x" in changes || "y" in changes)) return;
+  BattleApp.refresh();
+  renderBattleBar();
+  scheduleArrows();
+});
 Hooks.on("drawToken", token => drawTroopMarks(token));
 Hooks.on("renderTokenHUD", onRenderTokenHUD);
 Hooks.on("controlToken", () => BattleApp.refresh());
 Hooks.on("targetToken", () => BattleApp.refresh());
 Hooks.on("updateActor", (actor, changes, options, userId) => {
-  if (actor.type !== "troop") return;
+  // Portrait d'un officier changé : les marqueurs le suivent.
+  if (actor.type !== "troop") {
+    if ("img" in changes) refreshOrderBadges();
+    return;
+  }
   BattleApp.refresh();
   renderBattleBar();
   // Ordre ou cible changés (drapeau de la troupe) : pastilles et flèches.
@@ -153,6 +177,10 @@ Hooks.on("updateActor", (actor, changes, options, userId) => {
   // État : marqueur au centre du jeton (et retrait des anciennes icônes d'état de Foundry).
   if (foundry.utils.hasProperty(changes, "system.state") || foundry.utils.hasProperty(changes, "system.book")) for (const t of actor.getActiveTokens()) drawTroopMarks(t);
   if (userId === game.user.id && foundry.utils.hasProperty(changes, "system.state")) syncTroopStatus(actor);
+  // Compétences : suivent le type et l'entraînement.
+  if (userId === game.user.id && (foundry.utils.hasProperty(changes, "system.training") || foundry.utils.hasProperty(changes, "system.unitType"))) prepareBookTroop(actor, { force: true });
+  // Image personnalisée : liseré du camp.
+  if ("img" in changes || foundry.utils.hasProperty(changes, "system.side")) for (const t of actor.getActiveTokens()) drawTroopMarks(t);
   // Symbole du jeton : suit le type et le camp.
   if (userId === game.user.id && (foundry.utils.hasProperty(changes, "system.side") || foundry.utils.hasProperty(changes, "system.unitType"))) refreshTroopImage(actor);
 });

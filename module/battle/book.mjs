@@ -10,7 +10,7 @@ import { specialtyBonus } from "../data/actor-character.mjs";
 import { rollDice } from "../dice/test-roll.mjs";
 import {
   BOOK_ABILITY_PRIORITY, BOOK_ATTACHED_DAMAGE, BOOK_FORMATIONS, BOOK_ORDERS, BOOK_STATUS_CHIP, BOOK_SURVIVORS,
-  BOOK_TERRAINS, BOOK_TYPE_MAP, BOOK_UPGRADES, BOOK_WEATHER, BOOK_ABILITIES, bookGlory
+  BOOK_TERRAINS, BOOK_TYPE_MAP, BOOK_UPGRADES, BOOK_WEATHER, BOOK_ABILITIES, TROOP_STATS_VERSION, bookGlory
 } from "./book-config.mjs";
 import { adjacent, center, distance, regionTerrainKey } from "./engagement.mjs";
 import { hexNumber, startTargetPick } from "./map.mjs";
@@ -62,12 +62,14 @@ export function bookDataFor(system) {
   const open = BOOK_ABILITY_PRIORITY.filter(k => keys.includes(k));
   const abilities = Object.fromEntries(BOOK_ABILITIES.map(k => [k, 2]));
   const upgrades = BOOK_UPGRADES[system.training] ?? 3;
-  for (let i = 0; i < upgrades && open.length; i++) abilities[open[i % open.length]] += 1;
-  return { ready: true, type: map.type, abilities, upArmor: !!map.armor, upFight: !!map.fight, upShoot: !!map.shoot };
+  // Un Bleu n'a qu'un rang à placer : il va à sa dernière compétence clé, son métier reste à 2.
+  if (system.training === "green" && open.length) abilities[open.at(-1)] += 1;
+  else for (let i = 0; i < upgrades && open.length; i++) abilities[open[i % open.length]] += 1;
+  return { ready: true, v: TROOP_STATS_VERSION, type: map.type, abilities, upArmor: !!map.armor, upFight: !!map.fight, upShoot: !!map.shoot };
 }
 
 export function prepareBookTroop(actor, { force = false } = {}) {
-  if (actor?.type !== "troop" || (actor.system.book.ready && !force)) return;
+  if (actor?.type !== "troop" || (actor.system.book.ready && actor.system.book.v >= TROOP_STATS_VERSION && !force)) return;
   return actor.update({ "system.book": bookDataFor(actor.system) });
 }
 
@@ -85,7 +87,7 @@ export async function switchRules(rules) {
     });
     if (!ok) return;
   }
-  Object.assign(battle, { rules, round: 1, revealed: false, weather: "clear", engaged: [], done: [], reload: [], reloadNext: [] });
+  Object.assign(battle, { rules, round: 1, revealed: false, weather: "clear", engaged: [], done: [], reload: [], reloadNext: [], moved: [] });
   battle.book = newBook(battle.book);
   await saveBattle(battle);
   await resetOrders();

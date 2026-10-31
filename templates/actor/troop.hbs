@@ -1,6 +1,6 @@
 <div class="afc-sheet parchment edit-mode">
   <header class="afc-header">
-    <img class="portrait" src="{{actor.img}}" data-action="editImage" alt="{{actor.name}}">
+    <img class="portrait" src="{{actor.img}}" data-action="editImage" alt="{{actor.name}}" data-tooltip="AFC.Battle.ChangeImage">
     <div class="identity">
       <input class="name" type="text" name="name" value="{{actor.name}}">
       <div class="grid-3">
@@ -8,6 +8,7 @@
         <label>{{localize "AFC.Battle.UnitType"}}<select name="system.unitType"><option value=""></option>{{selectOptions types selected=system.unitType}}</select></label>
         <label>{{localize "AFC.Unit.training"}}<select name="system.training">{{selectOptions trainings selected=system.training localize=true}}</select></label>
       </div>
+      {{#if customImage}}{{#if editable}}<a class="add-item" data-action="resetImage"><i class="fa-solid fa-rotate-left"></i> {{localize "AFC.Battle.ResetImage"}}</a>{{/if}}{{/if}}
     </div>
   </header>
 
@@ -50,7 +51,6 @@
       <span class="value"><input type="number" name="system.cushion" value="{{system.cushion}}" min="0"> / {{system.cushionMax}}</span></div>
     <div class="vital"><span class="label">{{localize "AFC.Battle.Discipline"}}</span>
       <input type="number" name="system.discipline" value="{{system.discipline}}" min="0"></div>
-    <div class="vital"><span class="label">{{localize "AFC.Battle.Rank"}}</span><span class="value big-num">{{system.rank}}</span></div>
     <div class="vital"><span class="label">{{localize "AFC.Battle.Move"}}</span><span class="value big-num">{{system.move}}</span></div>
     <div class="vital"><span class="label">{{localize "AFC.Battle.Range"}}</span><span class="value big-num">{{#if system.range}}{{system.range}}{{else}}—{{/if}}</span></div>
   </section>
@@ -62,6 +62,15 @@
     <div class="vital"><span class="label">{{localize "AFC.Battle.Men"}}</span><input type="number" name="system.men" value="{{system.men}}" min="0"></div>
     <div class="vital"><span class="label">{{localize "AFC.Battle.Loss"}}</span><span class="value">{{system.loss}} % ({{system.lostMen}})</span></div>
   </section>
+
+  <div class="section-title">
+    <h2>{{localize "AFC.Battle.Skills"}}</h2>
+    {{#if editable}}<a class="add-item" data-action="resetBook"><i class="fa-solid fa-rotate"></i> {{localize "AFC.BattleBook.ResetUnit"}}</a>{{/if}}
+  </div>
+  <p class="hint">{{localize "AFC.Battle.SkillsHint"}}</p>
+  <div class="book-abilities">
+    {{#each bookAbilities as |a|}}<label>{{localize a.label}}<input type="number" name="system.book.abilities.{{a.key}}" value="{{a.value}}" min="1" max="9"></label>{{/each}}
+  </div>
 
   <div class="section-title">
     <h2>{{localize "AFC.Battle.Traits"}}</h2>

@@ -6,7 +6,7 @@ import { STATE_ORDER, TRAITS, TROOP_STATES, TYPE_TRAITS } from "../battle/battle
 import { BOOK_ABILITIES, BOOK_EQUIPMENT, BOOK_FORMATIONS, BOOK_STATUS } from "../battle/book-config.mjs";
 import { prepareBookTroop } from "../battle/book.mjs";
 import { isBook } from "../battle/rules.mjs";
-import { typeLabel } from "../battle/troops.mjs";
+import { isAutoIcon, setTroopImage, troopIcon, typeLabel } from "../battle/troops.mjs";
 
 const { HandlebarsApplicationMixin } = foundry.applications.api;
 const { ActorSheetV2 } = foundry.applications.sheets;
@@ -19,6 +19,7 @@ export class TroopSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     form: { submitOnChange: true },
     actions: {
       editImage: TroopSheet.#onEditImage,
+      resetImage: TroopSheet.#onResetImage,
       resetTraits: TroopSheet.#onResetTraits,
       resetBook: TroopSheet.#onResetBook
     }
@@ -37,7 +38,7 @@ export class TroopSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       states: Object.fromEntries(STATE_ORDER.map(k => [k, TROOP_STATES[k].label])),
       types: Object.fromEntries(Object.keys(TYPE_TRAITS).map(k => [k, typeLabel(k)]).sort((a, b) => a[1].localeCompare(b[1]))),
       traits: TRAITS.map(k => ({ key: k, label: loc(`AFC.Battle.Trait.${k}.name`), effect: loc(`AFC.Battle.Trait.${k}.effect`), on: s.traits.includes(k) })),
-      bookRules: isBook(),
+      bookRules: isBook(), customImage: !isAutoIcon(this.document.img),
       bookAbilities: BOOK_ABILITIES.map(k => ({ key: k, label: `AFC.Ability.${k}`, value: s.book.abilities[k] })),
       bookTypes: Object.fromEntries(Object.keys(BOOK_EQUIPMENT).map(k => [k, `AFC.BattleBook.Type.${k}`])),
       bookStatuses: Object.fromEntries(BOOK_STATUS.map(k => [k, `AFC.BattleBook.Status.${k}`])),
@@ -62,8 +63,15 @@ export class TroopSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   static #onResetBook() { return prepareBookTroop(this.document, { force: true }); }
 
   static #onEditImage() {
+    if (!this.isEditable) return;
+    if (!game.user.can("FILES_BROWSE")) return ui.notifications.warn(game.i18n.localize("AFC.Battle.NoBrowse"));
     const FP = foundry.applications.apps.FilePicker.implementation;
-    return new FP({ type: "image", current: this.document.img, callback: path => this.document.update({ img: path }) }).browse();
+    return new FP({ type: "image", current: this.document.img, callback: path => setTroopImage(this.document, path) }).browse();
+  }
+
+  /** Retour au symbole du type et du camp. */
+  static #onResetImage() {
+    return setTroopImage(this.document, troopIcon(this.document.system.unitType, this.document.system.side));
   }
 
   /** Traits par défaut du type d'unité. */

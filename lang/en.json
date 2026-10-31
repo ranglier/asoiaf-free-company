@@ -572,6 +572,15 @@
     }
 ,
     "Battle": {
+      "Moves": { "Button": "Choose the destination", "Pick": "{name}: click the destination space (the troop itself to stay put, Esc to cancel).", "Nowhere": "{name} has nowhere to go.", "OutOfRange": "Space out of range.", "NeedTarget": "Pick the target first.", "NotReached": "{a} does not reach {d} this turn.", "Locked": "During orders, your troops move through their order: they will move on reveal." },
+      "ReportCard": { "Rounds": "{n} turns", "Lost": "{lost} men lost out of {men} ({pct}%)", "NoLoss": "no losses", "Advantage": "Advantage: {side}", "Undecided": "Undecided", "Won1": "{n} melee won", "WonN": "{n} melees won", "Lost1": "{n} lost", "LostN": "{n} lost", "Shots": "{hits}/{shots} shots hit", "Rally1": "{n} rally", "RallyN": "{n} rallies", "Disorder1": "{n} disorder", "DisorderN": "{n} disorders", "Best": "Feat of arms: {name}, {n} states inflicted", "Intact": "{n} unscathed", "Publish": "Show to players" },
+      "Skills": "Skills",
+      "SkillsHint": "From type and training. Fighting is used in melee; Marksmanship when shooting (Athletics for thrown weapons). The others serve the rolls the GM asks for.",
+      "ChangeImage": "Change image",
+      "ResetImage": "Restore the symbol",
+      "NoBrowse": "Your role cannot browse files: ask the GM.",
+      "FreeMove": "Free deployment",
+      "FreeMoveHint": "Players may move their tokens by hand during orders.",
       "Painter": { "Color": "Color", "Delete": "Delete this terrain", "DeleteConfirm": "Delete the terrain {name}?", "Hint": "Choose a terrain, then click or drag over the map's spaces. Clicking a painted space removes it. Right-click still pans the view.", "Name": "Name on the map", "New": "New terrain", "None": "No terrain on this scene.", "Open": "Paint terrain", "Secret": "Hidden from players", "Title": "Terrain", "TypeLabel": "Effect", "Type": { "bridge": "Bridge", "ford": "Ford", "hill": "Hill", "landmark": "Landmark (no effect)", "marsh": "Marsh", "obstacle": "Obstacle", "river": "River", "road": "Road", "ruins": "Ruins, fortification", "village": "Village, farm", "wood": "Woods" } },
       "Rules": { "hexNumbers": "Space numbers", "hexTip": "Space number", "settings": "Settings", "label": "Rules", "house": "House rules", "book": "Book rules", "switchTitle": "Change rules", "switchConfirm": "Switch to {rules}? The battle restarts at round 1 and current orders are cleared. Each ruleset keeps its own troop state.", "switched": "This battle now uses {rules}." },
       "TerrainBook": { "hill": "Move −10 yards; +1B against lower opponents.", "wood": "Cover +2 Defense (+5 if the name says dense).", "marsh": "Move −10 yards.", "river": "Impassable, except ford or bridge.", "ford": "Move −10 yards.", "bridge": "Move −10 yards.", "road": "Removes terrain slowdown.", "village": "Move −10 yards.", "obstacle": "Temporary fortification: +1 Defense.", "ruins": "Cover +2 Defense (wall: +5, impassable).", "landmark": "Landmark, no effect." },
@@ -607,12 +616,12 @@
         "splitAttack": "divides its dice between targets: use a free attack for each",
         "suppress": "archers: no damage (except from 2 degrees); orders on the target +3, +1 per extra degree",
         "trample": "cavalry: sprints in a straight line, attacks each enemy on the way, 5 extra damage, −1D after the first",
-        "charge": "moves and attacks with momentum (beats Shoot, loses to Hold); designate the target",
+        "charge": "moves and attacks with momentum (beats Shoot, loses to Hold); pick the target, the token reaches it on reveal",
         "attack": "moves and fights without momentum, outside the triangle; designate the target",
         "hold": "stays and defends (beats Charge); reorganizes if not attacked",
         "shoot": "shoots a visible target in range (beats Hold); designate the target",
-        "maneuver": "moves without fighting (cavalry and Light: +1 hex, flank next round)",
-        "withdraw": "falls back one hex and limits losses"
+        "maneuver": "moves without fighting (cavalry and Light: +1 space, flank next turn); choose the destination, the token moves on reveal",
+        "withdraw": "steps back one space and limits losses; choose the space, the token moves on reveal"
       },
       "PickTarget": "{name}: click the targeted troop (Esc to cancel).",
       "PickCancelled": "Targeting cancelled.",
@@ -620,9 +629,9 @@
       "ClearTarget": "Clear target",
       "NoTarget": "target to designate",
       "OfficerTitle": "Officer: {name}",
-      "OfficerHint": "The officer rolls the troop's Warfare (Tactics). Without an officer, the troop uses its own rank.",
+      "OfficerHint": "The troop rolls its own skill. Its officer grants bonus dice: 1 per 2 ranks of Warfare (Tactics counts), at least 1.",
       "OfficerButton": "Choose officer",
-      "NoOfficerRank": "no officer (rank {n})",
+      "NoOfficerRank": "no officer",
       "HelpTitle": "Quick reference",
       "HelpHowTo": "Right-click a troop: orders, target, officer, rally. An offensive order then asks you to click the targeted troop. Orders stay secret until the Narrator reveals them.",
       "TriangleLabel": "Triangle",
@@ -668,7 +677,7 @@
       "Legend": "Terrain legend",
       "LegendEmpty": "No named terrain on this map.",
       "TerrainEffect": {
-        "hill": "+1B on defense and shooting for its occupant; charging uphill: −1D.",
+        "hill": "+1B on defense and when shooting against a lower enemy; charging uphill: −1D. No effect if both are on the hill.",
         "wood": "Cavalry −1D; cover against shots (+3).",
         "marsh": "Movement −1, no Charge, cavalry −1D.",
         "river": "Impassable, except at a ford or bridge.",
@@ -700,7 +709,8 @@
         "AgainstDiscipline": "Against Discipline ({d})",
         "Cushioned": "{n} absorbed",
         "Rally": "Rally",
-        "RallyBy": "{who} rallies {name}"
+        "RallyBy": "{who} rallies {name}",
+        "RallyCount": "{n}/{max} rallies"
       },
       "Terrain": { "hill": "Hill", "obstacle": "Obstacles", "village": "Village" },
       "Mod": {
@@ -807,12 +817,12 @@
       "Flee": "flees 2 hexes",
       "Rally": "Rally",
       "RallyTitle": "Rally: {name}",
-      "RallyIntro": "Warfare (Command) test against the troop's Discipline ({d}).",
+      "RallyIntro": "Warfare (Command) test against the troop's Discipline ({d}). Rallies used: {n}/{max}.",
       "Rallier": "Who rallies",
       "RallyOk": "Rallied: {state}.",
       "RallyFail": "The rally fails.",
       "RallyFresh": "This troop is fresh.",
-      "RallyLimit": "Rally limit reached: the troop leaves the battlefield.",
+      "RallyLimit": "This troop has reached its rally limit.",
       "NoRallier": "No character with Warfare available."
     },
     "Creation": {

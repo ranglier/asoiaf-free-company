@@ -547,3 +547,16 @@ body.detached .application.afc.afc-fill.afc-dialog .window-content { max-height:
 .afc .terrain-painter .terrain-edit { margin-top: 0.5rem; padding-top: 0.4rem; border-top: 1px solid var(--afc-line); display: flex; flex-direction: column; gap: 0.3rem; }
 .afc .terrain-painter .terrain-edit-row label { flex: 1 1 auto; }
 .afc .terrain-painter input[type="color"] { width: 3rem; height: 1.8rem; padding: 0; display: block; }
+
+/* Bilan de la bataille */
+.afc-card.battle.report { display: flex; flex-direction: column; gap: 0; font-size: 13px; line-height: 1.25; }
+.afc-card.battle.report .report-head { display: flex; justify-content: space-between; align-items: baseline; gap: 0.4rem; }
+.afc-card.battle.report .report-head strong { color: var(--afc-wax); font-family: var(--afc-font-label); font-weight: normal; font-size: 15px; }
+.afc-card.battle.report small { font-size: 12px; color: var(--afc-ink-soft); }
+.afc-card.battle.report .report-side { display: flex; justify-content: space-between; gap: 0.4rem; margin-top: 0.25rem; border-bottom: 1px solid var(--afc-line); }
+.afc-card.battle.report .report-row { display: flex; align-items: center; gap: 0.3rem; }
+.afc-card.battle.report .report-row .troop { flex: 1 1 auto; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.afc-card.battle.report .report-row .state-chip { margin-left: 0; padding: 0 0.25rem; font-size: 11px; line-height: 1.3; flex: none; }
+.afc-card.battle.report .report-row .men { flex: none; min-width: 2.2em; text-align: right; }
+.afc-card.battle.report .report-row.intact { color: var(--afc-ink-soft); font-size: 12px; }
+.afc-card.battle.report button { margin-top: 0.25rem; padding: 0 0.3rem; min-height: 0; height: 1.5rem; line-height: 1.4rem; font-size: 12px; }
