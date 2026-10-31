@@ -35,7 +35,11 @@
           <select name="unitType">{{#each unitTypes as |t|}}<option value="{{t.key}}">{{t.label}} ({{localize "AFC.Table.mightShort"}} {{t.cost}})</option>{{/each}}</select>
         </label>
         <label>{{localize "AFC.Unit.count"}}<input type="number" name="count" value="1" min="1"></label>
+        <label>{{localize "AFC.Unit.unitType2"}}
+          <select name="unitType2"><option value="">{{localize "AFC.Unit.NoSecondType"}}</option>{{#each unitTypes as |t|}}<option value="{{t.key}}">{{t.label}}</option>{{/each}}</select>
+        </label>
       </div>
+      <div class="troop-traits" data-unit-skills></div>
       <div class="builder-result">
         <span>{{localize "AFC.Table.manpowerShort"}} <strong data-unit-manpower></strong> / {{manpower}} · {{localize "AFC.Table.mightShort"}} <strong data-unit-might></strong> / {{might}} · {{localize "AFC.Unit.discipline"}} <strong data-unit-discipline></strong></span>
         <span class="hint" data-unit-notes></span>

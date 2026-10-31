@@ -8,6 +8,7 @@
         <label>{{localize "AFC.Battle.UnitType"}}<select name="system.unitType"><option value=""></option>{{selectOptions types selected=system.unitType}}</select></label>
         <label>{{localize "AFC.Unit.training"}}<select name="system.training">{{selectOptions trainings selected=system.training localize=true}}</select></label>
       </div>
+      <label>{{localize "AFC.Unit.unitType2"}}<select name="system.unitType2"><option value="">{{localize "AFC.Unit.NoSecondType"}}</option>{{selectOptions types selected=system.unitType2}}</select></label>
       {{#if customImage}}{{#if editable}}<a class="add-item" data-action="resetImage"><i class="fa-solid fa-rotate-left"></i> {{localize "AFC.Battle.ResetImage"}}</a>{{/if}}{{/if}}
     </div>
   </header>
@@ -70,6 +71,13 @@
   <p class="hint">{{localize "AFC.Battle.SkillsHint"}}</p>
   <div class="book-abilities">
     {{#each bookAbilities as |a|}}<label>{{localize a.label}}<input type="number" name="system.book.abilities.{{a.key}}" value="{{a.value}}" min="1" max="9"></label>{{/each}}
+  </div>
+
+  <div class="section-title"><h2>{{localize "AFC.Unit.Upgrade.title"}}</h2></div>
+  <div class="troop-traits">
+    <label class="checkbox" data-tooltip="AFC.Unit.Upgrade.armorEffect"><input type="checkbox" name="system.upgrades.armor" {{checked system.upgrades.armor}}> {{localize "AFC.Unit.Upgrade.armor"}}</label>
+    <label class="checkbox" data-tooltip="AFC.Unit.Upgrade.meleeEffect"><input type="checkbox" name="system.upgrades.melee" {{checked system.upgrades.melee}}> {{localize "AFC.Unit.Upgrade.melee"}}</label>
+    <label class="checkbox" data-tooltip="AFC.Unit.Upgrade.shootEffect"><input type="checkbox" name="system.upgrades.shoot" {{checked system.upgrades.shoot}}> {{localize "AFC.Unit.Upgrade.shoot"}}</label>
   </div>
 
   <div class="section-title">

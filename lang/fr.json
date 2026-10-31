@@ -1170,6 +1170,11 @@
       "totals": "Total du bataillon : {men} hommes · Effectif {manpower} · Puissance {might}",
       "experience": "Expérience",
       "keyAbilities": "Compétences clés",
+      "unitType": "Type principal",
+      "unitType2": "Second type",
+      "NoSecondType": "Aucun",
+      "ChooseSkills": "3 compétences clés :",
+      "Upgrade": { "title": "Améliorations", "armor": "Armure améliorée", "melee": "Armes de mêlée améliorées", "shoot": "Armes de tir améliorées", "armorEffect": "+1 encaissement par bataille.", "meleeEffect": "+1B en mêlée.", "shootEffect": "+1B au tir.", "confirm": "{name} : {upgrade} pour {cost} de Richesse, dépensés définitivement (Richesse actuelle : {wealth}).", "pay": "Payer {cost} de Richesse", "free": "Déjà acquise, sans payer", "tooPoor": "Pas assez de Richesse." },
       "Training": {
         "support": "Soutien",
         "green": "Bleu",

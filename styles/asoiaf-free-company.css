@@ -562,3 +562,8 @@ body.detached .application.afc.afc-fill.afc-dialog .window-content { max-height:
 .afc-card.battle.report .report-row .men { flex: none; min-width: 2.4em; text-align: right; font-weight: 600; }
 .afc-card.battle.report .report-row.intact { color: var(--afc-ink-soft); font-size: 14px; border-bottom: none; }
 .afc-card.battle.report button { margin-top: 0.3rem; padding: 0 0.3rem; min-height: 0; height: 1.6rem; line-height: 1.5rem; font-size: 13px; }
+
+/* Améliorations d'une unité */
+.afc .unit-upgrades { display: flex; flex-wrap: wrap; align-items: center; gap: 0.3rem; }
+.afc .unit-upgrades button { width: auto; flex: none; }
+.afc .unit-upgrades button.active { background: var(--afc-wax); color: var(--afc-wax-text); border-color: var(--afc-wax); }

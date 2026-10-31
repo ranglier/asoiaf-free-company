@@ -3,7 +3,8 @@
  */
 import { SYSTEM_ID, UNIT_TRAININGS } from "../config.mjs";
 import { COMPANY_UNIT_TYPES, HOUSE_UNIT_TYPES } from "../catalog-data.mjs";
-import { STATE_ORDER, TRAINING_BATTLE, TROOP_STATES, TYPE_ICONS, TYPE_TRAITS } from "./battle-config.mjs";
+import { combineTypes } from "../unit-mix.mjs";
+import { mergeTraits, STATE_ORDER, TRAINING_BATTLE, TROOP_STATES, TYPE_ICONS, TYPE_TRAITS } from "./battle-config.mjs";
 
 const { DialogV2 } = foundry.applications.api;
 const loc = key => game.i18n.localize(key);
@@ -21,7 +22,7 @@ export function typeLabel(key) {
  * « Infanterie légère, Arbalétriers », cumule leurs traits). Le dernier (« Arbalétriers », « Cavalerie lourde ») donne le symbole.
  */
 export function unitTypesOf(item) {
-  if (item.system.unitType) return [item.system.unitType];
+  if (item.system.unitType) return [item.system.unitType2, item.system.unitType].filter(Boolean);
   const keys = [...Object.keys(COMPANY_UNIT_TYPES), ...Object.keys(HOUSE_UNIT_TYPES)];
   const byLabel = [...keys].sort((a, b) => typeLabel(b).length - typeLabel(a).length);
   return item.name.split(/[,(]/).map(part => part.trim().toLowerCase())
@@ -66,17 +67,18 @@ function viewPosition() {
 }
 
 /** Crée l'acteur Troupe et son jeton au centre de la vue. */
-async function createTroop({ name, side, unitType, training, men, discipline = null, traits = null, source = {}, ownership = {}, hidden = false }) {
+async function createTroop({ name, side, unitType, unitType2 = "", skillKeys = [], upgrades = {}, training, men, discipline = null, traits = null, source = {}, ownership = {}, hidden = false }) {
   if (!canvas.scene) return ui.notifications.warn(loc("AFC.Battle.NoScene"));
-  const typeData = COMPANY_UNIT_TYPES[unitType] ?? HOUSE_UNIT_TYPES[unitType] ?? {};
+  const typeOf = key => COMPANY_UNIT_TYPES[key] ?? HOUSE_UNIT_TYPES[key];
+  const typeData = typeOf(unitType) ? combineTypes(typeOf(unitType), typeOf(unitType2)) : {};
   const img = troopIcon(unitType, side);
   const actor = await Actor.create({
     name, type: "troop", img, folder: (await battleFolder()).id, ownership,
     system: {
-      side, unitType, training, men, source,
-      traits: traits ?? TYPE_TRAITS[unitType] ?? [],
+      side, unitType, unitType2, skillKeys, upgrades, training, men, source,
+      traits: traits ?? mergeTraits([unitType, unitType2]),
       discipline: discipline ?? Math.max(0, (UNIT_TRAININGS[training]?.discipline ?? 6) + (typeData.discipline ?? 0)),
-      cushion: TRAINING_BATTLE[training]?.cushion ?? 0
+      cushion: (TRAINING_BATTLE[training]?.cushion ?? 0) + (upgrades.armor ? 1 : 0)
     },
     prototypeToken: {
       name, actorLink: true, texture: { src: img }, lockRotation: true,
@@ -97,8 +99,9 @@ export async function deployUnit(owner, item) {
   const ownership = Object.fromEntries(Object.entries(owner.ownership).filter(([k]) => k !== "default"));
   ownership.default = CONST.DOCUMENT_OWNERSHIP_LEVELS.LIMITED;
   const actor = await createTroop({
-    name: item.name, side: "company", unitType: types.at(-1) ?? "", training: item.system.training,
-    traits: [...new Set(types.flatMap(t => TYPE_TRAITS[t] ?? []))],
+    name: item.name, side: "company", unitType: types.at(-1) ?? "", unitType2: types.length > 1 ? types[0] : "",
+    skillKeys: item.system.skillKeys, upgrades: item.system.upgrades, training: item.system.training,
+    traits: mergeTraits(types),
     men: item.system.totalMen, discipline: item.system.discipline, source: { actor: owner.id, item: item.id }, ownership
   });
   if (actor) ui.notifications.info(game.i18n.format("AFC.Battle.Deployed", { name: item.name }));
@@ -113,6 +116,7 @@ export async function createEnemyTroop() {
     classes: ["afc", "afc-dialog"],
     content: `<div class="afc-test-dialog">
       <label>${loc("AFC.Battle.UnitType")}<select name="type">${types}</select></label>
+      <label>${loc("AFC.Unit.unitType2")}<select name="type2"><option value="">${loc("AFC.Unit.NoSecondType")}</option>${types}</select></label>
       <label>${loc("AFC.Unit.training")}<select name="training">${trainings}</select></label>
       <label>${loc("AFC.Battle.Name")}<input type="text" name="name" placeholder="${loc("AFC.Battle.NamePlaceholder")}"></label>
       <label>${loc("AFC.Battle.Men")}<input type="number" name="men" value="100" min="0"></label>
@@ -121,14 +125,14 @@ export async function createEnemyTroop() {
       label: loc("AFC.Battle.Create"),
       callback: (ev, button) => {
         const f = button.form.elements;
-        return { type: f.type.value, training: f.training.value, name: f.name.value.trim(), men: Number(f.men.value) || 0, hidden: f.hidden.checked };
+        return { type: f.type.value, type2: f.type2.value === f.type.value ? "" : f.type2.value, training: f.training.value, name: f.name.value.trim(), men: Number(f.men.value) || 0, hidden: f.hidden.checked };
       }
     },
     rejectClose: false
   });
   if (!data) return;
   return createTroop({
-    name: data.name || typeLabel(data.type), side: "enemy", unitType: data.type, training: data.training,
+    name: data.name || typeLabel(data.type), side: "enemy", unitType: data.type, unitType2: data.type2, training: data.training,
     men: data.men, hidden: data.hidden
   });
 }

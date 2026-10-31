@@ -102,6 +102,9 @@ export function meleeMods(att, def, battle) {
     if (shock) am.push(mod(loc("AFC.Battle.Mod.shockCancels")));
     else dm.push(mod(loc("AFC.Battle.Mod.triangle"), { b: 1 }));
   }
+  // Armes de mêlée améliorées.
+  if (A.upgrades.melee) am.push(mod(loc("AFC.Unit.Upgrade.melee"), { b: 1 }));
+  if (D.upgrades.melee) dm.push(mod(loc("AFC.Unit.Upgrade.melee"), { b: 1 }));
   // Flancs : chaque troupe alliée supplémentaire au contact de l'adversaire.
   const aFlank = flankers(def, A.side, [att.id]);
   const dFlank = flankers(att, D.side, [def.id]);
@@ -155,6 +158,7 @@ export function shootMods(shooter, target, battle) {
   const cover = terrainValue(tTerrain, "cover");
   if (cover) diff.push({ label: loc("AFC.Battle.Mod.cover"), value: cover });
   if (terrainValue(sTerrain, "defense") && !terrainValue(tTerrain, "defense")) mods.push(mod(loc("AFC.Battle.Terrain.hill"), { b: 1 }));
+  if (S.upgrades.shoot) mods.push(mod(loc("AFC.Unit.Upgrade.shoot"), { b: 1 }));
   if (TRIANGLE.shoot === tOrder) mods.push(mod(loc("AFC.Battle.Mod.triangle"), { b: 1 }));
   if (weather.shoot) mods.push(mod(loc("AFC.Battle.Weather.rain"), { p: 1 }));
   if (S.state === "disordered") mods.push(mod(loc("AFC.Battle.State.disordered"), { p: 1 }));

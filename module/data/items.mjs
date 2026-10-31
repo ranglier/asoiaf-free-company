@@ -98,6 +98,15 @@ export class UnitData extends foundry.abstract.TypeDataModel {
     return {
       // Type du catalogue (traits de bataille) ; vide pour les anciennes unités (reconnu au nom).
       unitType: new fields.StringField({ blank: true }),
+      // Second type (unité mixte) et compétences clés choisies parmi celles des deux types.
+      unitType2: new fields.StringField({ blank: true }),
+      skillKeys: new fields.ArrayField(new fields.StringField()),
+      // Améliorations d'équipement (1 point de Richesse par unité, une fois chacune).
+      upgrades: new fields.SchemaField({
+        armor: new fields.BooleanField({ initial: false }),
+        melee: new fields.BooleanField({ initial: false }),
+        shoot: new fields.BooleanField({ initial: false })
+      }),
       training: new fields.StringField({ initial: "green", choices: Object.keys(UNIT_TRAININGS) }),
       classes: new fields.StringField({ initial: "I" }),
       mightCost: int(1, { min: 0 }),

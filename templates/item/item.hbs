@@ -56,6 +56,8 @@
     {{/if}}
 
     {{#if (eq item.type "unit")}}
+    <label>{{localize "AFC.Unit.unitType"}}<select name="system.unitType"><option value=""></option>{{selectOptions unitTypes selected=system.unitType}}</select></label>
+    <label>{{localize "AFC.Unit.unitType2"}}<select name="system.unitType2"><option value="">{{localize "AFC.Unit.NoSecondType"}}</option>{{selectOptions unitTypes selected=system.unitType2}}</select></label>
     <label>{{localize "AFC.Unit.training"}}<select name="system.training">{{selectOptions unitTrainings selected=system.training localize=true}}</select></label>
     <label>{{localize "AFC.Unit.classes"}}<input type="text" name="system.classes" value="{{system.classes}}"></label>
     <label>{{localize "AFC.Unit.mightCost"}}<input type="number" name="system.mightCost" value="{{system.mightCost}}" min="0"></label>
@@ -65,6 +67,10 @@
     <label>{{localize "AFC.Unit.experience"}}<input type="number" name="system.experience" value="{{system.experience}}" min="0"></label>
     <label class="wide">{{localize "AFC.Unit.keyAbilities"}}<input type="text" name="system.keyAbilities" value="{{system.keyAbilities}}"></label>
     <p class="wide derived">{{localize "AFC.Unit.totals" men=system.totalMen manpower=system.totalManpower might=system.totalMight}}</p>
+    <div class="wide unit-upgrades">
+      <b>{{localize "AFC.Unit.Upgrade.title"}}</b>
+      {{#each unitUpgrades as |u|}}<button type="button" class="small {{#if u.on}}active{{/if}}" data-action="upgrade" data-upgrade="{{u.key}}" data-tooltip="{{u.effect}}">{{#if u.on}}<i class="fa-solid fa-check"></i> {{/if}}{{localize u.label}}</button>{{/each}}
+    </div>
     <p class="wide derived">{{localize "AFC.Unit.manpowerCost"}} : {{system.manpowerCost}} · {{localize "AFC.Unit.discipline"}} : {{system.discipline}}</p>
     {{/if}}
   </section>

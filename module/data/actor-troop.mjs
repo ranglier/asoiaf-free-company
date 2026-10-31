@@ -16,6 +16,13 @@ export default class TroopData extends foundry.abstract.TypeDataModel {
     return {
       side: new fields.StringField({ initial: "enemy", choices: ["company", "enemy"] }),
       unitType: new fields.StringField({ blank: true }),
+      unitType2: new fields.StringField({ blank: true }),
+      skillKeys: new fields.ArrayField(new fields.StringField()),
+      upgrades: new fields.SchemaField({
+        armor: new fields.BooleanField({ initial: false }),
+        melee: new fields.BooleanField({ initial: false }),
+        shoot: new fields.BooleanField({ initial: false })
+      }),
       training: new fields.StringField({ initial: "trained", choices: Object.keys(UNIT_TRAININGS) }),
       traits: new fields.ArrayField(new fields.StringField({ choices: TRAITS })),
       // Discipline du livre : difficulté pour rallier ou réorganiser (plus bas = mieux).
@@ -54,7 +61,7 @@ export default class TroopData extends foundry.abstract.TypeDataModel {
 
   prepareDerivedData() {
     const t = TRAINING_BATTLE[this.training] ?? TRAINING_BATTLE.trained;
-    this.cushionMax = t.cushion;
+    this.cushionMax = t.cushion + (this.upgrades.armor ? 1 : 0);
     this.ralliesMax = t.cushion + 1;
     this.has = Object.fromEntries(this.traits.map(k => [k, true]));
     // Compétences de l'unité (type + entraînement) : Corps à corps en mêlée, Tir ou Athlétisme (armes de jet) au tir.

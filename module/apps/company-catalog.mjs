@@ -1,4 +1,5 @@
 import { ABILITIES, SERVICE_SIZES, SYSTEM_ID, UNIT_TRAININGS } from "../config.mjs";
+import { bindSkillChoice, combineTypes } from "../unit-mix.mjs";
 import { COMPANY_SERVICES, COMPANY_UNIT_TYPES, UNLIMITED_SERVICE_CATEGORIES } from "../catalog-data.mjs";
 
 const { HandlebarsApplicationMixin, ApplicationV2 } = foundry.applications.api;
@@ -88,7 +89,9 @@ export class CompanyCatalog extends HandlebarsApplicationMixin(ApplicationV2) {
   _onRender(context, options) {
     super._onRender(context, options);
     const root = this.element;
+    this.skillChoice = bindSkillChoice(root, COMPANY_UNIT_TYPES);
     const refresh = () => {
+      this.skillChoice.update();
       const u = this.#readUnit();
       root.querySelector("[data-unit-manpower]").textContent = u.totalManpower;
       root.querySelector("[data-unit-might]").textContent = u.totalMight;
@@ -106,11 +109,14 @@ export class CompanyCatalog extends HandlebarsApplicationMixin(ApplicationV2) {
     const typeKey = root.querySelector('[name="unitType"]').value;
     const count = Math.max(1, Number(root.querySelector('[name="count"]')?.value) || 1);
     const type = COMPANY_UNIT_TYPES[typeKey];
+    const type2Key = root.querySelector('[name="unitType2"]').value;
+    const second = type2Key && type2Key !== typeKey ? COMPANY_UNIT_TYPES[type2Key] : null;
+    const mix = combineTypes(type, second);
     const t = UNIT_TRAININGS[training];
     const notes = [];
     // Maîtres équestres : −1 au coût en Puissance des unités montées.
-    let might = type.cost;
-    if (type.mounted && this.#hasCategory("horses")) {
+    let might = mix.cost;
+    if (mix.mounted && this.#hasCategory("horses")) {
       might = Math.max(0, might - 1);
       notes.push(loc("AFC.CompanyCatalog.NoteHorseMasters"));
     }
@@ -121,9 +127,9 @@ export class CompanyCatalog extends HandlebarsApplicationMixin(ApplicationV2) {
     if (typeKey === "volunteers" || typeKey === "special") notes.push(loc("AFC.CompanyCatalog.NoteSpecial"));
     // La discipline ne descend jamais sous Élémentaire (0).
     return {
-      training, typeKey, type, notes, count, might,
+      training, typeKey, type, type2Key, second, mix, notes, count, might,
       manpower: t.manpower, totalManpower: t.manpower * count, totalMight: might * count,
-      discipline: Math.max(0, t.discipline + type.discipline)
+      discipline: Math.max(0, t.discipline + mix.discipline)
     };
   }
 
@@ -145,14 +151,16 @@ export class CompanyCatalog extends HandlebarsApplicationMixin(ApplicationV2) {
 
   static async #onAddUnit() {
     const u = this.#readUnit();
-    const name = `${loc(`AFC.CompanyCatalog.UnitType.${u.typeKey}`)} (${loc(UNIT_TRAININGS[u.training].label).toLowerCase()})${u.count > 1 ? ` ×${u.count}` : ""}`;
+    const typeName = key => loc(`AFC.CompanyCatalog.UnitType.${key}`);
+    const name = `${typeName(u.typeKey)}${u.second ? ` + ${typeName(u.type2Key)}` : ""} (${loc(UNIT_TRAININGS[u.training].label).toLowerCase()})${u.count > 1 ? ` ×${u.count}` : ""}`;
     await this.actor.createEmbeddedDocuments("Item", [{
       name, type: "unit",
       system: {
         unitType: u.typeKey,
-        training: u.training, mightCost: u.might, disciplineMod: u.type.discipline,
-        classes: u.type.classes, men: u.type.men ?? 100, count: u.count,
-        keyAbilities: u.type.abilities.map(a => loc(ABILITIES[a].label)).join(", "),
+        training: u.training, mightCost: u.might, disciplineMod: u.mix.discipline,
+        unitType2: u.second ? u.type2Key : "", skillKeys: u.second ? this.skillChoice.read() : [],
+        classes: u.mix.classes, men: u.mix.men, count: u.count,
+        keyAbilities: (u.second ? this.skillChoice.read() : u.type.abilities).map(a => loc(ABILITIES[a].label)).join(", "),
         experience: UNIT_TRAININGS[u.training].experience,
         description: u.notes.length ? `<p>${u.notes.join("</p><p>")}</p>` : ""
       }

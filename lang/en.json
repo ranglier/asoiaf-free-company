@@ -1162,6 +1162,11 @@
       "totals": "Battalion total: {men} men · Manpower {manpower} · Might {might}",
       "experience": "Experience",
       "keyAbilities": "Key abilities",
+      "unitType": "Main type",
+      "unitType2": "Second type",
+      "NoSecondType": "None",
+      "ChooseSkills": "3 key abilities:",
+      "Upgrade": { "title": "Upgrades", "armor": "Upgraded armor", "melee": "Upgraded melee weapons", "shoot": "Upgraded ranged weapons", "armorEffect": "+1 cushion per battle.", "meleeEffect": "+1B in melee.", "shootEffect": "+1B when shooting.", "confirm": "{name}: {upgrade} for {cost} Wealth, spent permanently (current Wealth: {wealth}).", "pay": "Pay {cost} Wealth", "free": "Already owned, no payment", "tooPoor": "Not enough Wealth." },
       "Training": {
         "support": "Support",
         "green": "Green",

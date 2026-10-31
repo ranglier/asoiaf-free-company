@@ -1,4 +1,5 @@
 import { ABILITIES, SYSTEM_ID, UNIT_TRAININGS } from "../config.mjs";
+import { bindSkillChoice, combineTypes } from "../unit-mix.mjs";
 import {
   COMMUNITIES, FEATURES, HOLDINGS, HOUSE_UNIT_TRAINING_COSTS, HOUSE_UNIT_TYPES, MERCENARY_WEALTH, TERRAINS
 } from "../catalog-data.mjs";
@@ -85,7 +86,9 @@ export class HoldingCatalog extends HandlebarsApplicationMixin(ApplicationV2) {
   _onRender(context, options) {
     super._onRender(context, options);
     const root = this.element;
+    this.skillChoice = bindSkillChoice(root, HOUSE_UNIT_TYPES);
     const refresh = () => {
+      this.skillChoice.update();
       const domain = this.#readDomain();
       root.querySelector("[data-domain-cost]").textContent = domain.cost;
       root.querySelector("[data-domain-name]").textContent = domain.name;
@@ -117,15 +120,18 @@ export class HoldingCatalog extends HandlebarsApplicationMixin(ApplicationV2) {
     const typeKey = root.querySelector('[name="unitType"]').value;
     const count = Math.max(1, Number(root.querySelector('[name="count"]')?.value) || 1);
     const type = HOUSE_UNIT_TYPES[typeKey];
+    const type2Key = root.querySelector('[name="unitType2"]').value;
+    const second = type2Key && type2Key !== typeKey ? HOUSE_UNIT_TYPES[type2Key] : null;
+    const mix = combineTypes(type, second);
     const notes = [];
     if (typeKey === "peasants") notes.push(loc("AFC.Catalog.NotePeasants"));
     if (typeKey === "mercenaries") notes.push(game.i18n.format("AFC.Catalog.NoteMercenaries", { n: MERCENARY_WEALTH[training] }));
     if (typeKey === "warships") notes.push(loc("AFC.Catalog.NoteWarships"));
     if (typeKey === "garrison") notes.push(loc("AFC.Catalog.NoteGarrison"));
-    const cost = HOUSE_UNIT_TRAINING_COSTS[training] + type.cost;
+    const cost = HOUSE_UNIT_TRAINING_COSTS[training] + mix.cost;
     return {
-      training, typeKey, type, notes, count, cost, totalCost: cost * count,
-      discipline: Math.max(0, UNIT_TRAININGS[training].discipline + type.discipline)
+      training, typeKey, type, type2Key, second, mix, notes, count, cost, totalCost: cost * count,
+      discipline: Math.max(0, UNIT_TRAININGS[training].discipline + mix.discipline)
     };
   }
 
@@ -159,14 +165,16 @@ export class HoldingCatalog extends HandlebarsApplicationMixin(ApplicationV2) {
 
   static async #onAddUnit() {
     const u = this.#readUnit();
-    const name = `${loc(`AFC.Catalog.UnitType.${u.typeKey}`)} (${loc(UNIT_TRAININGS[u.training].label).toLowerCase()})${u.count > 1 ? ` ×${u.count}` : ""}`;
+    const typeName = key => loc(`AFC.Catalog.UnitType.${key}`);
+    const name = `${typeName(u.typeKey)}${u.second ? ` + ${typeName(u.type2Key)}` : ""} (${loc(UNIT_TRAININGS[u.training].label).toLowerCase()})${u.count > 1 ? ` ×${u.count}` : ""}`;
     await this.actor.createEmbeddedDocuments("Item", [{
       name, type: "unit",
       system: {
         unitType: u.typeKey,
-        training: u.training, mightCost: u.cost, disciplineMod: u.type.discipline,
-        classes: u.type.classes, men: u.type.men ?? 100, count: u.count,
-        keyAbilities: u.type.abilities.map(a => loc(ABILITIES[a].label)).join(", "),
+        training: u.training, mightCost: u.cost, disciplineMod: u.mix.discipline,
+        unitType2: u.second ? u.type2Key : "", skillKeys: u.second ? this.skillChoice.read() : [],
+        classes: u.mix.classes, men: u.mix.men, count: u.count,
+        keyAbilities: (u.second ? this.skillChoice.read() : u.type.abilities).map(a => loc(ABILITIES[a].label)).join(", "),
         experience: UNIT_TRAININGS[u.training].experience,
         description: u.notes.length ? `<p>${u.notes.join("</p><p>")}</p>` : ""
       }

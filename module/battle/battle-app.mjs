@@ -106,7 +106,10 @@ export class BattleApp extends HandlebarsApplicationMixin(ApplicationV2) {
         overload: officer && officerLoad[unit.officer] > commandMax(unit.officer) ? commandMax(unit.officer) : 0,
         cushion: s.cushion, cushionMax: s.cushionMax, disorders: s.disorders, rallies: s.rallies, ralliesMax: s.ralliesMax,
         move: s.move, range: s.range, melee: s.melee, shootRank: s.shootRank,
-        traits: s.traits.map(k => ({ name: loc(`AFC.Battle.Trait.${k}.name`), effect: loc(`AFC.Battle.Trait.${k}.effect`) })),
+        traits: [
+          ...s.traits.map(k => ({ name: loc(`AFC.Battle.Trait.${k}.name`), effect: loc(`AFC.Battle.Trait.${k}.effect`) })),
+          ...["armor", "melee", "shoot"].filter(k => s.upgrades[k]).map(k => ({ name: loc(`AFC.Unit.Upgrade.${k}`), effect: loc(`AFC.Unit.Upgrade.${k}Effect`) }))
+        ],
         canRally: mine && !["fresh", "destroyed"].includes(s.state)
       };
     };

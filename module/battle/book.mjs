@@ -5,7 +5,7 @@
  * pouvoir écrire sur la scène et sur les troupes adverses. Rien à décider pour lui : la carte tombe.
  */
 import { SYSTEM_ID } from "../config.mjs";
-import { COMPANY_UNIT_TYPES, HOUSE_UNIT_TYPES } from "../catalog-data.mjs";
+import { defaultSkillKeys } from "../unit-mix.mjs";
 import { specialtyBonus } from "../data/actor-character.mjs";
 import { rollDice } from "../dice/test-roll.mjs";
 import {
@@ -58,16 +58,15 @@ const activeTroops = (side, scene) => sideTroops(side, scene).filter(t => t.acto
 /** Compétences et équipement du livre, d'après le type et l'entraînement de la troupe. */
 export function bookDataFor(system) {
   const map = BOOK_TYPE_MAP[system.unitType] ?? { type: "infantry" };
-  const listed = (COMPANY_UNIT_TYPES[system.unitType] ?? HOUSE_UNIT_TYPES[system.unitType])?.abilities;
-  // Pas de compétences clés : combattant ordinaire (type Spéciale : « trois au choix », à ajuster sur la fiche), sauf le Soutien.
-  const keys = listed?.length || system.unitType === "support" ? listed : ["fighting", "endurance", "athletics"];
+  // Sans compétences clés (type Spéciale : « trois au choix »), combattant ordinaire, à ajuster sur la fiche.
+  const keys = system.skillKeys?.length ? system.skillKeys : defaultSkillKeys(system.unitType, system.unitType2);
   const open = BOOK_ABILITY_PRIORITY.filter(k => keys.includes(k));
   const abilities = Object.fromEntries(BOOK_ABILITIES.map(k => [k, 2]));
   const upgrades = BOOK_UPGRADES[system.training] ?? 3;
   // Un Bleu n'a qu'un rang à placer : il va à sa dernière compétence clé, son métier reste à 2.
   if (system.training === "green" && open.length) abilities[open.at(-1)] += 1;
   else for (let i = 0; i < upgrades && open.length; i++) abilities[open[i % open.length]] += 1;
-  return { ready: true, v: TROOP_STATS_VERSION, type: map.type, abilities, upArmor: !!map.armor, upFight: !!map.fight, upShoot: !!map.shoot };
+  return { ready: true, v: TROOP_STATS_VERSION, type: map.type, abilities, upArmor: !!map.armor || !!system.upgrades?.armor, upFight: !!map.fight || !!system.upgrades?.melee, upShoot: !!map.shoot || !!system.upgrades?.shoot };
 }
 
 export function prepareBookTroop(actor, { force = false } = {}) {

@@ -67,6 +67,14 @@ export const TYPE_TRAITS = {
   peasants: ["green"]
 };
 
+/** Traits d'une unité à un ou deux types : une arme de tir remplace les armes de jet, l'armure lourde exclut Léger. */
+export function mergeTraits(types) {
+  const traits = new Set(types.flatMap(t => TYPE_TRAITS[t] ?? []));
+  if (traits.has("bows") || traits.has("crossbows") || traits.has("slings")) traits.delete("javelins");
+  if (traits.has("heavyArmor")) traits.delete("light");
+  return [...traits];
+}
+
 /** Image du jeton selon le type d'unité. */
 export const TYPE_ICONS = {
   heavyInfantry: "heavy", personalGuard: "heavy", hedgeKnights: "heavy", garrison: "heavy", infantry: "infantry",

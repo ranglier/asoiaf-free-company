@@ -2,7 +2,7 @@
  * Fiche de Troupe : type, entraînement, traits, état et compteurs de bataille.
  */
 import { SYSTEM_ID, UNIT_TRAININGS } from "../config.mjs";
-import { STATE_ORDER, TRAITS, TROOP_STATES, TYPE_TRAITS } from "../battle/battle-config.mjs";
+import { mergeTraits, STATE_ORDER, TRAITS, TROOP_STATES, TYPE_TRAITS } from "../battle/battle-config.mjs";
 import { BOOK_ABILITIES, BOOK_EQUIPMENT, BOOK_FORMATIONS, BOOK_STATUS } from "../battle/book-config.mjs";
 import { prepareBookTroop } from "../battle/book.mjs";
 import { isBook } from "../battle/rules.mjs";
@@ -50,6 +50,10 @@ export class TroopSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   /** Cases à cocher des traits -> liste. */
   _processFormData(event, form, formData) {
     const data = super._processFormData(event, form, formData);
+    // Armure améliorée cochée ou décochée : la réserve d'encaissement suit.
+    const armor = foundry.utils.getProperty(data, "system.upgrades.armor");
+    const s = this.document.system;
+    if (armor !== undefined && armor !== s.upgrades.armor) foundry.utils.setProperty(data, "system.cushion", Math.max(0, s.cushion + (armor ? 1 : -1)));
     // Règles du livre : la fiche n'affiche pas les traits, on n'y touche pas.
     if (!form.elements[`trait.${TRAITS[0]}`]) return data;
     const traits = TRAITS.filter(k => form.elements[`trait.${k}`]?.checked);
@@ -76,6 +80,7 @@ export class TroopSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
 
   /** Traits par défaut du type d'unité. */
   static #onResetTraits() {
-    return this.document.update({ "system.traits": TYPE_TRAITS[this.document.system.unitType] ?? [] });
+    const s = this.document.system;
+    return this.document.update({ "system.traits": mergeTraits([s.unitType, s.unitType2]) });
   }
 }
