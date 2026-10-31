@@ -14,6 +14,7 @@ import { TroopSheet } from "./module/sheets/troop-sheet.mjs";
 import { BattleApp } from "./module/battle/battle-app.mjs";
 import { prepareBookTroop } from "./module/battle/book.mjs";
 import { isBook } from "./module/battle/rules.mjs";
+import { TerrainPainter } from "./module/battle/terrain.mjs";
 import { onRenderBattleCard } from "./module/battle/engagement.mjs";
 import { migrateBattle, registerBattleSocket } from "./module/battle/state.mjs";
 import { renderBattleBar } from "./module/battle/bar.mjs";
@@ -104,6 +105,7 @@ Hooks.on("updateScene", (scene, changes) => {
   renderBattleBar();
 });
 Hooks.on("canvasReady", () => {
+  TerrainPainter.refresh();
   migrateBattle();
   drawHexNumbers();
   BattleApp.refresh();
@@ -115,6 +117,7 @@ Hooks.on("canvasReady", () => {
 // Noms sur la carte et légende : suivent les régions (un passage découvert apparaît aussitôt).
 for (const hook of ["createRegion", "updateRegion", "deleteRegion"]) {
   Hooks.on(hook, () => {
+    TerrainPainter.refresh();
     drawRegionLabels();
     renderBattleBar();
   });

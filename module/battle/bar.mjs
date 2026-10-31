@@ -4,7 +4,7 @@
  * peut faire. Affichée seulement sur une scène qui contient des troupes.
  */
 import { bookBar, onBookBar } from "./book.mjs";
-import { endTurn, plannedEngagements, resolvePlanned, revealOrders, terrainKeyOf } from "./engagement.mjs";
+import { endTurn, plannedEngagements, resolvePlanned, regionTerrainKey, revealOrders } from "./engagement.mjs";
 import { visibleRegions } from "./map.mjs";
 import { isBook } from "./rules.mjs";
 import { canCommand, getBattle, unitOf } from "./state.mjs";
@@ -18,7 +18,7 @@ let legendOpen = false;
 /** Légende : couleur, nom et effet de chaque terrain de la scène (un nom inconnu est un simple repère). */
 function legendHTML(scene) {
   const rows = visibleRegions(scene).map(r => {
-    const key = terrainKeyOf(r.name);
+    const key = regionTerrainKey(r);
     return `<li><span class="swatch" style="background:${r.color?.css ?? "transparent"}"></span><b>${esc(r.name)}</b>
       <small>${esc(loc(`AFC.Battle.${isBook(scene) ? "TerrainBook" : "TerrainEffect"}.${key ?? "landmark"}`))}</small></li>`;
   }).join("");

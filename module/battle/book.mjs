@@ -12,7 +12,7 @@ import {
   BOOK_ABILITY_PRIORITY, BOOK_ATTACHED_DAMAGE, BOOK_FORMATIONS, BOOK_ORDERS, BOOK_STATUS_CHIP, BOOK_SURVIVORS,
   BOOK_TERRAINS, BOOK_TYPE_MAP, BOOK_UPGRADES, BOOK_WEATHER, BOOK_ABILITIES, bookGlory
 } from "./book-config.mjs";
-import { adjacent, center, distance, terrainKeyOf } from "./engagement.mjs";
+import { adjacent, center, distance, regionTerrainKey } from "./engagement.mjs";
 import { hexNumber, startTargetPick } from "./map.mjs";
 import { gmHandlers, getBattle, requestGM, resetOrders, saveBattle, unitOf } from "./state.mjs";
 import { isBook } from "./rules.mjs";
@@ -170,8 +170,8 @@ export async function chooseCommanders() {
 const pointKeys = (scene, point) => {
   const keys = new Set(), names = [];
   for (const region of scene.regions) {
-    const key = terrainKeyOf(region.name);
-    if (key && region.testPoint({ ...point, elevation: 0 })) { keys.add(key); names.push(region.name); }
+    const key = regionTerrainKey(region);
+    if (key && region.testPoint({ ...point, elevation: 0 })) { keys.add(key); names.push({ key, name: region.name }); }
   }
   return { keys: [...keys], names };
 };
@@ -183,7 +183,7 @@ function terrainCover(token) {
   return Math.max(0, ...keys.map(k => {
     const t = BOOK_TERRAINS[k];
     if (!t?.cover) return 0;
-    return t.dense && names.some(n => terrainKeyOf(n) === k && t.dense.test(n)) ? t.denseCover : t.cover;
+    return t.dense && names.some(n => n.key === k && t.dense.test(n.name)) ? t.denseCover : t.cover;
   }));
 }
 
@@ -270,7 +270,7 @@ function passable(offset, scene) {
   if (!canvas.dimensions.sceneRect.contains(point.x, point.y)) return false;
   const { keys, names } = pointKeys(scene, point);
   const crossing = keys.includes("ford") || keys.includes("bridge");
-  return crossing || !keys.some(k => BOOK_TERRAINS[k]?.blocks || (BOOK_TERRAINS[k]?.wallBlocks && names.some(n => BOOK_TERRAINS[k].dense.test(n))));
+  return crossing || !keys.some(k => BOOK_TERRAINS[k]?.blocks || (BOOK_TERRAINS[k]?.wallBlocks && names.some(n => n.key === k && BOOK_TERRAINS[k].dense.test(n.name))));
 }
 function placeAt(token, offset) {
   const point = canvas.grid.getCenterPoint(offset);

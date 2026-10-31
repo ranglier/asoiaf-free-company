@@ -1,0 +1,34 @@
+<div class="afc-sheet parchment terrain-painter">
+  <p class="hint">{{localize "AFC.Battle.Painter.Hint"}}</p>
+
+  <ul class="terrain-list">
+    {{#each rows as |r|}}
+    <li class="{{#if r.active}}active{{/if}}" data-action="pick" data-region="{{r.id}}">
+      <span class="swatch" style="background:{{r.color}}"></span>
+      <b>{{r.name}}</b>
+      <small>{{r.cells}}</small>
+      {{#if r.active}}<i class="fa-solid fa-paintbrush"></i>{{/if}}
+    </li>
+    {{else}}
+    <li class="hint">{{localize "AFC.Battle.Painter.None"}}</li>
+    {{/each}}
+  </ul>
+
+  <div class="terrain-new">
+    <select name="newType">{{selectOptions types selected=newType localize=true}}</select>
+    <button type="button" data-action="create"><i class="fa-solid fa-plus"></i> {{localize "AFC.Battle.Painter.New"}}</button>
+  </div>
+
+  {{#if region}}
+  <section class="terrain-edit">
+    <label>{{localize "AFC.Battle.Painter.Name"}}<input type="text" name="name" value="{{region.name}}"></label>
+    <div class="terrain-edit-row">
+      <label>{{localize "AFC.Battle.Painter.TypeLabel"}}<select name="type">{{selectOptions types selected=region.key localize=true}}</select></label>
+      <label>{{localize "AFC.Battle.Painter.Color"}}<input type="color" name="color" value="{{region.color}}"></label>
+    </div>
+    <p class="hint">{{region.effect}}</p>
+    <label class="checkbox"><input type="checkbox" name="secret" {{checked region.secret}}> {{localize "AFC.Battle.Painter.Secret"}}</label>
+    <button type="button" data-action="remove"><i class="fa-solid fa-trash"></i> {{localize "AFC.Battle.Painter.Delete"}}</button>
+  </section>
+  {{/if}}
+</div>

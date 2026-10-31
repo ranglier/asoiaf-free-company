@@ -25,12 +25,19 @@ export const center = token => ({ x: token._source.x + (token.width * canvas.gri
 /** Terrain reconnu au nom d'une région (sinon, simple repère sans effet). */
 export const terrainKeyOf = name => Object.entries(TERRAINS).find(([, t]) => t.match.test(name))?.[0];
 
+/** Terrain d'une région : son type (panneau des terrains), sinon reconnu à son nom. Un repère n'a pas d'effet. */
+export function regionTerrainKey(region) {
+  const type = region.getFlag(SYSTEM_ID, "terrain");
+  if (type) return type === "landmark" ? undefined : type;
+  return terrainKeyOf(region.name);
+}
+
 /** Terrains de la case d'un jeton (régions de la scène reconnues à leur nom). */
 export function terrainAt(token) {
   const point = { ...center(token), elevation: 0 };
   const keys = new Set();
   for (const region of token.parent.regions) {
-    const key = terrainKeyOf(region.name);
+    const key = regionTerrainKey(region);
     if (key && region.testPoint(point)) keys.add(key);
   }
   return [...keys];

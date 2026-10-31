@@ -6,6 +6,7 @@ import { SYSTEM_ID } from "../config.mjs";
 import { ORDERS, TRIANGLE, TROOP_STATES, WEATHER } from "./battle-config.mjs";
 import { bookContext, bookReport, chooseCommanders, freeAttack, giveBookOrder, nextStep, resetBook, switchRules } from "./book.mjs";
 import { battleRules, isBook, RULES } from "./rules.mjs";
+import { TerrainPainter } from "./terrain.mjs";
 import { battleReport, endTurn, orderLabel, plannedEngagements, rallyTroop, resolveMelee, resolvePlanned, resolveShoot, revealOrders } from "./engagement.mjs";
 import { chooseOfficer, giveOrder, hexNumber, hexNumbersOn, ORDER_ICONS, orderVisible, startTargetPick, TARGETED_ORDERS } from "./map.mjs";
 import { canCommand, clearBattle, getBattle, saveBattle, setUnit, unitOf } from "./state.mjs";
@@ -45,6 +46,7 @@ export class BattleApp extends HandlebarsApplicationMixin(ApplicationV2) {
       openTroop: BattleApp.#onOpenTroop,
       bookNext: BattleApp.#onBookNext,
       bookCommanders: BattleApp.#onBookCommanders,
+      terrainPainter: BattleApp.#onTerrainPainter,
       bookFree: BattleApp.#onBookFree
     }
   };
@@ -247,6 +249,7 @@ export class BattleApp extends HandlebarsApplicationMixin(ApplicationV2) {
     return resolvePlanned({ from, to, shoot: shoot === "true" });
   }
 
+  static #onTerrainPainter() { return TerrainPainter.open(); }
   static #onBookNext() { return nextStep(); }
   static #onBookCommanders() { return chooseCommanders(); }
   static #onBookFree() { const p = BattleApp.#pair(); return p && freeAttack(...p); }
