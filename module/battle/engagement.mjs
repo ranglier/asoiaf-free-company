@@ -531,7 +531,7 @@ function troopFacts(s, stat = {}) {
   return facts.join(" · ");
 }
 
-/** Bilan compact : qui l'emporte, pertes par camp, une ligne par troupe touchée (ses faits d'armes au survol). Réservé au MJ jusqu'à publication. */
+/** Bilan compact : pertes par camp, une ligne par troupe touchée (ses faits d'armes au survol). Réservé au MJ jusqu'à publication. */
 export async function battleReport() {
   const battle = getBattle();
   const troops = canvas.scene.tokens.filter(t => t.actor?.type === "troop" && !t.hidden);
@@ -545,17 +545,13 @@ export async function battleReport() {
       const s = t.actor.system;
       return { name: t.name, state: s.state, stateLabel: loc(TROOP_STATES[s.state].label), loss: s.loss, lostMen: s.lostMen, facts: troopFacts(s, battle.stats?.[t.id]) };
     }).sort((a, b) => b.loss - a.loss || b.lostMen - a.lostMen);
-    return { label: loc(`AFC.Battle.Side.${key}`), men, lost, pct, rows, intact: list.length - touched.length, broken: list.filter(t => t.actor.system.stateIndex >= 3).length };
+    const intact = list.length - touched.length;
+    return { key, label: loc(`AFC.Battle.Side.${key}`), men, lost, pct, rows, intact: intact ? fmt(intact === 1 ? "AFC.Battle.ReportCard.Intact1" : "AFC.Battle.ReportCard.IntactN", { n: intact }) : "" };
   });
-  const [us, them] = sides;
-  // Un camp prend l'avantage par ses pertes, à 5 points d'écart au moins, ou par les troupes qu'il a brisées.
-  const gap = (them.pct + them.broken * 5) - (us.pct + us.broken * 5);
-  const verdict = gap >= 5 ? fmt("AFC.Battle.ReportCard.Advantage", { side: us.label })
-    : gap <= -5 ? fmt("AFC.Battle.ReportCard.Advantage", { side: them.label }) : loc("AFC.Battle.ReportCard.Undecided");
   return ChatMessage.create({
     whisper: ChatMessage.getWhisperRecipients("GM"),
     content: await renderCard("battle-report", {
-      rounds: Math.max(1, battle.round - (battle.revealed ? 0 : 1)), verdict, sides
+      rounds: Math.max(1, battle.round - (battle.revealed ? 0 : 1)), sides
     })
   });
 }

@@ -573,7 +573,7 @@
 ,
     "Battle": {
       "Moves": { "Button": "Choose the destination", "Pick": "{name}: click the destination space (the troop itself to stay put, Esc to cancel).", "Nowhere": "{name} has nowhere to go.", "OutOfRange": "Space out of range.", "NeedTarget": "Pick the target first.", "NotReached": "{a} does not reach {d} this turn.", "Locked": "During orders, your troops move through their order: they will move on reveal." },
-      "ReportCard": { "Rounds": "{n} turns", "Lost": "{lost} men lost out of {men} ({pct}%)", "NoLoss": "no losses", "Advantage": "Advantage: {side}", "Undecided": "Undecided", "Won1": "{n} melee won", "WonN": "{n} melees won", "Lost1": "{n} lost", "LostN": "{n} lost", "Shots": "{hits}/{shots} shots hit", "Rally1": "{n} rally", "RallyN": "{n} rallies", "Disorder1": "{n} disorder", "DisorderN": "{n} disorders", "Best": "Feat of arms: {name}, {n} states inflicted", "Intact": "{n} unscathed", "Publish": "Show to players" },
+      "ReportCard": { "Title": "Report", "Rounds": "{n} turns", "Lost": "−{lost} of {men} · {pct}%", "NoLoss": "no losses", "Advantage": "Advantage: {side}", "Undecided": "Undecided", "Won1": "{n} melee won", "WonN": "{n} melees won", "Lost1": "{n} lost", "LostN": "{n} lost", "Shots": "{hits}/{shots} shots hit", "Rally1": "{n} rally", "RallyN": "{n} rallies", "Disorder1": "{n} disorder", "DisorderN": "{n} disorders", "Best": "Feat of arms: {name}, {n} states inflicted", "Intact1": "{n} troop unscathed", "IntactN": "{n} troops unscathed", "Publish": "Show to players" },
       "Skills": "Skills",
       "SkillsHint": "From type and training. Fighting is used in melee; Marksmanship when shooting (Athletics for thrown weapons). The others serve the rolls the GM asks for.",
       "ChangeImage": "Change image",

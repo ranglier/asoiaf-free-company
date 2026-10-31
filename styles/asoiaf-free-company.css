@@ -549,14 +549,16 @@ body.detached .application.afc.afc-fill.afc-dialog .window-content { max-height:
 .afc .terrain-painter input[type="color"] { width: 3rem; height: 1.8rem; padding: 0; display: block; }
 
 /* Bilan de la bataille */
-.afc-card.battle.report { display: flex; flex-direction: column; gap: 0; font-size: 13px; line-height: 1.25; }
+.afc-card.battle.report { display: flex; flex-direction: column; gap: 0; font-size: 15px; line-height: 1.3; }
 .afc-card.battle.report .report-head { display: flex; justify-content: space-between; align-items: baseline; gap: 0.4rem; }
-.afc-card.battle.report .report-head strong { color: var(--afc-wax); font-family: var(--afc-font-label); font-weight: normal; font-size: 15px; }
-.afc-card.battle.report small { font-size: 12px; color: var(--afc-ink-soft); }
-.afc-card.battle.report .report-side { display: flex; justify-content: space-between; gap: 0.4rem; margin-top: 0.25rem; border-bottom: 1px solid var(--afc-line); }
-.afc-card.battle.report .report-row { display: flex; align-items: center; gap: 0.3rem; }
+.afc-card.battle.report .report-head strong { font-family: var(--afc-font-label); font-weight: normal; font-size: 19px; line-height: 1.2; color: var(--afc-wax); }
+.afc-card.battle.report .report-head small { font-size: 14px; color: var(--afc-ink-soft); }
+.afc-card.battle.report .report-side { display: flex; justify-content: space-between; align-items: baseline; gap: 0.4rem; margin-top: 0.35rem; padding: 0.05rem 0.3rem; border-left: 4px solid #2f6ea5; background: var(--afc-paper-light); font-size: 14px; }
+.afc-card.battle.report .report-side b { font-size: 15px; }
+.afc-card.battle.report .report-side.side-enemy { border-left-color: var(--afc-wax); }
+.afc-card.battle.report .report-row { display: flex; align-items: center; gap: 0.35rem; padding: 0.12rem 0.3rem; border-bottom: 1px dotted var(--afc-line); }
 .afc-card.battle.report .report-row .troop { flex: 1 1 auto; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
-.afc-card.battle.report .report-row .state-chip { margin-left: 0; padding: 0 0.25rem; font-size: 11px; line-height: 1.3; flex: none; }
-.afc-card.battle.report .report-row .men { flex: none; min-width: 2.2em; text-align: right; }
-.afc-card.battle.report .report-row.intact { color: var(--afc-ink-soft); font-size: 12px; }
-.afc-card.battle.report button { margin-top: 0.25rem; padding: 0 0.3rem; min-height: 0; height: 1.5rem; line-height: 1.4rem; font-size: 12px; }
+.afc-card.battle.report .report-row .state-chip { margin-left: 0; padding: 0 0.3rem; font-size: 13px; line-height: 1.35; flex: none; }
+.afc-card.battle.report .report-row .men { flex: none; min-width: 2.4em; text-align: right; font-weight: 600; }
+.afc-card.battle.report .report-row.intact { color: var(--afc-ink-soft); font-size: 14px; border-bottom: none; }
+.afc-card.battle.report button { margin-top: 0.3rem; padding: 0 0.3rem; min-height: 0; height: 1.6rem; line-height: 1.5rem; font-size: 13px; }
