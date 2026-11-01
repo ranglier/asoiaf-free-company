@@ -14,7 +14,7 @@ import {
   BOOK_TERRAINS, BOOK_TYPE_MAP, BOOK_UPGRADES, BOOK_WEATHER, BOOK_ABILITIES, TROOP_STATS_VERSION, bookGlory
 } from "./book-config.mjs";
 import { adjacent, center, distance, regionTerrainKey } from "./engagement.mjs";
-import { hexNumber, startTargetPick } from "./map.mjs";
+import { hexNumber, startTargetPick, togglePalette } from "./map.mjs";
 import { gmHandlers, getBattle, requestGM, resetOrders, saveBattle, unitOf } from "./state.mjs";
 import { isBook } from "./rules.mjs";
 
@@ -906,7 +906,7 @@ export function fillBookHUD(hud, token, addButton) {
       });
       palette.append(o);
     }
-    addButton(BOOK_ORDERS[unit.order]?.icon ?? "fa-flag", loc("AFC.Battle.GiveOrder"), () => palette.classList.toggle("open"), { active: !!unit.order }).append(palette);
+    addButton(BOOK_ORDERS[unit.order]?.icon ?? "fa-flag", loc("AFC.Battle.GiveOrder"), () => togglePalette(palette), { active: !!unit.order }).append(palette);
   }
   if (token.actor.system.book.readied) {
     addButton("fa-bell", fmt(`${L}.ReadyTrigger`, { c: token.actor.system.book.readied }), () => {

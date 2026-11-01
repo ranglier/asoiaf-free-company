@@ -353,7 +353,7 @@ function cushionDialog({ name, losses, cushion }) {
     window: { title: fmt("AFC.Battle.CushionTitle", { name }) },
     classes: ["afc", "afc-dialog"],
     content: `<div class="afc-test-dialog"><p>${fmt("AFC.Battle.CushionQuestion", { n: losses, c: cushion })}</p>
-      <label>${loc("AFC.Battle.Cushion")}<input type="number" name="spend" value="0" min="0" max="${Math.min(cushion, losses)}"></label></div>`,
+      <label>${loc("AFC.Battle.Cushion")}<input type="number" name="spend" value="${Math.min(1, cushion, losses)}" min="0" max="${Math.min(cushion, losses)}"></label></div>`,
     ok: { label: loc("AFC.Battle.Apply"), callback: (ev, button) => Math.max(0, Math.min(cushion, losses, Number(button.form.elements.spend.value) || 0)) },
     rejectClose: false
   });

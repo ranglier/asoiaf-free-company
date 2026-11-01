@@ -12,8 +12,9 @@ const FLAG = "battle";
 const UNIT = "unit";
 const CHANNEL = `system.${SYSTEM_ID}`;
 const EMPTY_UNIT = { order: "", target: "", officer: "", countered: false, path: [] };
-/** Options de la bataille (règles maison), actives par défaut. */
-export const BATTLE_OPTIONS = ["outnumber", "officerTest", "trainingBonus", "singleDefense"];
+/** Options de la bataille (règles maison), actives par défaut sauf celles à l'essai. */
+export const BATTLE_OPTIONS = ["outnumber", "officerTest", "trainingBonus", "singleDefense", "fastManeuver"];
+const TRIAL_OPTIONS = ["fastManeuver"];
 
 /** Ordre, cible, officier et contre-ordre d'un jeton de troupe. */
 function readUnit(token, legacy) {
@@ -24,7 +25,7 @@ function readUnit(token, legacy) {
 /** Bataille de la scène (copie modifiable) ; les troupes sont lues sur leurs acteurs. */
 export function getBattle(scene = canvas.scene) {
   const data = foundry.utils.deepClone(scene?.getFlag(SYSTEM_ID, FLAG) ?? {});
-  const battle = foundry.utils.mergeObject({ round: 1, revealed: false, weather: "clear", engaged: [], done: [], reload: [], reloadNext: [], moved: [], stats: {}, command: [], defenseDice: [], ...Object.fromEntries(BATTLE_OPTIONS.map(k => [k, true])) }, data);
+  const battle = foundry.utils.mergeObject({ round: 1, revealed: false, weather: "clear", engaged: [], done: [], reload: [], reloadNext: [], moved: [], stats: {}, command: [], defenseDice: [], ...Object.fromEntries(BATTLE_OPTIONS.map(k => [k, !TRIAL_OPTIONS.includes(k)])) }, data);
   // Anciennes versions : unités ou groupes rangés sur la scène.
   const legacy = {};
   for (const u of data.units ?? []) legacy[u.id] = u;

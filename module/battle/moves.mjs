@@ -40,7 +40,7 @@ export function occupiedCells(scene, { all = false } = {}) {
 export function moveRange(token, order) {
   const s = token.actor.system;
   if (order === "withdraw") return 1;
-  return s.move + (order === "maneuver" && (s.has.mounted || s.has.light) ? 1 : 0);
+  return s.move + (order === "maneuver" && (s.has.mounted || s.has.light || getBattle(token.parent).fastManeuver) ? 1 : 0);
 }
 
 /**

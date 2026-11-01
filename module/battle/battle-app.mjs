@@ -7,9 +7,9 @@ import { ORDERS, TRIANGLE, TROOP_STATES, WEATHER } from "./battle-config.mjs";
 import { bookContext, bookReport, chooseCommanders, freeAttack, giveBookOrder, nextStep, resetBook, switchRules } from "./book.mjs";
 import { battleRules, isBook, RULES } from "./rules.mjs";
 import { TerrainPainter } from "./terrain.mjs";
-import { battleReport, commandTroop, endTurn, mayCommand, officerBonus, orderLabel, plannedEngagements, rallyTroop, resolveMelee, resolvePlanned, resolveShoot, revealOrders } from "./engagement.mjs";
-import { chooseOfficer, giveOrder, hexNumber, hexNumbersOn, ORDER_ICONS, orderVisible, startTargetPick, TARGETED_ORDERS } from "./map.mjs";
-import { APPROACH_ORDERS, hasMoved, PATH_ORDERS, startMovePick } from "./moves.mjs";
+import { battleReport, commandTroop, endTurn, mayCommand, officerBonus, orderLabel, plannedEngagements, rallyTroop, resolveMelee, resolvePlanned, resolveShoot, revealOrders, shootRange } from "./engagement.mjs";
+import { chooseOfficer, giveOrder, hexNumber, hexNumbersOn, ORDER_ICONS, orderVisible, startMoveChoice, startTargetPick, TARGETED_ORDERS } from "./map.mjs";
+import { APPROACH_ORDERS, hasMoved, PATH_ORDERS } from "./moves.mjs";
 import { BATTLE_OPTIONS, canCommand, clearBattle, getBattle, saveBattle, setUnit, unitOf } from "./state.mjs";
 import { createEnemyTroop, troopPool } from "./troops.mjs";
 
@@ -103,7 +103,7 @@ export class BattleApp extends HandlebarsApplicationMixin(ApplicationV2) {
         id: token.id, name: token.name, img: token.texture.src, hex: hexNumber(token), hidden: token.hidden, side: s.side,
         state: s.state, stateLabel: TROOP_STATES[s.state].label, known, mine,
         order: unit.order, orderText: orderLabel(unit.order),
-        orderOptions: ORDERS.map(k => ({ key: k, label: loc(`AFC.Battle.Order.${k}`), selected: k === unit.order, disabled: k === "shoot" && (battle.reload ?? []).includes(token.id) })), orderIcon: ORDER_ICONS[unit.order] ?? "fa-flag",
+        orderOptions: ORDERS.map(k => ({ key: k, label: loc(`AFC.Battle.Order.${k}`), selected: k === unit.order, disabled: k === "shoot" && (!s.range || (battle.reload ?? []).includes(token.id)) })), orderIcon: ORDER_ICONS[unit.order] ?? "fa-flag",
         // Avant la révélation, un joueur ne sait même pas si l'ennemi a reçu un ordre.
         showOrder: visible && !!unit.order, secret: !visible && !!unit.order && (isGM || s.side === "company"),
         canSet: mine && !(battle.revealed && unit.countered && !isGM),
@@ -117,7 +117,7 @@ export class BattleApp extends HandlebarsApplicationMixin(ApplicationV2) {
         canOfficerCommand: mayCommand(token, battle),
         overload: officer && officerLoad[unit.officer] > commandMax(unit.officer) ? commandMax(unit.officer) : 0,
         cushion: s.cushion, cushionMax: s.cushionMax, disorders: s.disorders, rallies: s.rallies, ralliesMax: s.ralliesMax,
-        move: s.move, range: s.range, meleeLabel: poolText(troopPool(s, "fighting", battle)), shootLabel: poolText(troopPool(s, s.shootSkill, battle)), units: s.units, weight: s.weight,
+        move: s.move, range: shootRange(s, battle), meleeLabel: poolText(troopPool(s, "fighting", battle)), shootLabel: poolText(troopPool(s, s.shootSkill, battle)), units: s.units, weight: s.weight,
         traits: [
           ...s.traits.map(k => ({ name: loc(`AFC.Battle.Trait.${k}.name`), effect: loc(`AFC.Battle.Trait.${k}.effect`) })),
           ...["armor", "melee", "shoot"].filter(k => s.upgrades[k]).map(k => ({ name: loc(`AFC.Unit.Upgrade.${k}`), effect: loc(`AFC.Unit.Upgrade.${k}Effect`) }))
@@ -248,7 +248,7 @@ export class BattleApp extends HandlebarsApplicationMixin(ApplicationV2) {
   static #onReport() { return isBook() ? bookReport() : battleReport(); }
   static #onNewEnemy() { return createEnemyTroop(); }
   static #onPickTarget(event, target) { const t = BattleApp.#token(target); if (t) startTargetPick(t); }
-  static #onPickMove(event, target) { const t = BattleApp.#token(target); if (t) startMovePick(t); }
+  static #onPickMove(event, target) { const t = BattleApp.#token(target); if (t) startMoveChoice(t); }
   static #onClearTarget(event, target) { const t = BattleApp.#token(target); if (t) setUnit(t.id, { target: "" }); }
   static #onOfficer(event, target) { const t = BattleApp.#token(target); if (t) chooseOfficer(t); }
   static #onRally(event, target) { const t = BattleApp.#token(target); if (t) rallyTroop(t.id); }

@@ -10,7 +10,7 @@ import { SYSTEM_ID } from "../config.mjs";
 import { BOOK_STATUS_CHIP, isBookTargeted } from "./book-config.mjs";
 import { drawBookHealth, fillBookHUD } from "./book.mjs";
 import { center, commandTroop, distance, mayCommand, plannedEngagements, rallyTroop, resolvePlanned, shootRange } from "./engagement.mjs";
-import { afterPlan, APPROACH_ORDERS, cellCenter, hasMoved, PATH_ORDERS, plannedPath, startMovePick } from "./moves.mjs";
+import { afterPlan, APPROACH_ORDERS, cancelMovePick, cellCenter, hasMoved, PATH_ORDERS, plannedPath, startMovePick } from "./moves.mjs";
 import { chooseSplit } from "./split.mjs";
 import { isAutoIcon } from "./troops.mjs";
 import { isBook } from "./rules.mjs";
@@ -35,6 +35,7 @@ let picking = null;
 /** Attend un clic sur une troupe visible, puis l'enregistre comme cible (Échap : annuler). */
 export function startTargetPick(token, onPick = null) {
   cancelTargetPick();
+  cancelMovePick();
   const view = canvas.app.view;
   const onDown = event => {
     if (event.button !== 0) return;
@@ -46,6 +47,8 @@ export function startTargetPick(token, onPick = null) {
     cancelTargetPick();
     if (!hit) return ui.notifications.info(loc("AFC.Battle.PickCancelled"));
     if (onPick) return onPick(hit.document);
+    // L'ordre a pu changer depuis : on ne pose pas de cible sur un ordre qui n'en a pas.
+    if (!isBook(token.parent) && !TARGETED_ORDERS.includes(unitOf(getBattle(), token.id).order)) return;
     setUnit(token.id, { target: hit.document.id }).then(() => afterPlan(token));
     ui.notifications.info(fmt("AFC.Battle.PlanSetDone", { a: token.name, d: hit.document.name }));
     // La cible peut encore approcher : on prévient sans refuser.
@@ -71,6 +74,19 @@ export function cancelTargetPick() {
   picking = null;
 }
 
+/** Choix de la case d'arrivée : une seule désignation à la fois sur la carte. */
+export function startMoveChoice(token) {
+  cancelTargetPick();
+  return startMovePick(token);
+}
+
+/** Ouvre la palette d'ordres, vers la droite si elle sortirait de l'écran à gauche. */
+export function togglePalette(palette) {
+  palette.classList.remove("flip");
+  palette.classList.toggle("open");
+  if (palette.classList.contains("open") && palette.getBoundingClientRect().left < 60) palette.classList.add("flip");
+}
+
 /** Choix de l'officier d'une troupe (PJ ou PNJ que l'utilisateur possède ; tous pour le MJ). */
 export async function chooseOfficer(token) {
   const battle = getBattle();
@@ -90,10 +106,13 @@ export async function chooseOfficer(token) {
 
 /** Donne un ordre ; pour un ordre offensif, enchaîne sur la désignation de la cible. */
 export async function giveOrder(token, order) {
+  cancelTargetPick();
+  cancelMovePick();
+  if (order === "shoot" && !token.actor.system.range) return ui.notifications.warn(loc("AFC.Battle.Warn.noRange"));
   if (order === "shoot" && (getBattle().reload ?? []).includes(token.id)) return ui.notifications.warn(fmt("AFC.Battle.Reloading", { name: token.name }));
   await setUnit(token.id, { order });
   if (TARGETED_ORDERS.includes(order)) return startTargetPick(token);
-  if (PATH_ORDERS.includes(order) && !hasMoved(token)) return startMovePick(token);
+  if (PATH_ORDERS.includes(order) && !hasMoved(token)) return startMoveChoice(token);
   ui.notifications.info(`${token.name} : ${loc(`AFC.Battle.Order.${order}`)}`);
   afterPlan(token);
 }
@@ -131,6 +150,7 @@ export function onRenderTokenHUD(hud, html) {
     const palette = document.createElement("div");
     palette.className = "afc-order-palette";
     for (const order of ORDERS) {
+      if (order === "shoot" && !token.actor.system.range) continue;
       const o = document.createElement("button");
       o.type = "button";
       o.className = `control-icon${unit.order === order ? " active" : ""}`;
@@ -144,13 +164,13 @@ export function onRenderTokenHUD(hud, html) {
       palette.append(o);
     }
     const label = battle.revealed ? loc("AFC.Battle.Counter") : loc("AFC.Battle.GiveOrder");
-    button(unit.order ? ORDER_ICONS[unit.order] : "fa-flag", label, () => palette.classList.toggle("open"), { active: !!unit.order }).append(palette);
+    button(unit.order ? ORDER_ICONS[unit.order] : "fa-flag", label, () => togglePalette(palette), { active: !!unit.order }).append(palette);
     if (TARGETED_ORDERS.includes(unit.order)) {
       button("fa-crosshairs", unit.target ? loc("AFC.Battle.PlanChange") : loc("AFC.Battle.PlanSet"), () => { hud.close(); startTargetPick(token); });
     }
     // Case d'arrivée : à choisir pour Manœuvrer et Se replier, facultative pour Charger et Attaquer.
     const movable = PATH_ORDERS.includes(unit.order) || (APPROACH_ORDERS.includes(unit.order) && unit.target);
-    if (movable && !hasMoved(token)) button("fa-route", loc("AFC.Battle.Moves.Button"), () => { hud.close(); startMovePick(token); });
+    if (movable && !hasMoved(token)) button("fa-route", loc("AFC.Battle.Moves.Button"), () => { hud.close(); startMoveChoice(token); });
   }
   // MJ : résoudre l'engagement de cette troupe directement depuis la carte.
   const plan = game.user.isGM && battle.revealed ? plannedEngagements(battle).find(p => p.from === token.id) : null;

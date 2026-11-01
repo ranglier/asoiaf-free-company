@@ -585,6 +585,8 @@
         "trainingBonusHint": "Compétences au-delà de 3D : vétéran 3D+1B, élite 3D+2B. Bleu : 2D+1B sur ses compétences clés. Décoché : un rang vaut un dé de test.",
         "singleDefense": "Jet unique de la cible",
         "singleDefenseHint": "Une troupe attaquée par plusieurs ne lance ses dés de défense qu'une fois par tour : les mêmes dés servent contre chaque attaquant.",
+        "fastManeuver": "Manœuvre rapide (à l'essai)",
+        "fastManeuverHint": "Toute troupe gagne +1 case sur Manœuvrer, pas seulement la cavalerie et les troupes légères. La charge ne porte pas plus loin.",
         "sameRoll": "Même jet",
         "morale": "Moral",
         "noBonus": "Aucun bonus",

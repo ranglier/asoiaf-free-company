@@ -585,6 +585,8 @@
         "trainingBonusHint": "Skills above 3D: veteran 3D+1B, elite 3D+2B. Green: 2D+1B on key skills. Unchecked: each rank is a test die.",
         "singleDefense": "Single target roll",
         "singleDefenseHint": "A troop attacked by several rolls its defense dice once per round: the same dice count against each attacker.",
+        "fastManeuver": "Fast maneuver (trial)",
+        "fastManeuverHint": "Every troop gains +1 space on Maneuver, not only cavalry and light troops. Charges do not reach further.",
         "sameRoll": "Same roll",
         "morale": "Morale",
         "noBonus": "No bonus",
