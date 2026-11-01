@@ -46,6 +46,8 @@ export default class TroopData extends foundry.abstract.TypeDataModel {
         ready: new fields.BooleanField({ initial: false }),
         v: int(0, { min: 0 }),
         type: new fields.StringField({ initial: "infantry", choices: Object.keys(BOOK_EQUIPMENT) }),
+        // Type Spéciale : courte ou longue portée, au choix (table 10-1).
+        specialRange: new fields.StringField({ initial: "long", choices: Object.keys(BOOK_RANGES) }),
         abilities: new fields.SchemaField(Object.fromEntries(BOOK_ABILITIES.map(k => [k, int(2, { min: 1 })]))),
         upArmor: new fields.BooleanField({ initial: false }),
         upFight: new fields.BooleanField({ initial: false }),
@@ -102,7 +104,8 @@ export default class TroopData extends foundry.abstract.TypeDataModel {
     b.health = a.endurance * 3;
     b.healthLeft = Math.max(0, b.health - b.damage);
     b.fightDamage = Math.max(0, a.athletics + fight.fight);
-    b.shoot = shoot ? { damage: Math.max(0, a[shoot.ability] + shoot.mod), range: shoot.range, yards: BOOK_RANGES[shoot.range] } : null;
+    const range = b.type === "special" ? b.specialRange : shoot?.range;
+    b.shoot = shoot ? { damage: Math.max(0, a[shoot.ability] + shoot.mod), range, yards: BOOK_RANGES[range] } : null;
     const mounted = b.type === "cavalry";
     const base = mounted ? BOOK_MOVE.cavalry : b.type === "warships" ? BOOK_MOVE.ships : BOOK_MOVE.infantry;
     b.mounted = mounted;

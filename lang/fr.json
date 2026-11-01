@@ -445,6 +445,8 @@
       "StatusLabel": "Statut",
       "Formation": { "none": "Aucune", "battle": "Bataille", "checkered": "Tirailleur", "column": "Colonne", "mob": "Foule", "phalanx": "Phalange", "shieldWall": "Mur de boucliers", "square": "Carré", "tortoise": "Tortue", "wedge": "Coin" },
       "FormationLabel": "Formation",
+      "RangeClose": "Courte portée",
+      "RangeLong": "Longue portée",
       "Weather": { "clear": "Temps clair", "lightRain": "Pluie légère", "heavyRain": "Forte pluie (−2)", "lightSnow": "Neige légère (−2)", "heavySnow": "Forte neige (−2, obscurité)", "dim": "Pénombre ou brume", "dark": "Obscurité" },
       "Type": { "archers": "Archers", "cavalry": "Cavalerie", "criminals": "Criminels", "engineers": "Ingénieurs", "garrison": "Garnison", "guerillas": "Guérilleros", "infantry": "Infanterie", "mercenaries": "Mercenaires", "peasants": "Paysans", "personalGuard": "Garde personnelle", "raiders": "Pillards", "sailors": "Marins", "scouts": "Éclaireurs", "special": "Spéciale", "support": "Soutien", "warships": "Navires de guerre" },
       "TypeLabel": "Équipement du type",

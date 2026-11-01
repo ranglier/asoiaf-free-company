@@ -5,12 +5,11 @@
 import { ABILITIES, SYSTEM_ID } from "../config.mjs";
 import { specialtyBonus } from "../data/actor-character.mjs";
 import { autoPenalties, evaluateTest, rollDice } from "../dice/test-roll.mjs";
-import { defaultSkillKeys } from "../unit-mix.mjs";
 import {
   MAX_LOSS, MOVING_ORDERS, OFFICER_TEST, ORDER_ICONS, STATE_ORDER, TERRAINS, TRIANGLE, TROOP_STATES, WEATHER
 } from "./battle-config.mjs";
 import { executeMoves } from "./moves.mjs";
-import { moraleMod } from "./troops.mjs";
+import { moraleMod, troopPool } from "./troops.mjs";
 import { askHandlers, askUser, canCommand, getBattle, gmHandlers, requestGM, resetOrders, saveBattle, unitOf } from "./state.mjs";
 
 const { DialogV2 } = foundry.applications.api;
@@ -74,15 +73,6 @@ export const officerBonus = warfare => Math.max(1, Math.floor((warfare.rank + sp
 export function officerDice(battle, tokenId, officerId, warfare) {
   if (!battle.officerTest) return officerBonus(warfare);
   return battle.command.find(c => c.id === tokenId && c.officer === officerId)?.bonus ?? 0;
-}
-
-/** Dés d'une compétence. Option : 3D au plus, le reste en dés de bonus ; un Bleu a 2D+1B sur ses compétences clés. */
-export function troopPool(s, ability, battle) {
-  const rank = s.book.abilities[ability];
-  if (!battle.trainingBonus) return { rank, bonus: 0 };
-  const keys = s.skillKeys?.length ? s.skillKeys : defaultSkillKeys(s.unitType, s.unitType2);
-  if (s.training === "green" && keys.includes(ability)) return { rank: 2, bonus: 1 };
-  return rank > 3 ? { rank: 3, bonus: rank - 3 } : { rank, bonus: 0 };
 }
 
 /** La troupe lance sa propre compétence (Corps à corps ou Tir) ; son officier lui donne des dés de bonus. */

@@ -11,7 +11,7 @@
   </label>
   {{/if}}
   <div class="row">
-    <label>{{localize "AFC.Roll.Bonus"}}<input type="number" name="bonus" value="0" min="0"></label>
+    <label>{{localize "AFC.Roll.Bonus"}}<input type="number" name="bonus" value="{{#if baseBonus}}{{baseBonus}}{{else}}0{{/if}}" min="0"></label>
     <label>{{localize "AFC.Roll.Penalty"}}<input type="number" name="penalty" value="0" min="0"></label>
     <label>{{localize "AFC.Roll.Modifier"}}<input type="number" name="modifier" value="0"></label>
   </div>

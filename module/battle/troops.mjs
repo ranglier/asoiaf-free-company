@@ -3,7 +3,7 @@
  */
 import { SYSTEM_ID, UNIT_TRAININGS } from "../config.mjs";
 import { COMPANY_UNIT_TYPES, HOUSE_UNIT_TYPES } from "../catalog-data.mjs";
-import { combineTypes } from "../unit-mix.mjs";
+import { combineTypes, defaultSkillKeys } from "../unit-mix.mjs";
 import { mergeTraits, STATE_ORDER, TRAINING_BATTLE, TROOP_STATES, TYPE_ICONS, TYPE_TRAITS } from "./battle-config.mjs";
 
 const { DialogV2 } = foundry.applications.api;
@@ -11,6 +11,15 @@ const loc = key => game.i18n.localize(key);
 
 /** Moral de la Compagnie sur la Discipline (une difficulté) : bon moral −2, solide −1, grogne +1, crise +2. Sans Compagnie : 0. */
 export const moraleMod = s => 0 - (game.actors.get(s.source.actor)?.system.cohesionState?.discipline ?? 0);
+
+/** Dés d'une compétence. Option : 3D au plus, le reste en dés de bonus ; un Bleu a 2D+1B sur ses compétences clés. */
+export function troopPool(s, ability, battle) {
+  const rank = s.book.abilities[ability];
+  if (!battle.trainingBonus) return { rank, bonus: 0 };
+  const keys = s.skillKeys?.length ? s.skillKeys : defaultSkillKeys(s.unitType, s.unitType2);
+  if (s.training === "green" && keys.includes(ability)) return { rank: 2, bonus: 1 };
+  return rank > 3 ? { rank: 3, bonus: rank - 3 } : { rank, bonus: 0 };
+}
 
 /** Libellé d'un type d'unité (catalogue de la Compagnie, sinon de la Maison). */
 export function typeLabel(key) {

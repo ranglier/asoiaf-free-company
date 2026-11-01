@@ -1,5 +1,7 @@
 import { ABILITIES, DIFFICULTIES, SYSTEM_ID } from "../config.mjs";
 import { isBook } from "../battle/rules.mjs";
+import { getBattle } from "../battle/state.mjs";
+import { troopPool } from "../battle/troops.mjs";
 import { defaultDifficulty } from "../settings.mjs";
 
 const renderTemplate = (...args) => foundry.applications.handlebars.renderTemplate(...args);
@@ -83,8 +85,10 @@ export function difficultyOptions(selected) {
  * - specialty : index de la spécialité à appliquer.
  */
 export async function rollAbilityTest(actor, abilityKey, { quick = false, specialty = null } = {}) {
-  // Une troupe n'a qu'un rang par compétence, sans spécialité.
-  const ability = actor.type === "troop" ? { rank: actor.system.book.abilities[abilityKey], specialties: [] } : actor.system.abilities[abilityKey];
+  // Une troupe n'a qu'un rang par compétence, sans spécialité. En règles maison, ses dés sont les mêmes qu'en bataille.
+  const pool = actor.type !== "troop" ? null : isBook() ? { rank: actor.system.book.abilities[abilityKey], bonus: 0 } : troopPool(actor.system, abilityKey, getBattle());
+  const ability = pool ? { rank: pool.rank, specialties: [] } : actor.system.abilities[abilityKey];
+  const baseBonus = pool?.bonus ?? 0;
   const label = game.i18n.localize(ABILITIES[abilityKey].label);
   const auto = autoPenalties(actor, abilityKey);
   const spec = specialty !== null ? ability.specialties[specialty] : null;
@@ -92,14 +96,14 @@ export async function rollAbilityTest(actor, abilityKey, { quick = false, specia
   if (quick) {
     return rollTest(actor, {
       abilityKey, label, rank: ability.rank,
-      specialty: spec?.name ?? null, bonus: spec?.bonus ?? 0,
+      specialty: spec?.name ?? null, bonus: (spec?.bonus ?? 0) + baseBonus,
       penalty: auto.dice, modifier: auto.modifier, notes: auto.notes,
       difficulty: defaultDifficulty()
     });
   }
 
   const content = await renderTemplate(`systems/${SYSTEM_ID}/templates/dialog/test-dialog.hbs`, {
-    ability, auto, selectedSpecialty: specialty, difficulties: difficultyOptions(defaultDifficulty())
+    ability, auto, baseBonus, selectedSpecialty: specialty, difficulties: difficultyOptions(defaultDifficulty())
   });
   const options = await foundry.applications.api.DialogV2.prompt({
     window: { title: game.i18n.format("AFC.Roll.DialogTitle", { ability: label }) },

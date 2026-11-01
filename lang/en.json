@@ -445,6 +445,8 @@
       "StatusLabel": "Status",
       "Formation": { "none": "None", "battle": "Battle", "checkered": "Checkered", "column": "Column", "mob": "Mob", "phalanx": "Phalanx", "shieldWall": "Shield wall", "square": "Square", "tortoise": "Tortoise shell", "wedge": "Wedge" },
       "FormationLabel": "Formation",
+      "RangeClose": "Close range",
+      "RangeLong": "Long range",
       "Weather": { "clear": "Clear", "lightRain": "Light rain", "heavyRain": "Heavy rain (−2)", "lightSnow": "Light snow (−2)", "heavySnow": "Heavy snow (−2, darkness)", "dim": "Dim light or mist", "dark": "Darkness" },
       "Type": { "archers": "Archers", "cavalry": "Cavalry", "criminals": "Criminals", "engineers": "Engineers", "garrison": "Garrison", "guerillas": "Guerillas", "infantry": "Infantry", "mercenaries": "Mercenaries", "peasants": "Peasant levies", "personalGuard": "Personal guard", "raiders": "Raiders", "sailors": "Sailors", "scouts": "Scouts", "special": "Special", "support": "Support", "warships": "Warships" },
       "TypeLabel": "Type equipment",

@@ -34,6 +34,7 @@
   <div class="book-equip">
     <label>{{localize "AFC.BattleBook.TypeLabel"}}<select name="system.book.type">{{selectOptions bookTypes selected=system.book.type localize=true}}</select></label>
     <label>{{localize "AFC.BattleBook.FormationLabel"}}<select name="system.book.formation">{{selectOptions bookFormations selected=system.book.formation localize=true}}</select></label>
+    {{#if isSpecial}}<label>{{localize "AFC.Battle.Range"}}<select name="system.book.specialRange">{{selectOptions bookRanges selected=system.book.specialRange localize=true}}</select></label>{{/if}}
   </div>
   <div class="troop-traits">
     <label class="checkbox"><input type="checkbox" name="system.book.upArmor" {{checked system.book.upArmor}}> {{localize "AFC.BattleBook.UpArmor"}}</label>

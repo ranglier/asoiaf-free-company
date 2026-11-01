@@ -40,8 +40,9 @@ export class TroopSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       states: Object.fromEntries(STATE_ORDER.map(k => [k, TROOP_STATES[k].label])),
       types: Object.fromEntries(Object.keys(TYPE_TRAITS).map(k => [k, typeLabel(k)]).sort((a, b) => a[1].localeCompare(b[1]))),
       traits: TRAITS.map(k => ({ key: k, label: loc(`AFC.Battle.Trait.${k}.name`), effect: loc(`AFC.Battle.Trait.${k}.effect`), on: s.traits.includes(k) })),
-      bookRules: isBook(), customImage: !isAutoIcon(this.document.img),
+      bookRules: isBook(), isSpecial: s.book.type === "special", customImage: !isAutoIcon(this.document.img),
       bookAbilities: BOOK_ABILITIES.map(k => ({ key: k, label: `AFC.Ability.${k}`, value: s.book.abilities[k] })),
+      bookRanges: { close: "AFC.BattleBook.RangeClose", long: "AFC.BattleBook.RangeLong" },
       bookTypes: Object.fromEntries(Object.keys(BOOK_EQUIPMENT).map(k => [k, `AFC.BattleBook.Type.${k}`])),
       bookStatuses: Object.fromEntries(BOOK_STATUS.map(k => [k, `AFC.BattleBook.Status.${k}`])),
       bookFormations: Object.fromEntries(Object.keys(BOOK_FORMATIONS).map(k => [k, `AFC.BattleBook.Formation.${k}`]))
