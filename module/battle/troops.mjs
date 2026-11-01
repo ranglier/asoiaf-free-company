@@ -9,6 +9,9 @@ import { mergeTraits, STATE_ORDER, TRAINING_BATTLE, TROOP_STATES, TYPE_ICONS, TY
 const { DialogV2 } = foundry.applications.api;
 const loc = key => game.i18n.localize(key);
 
+/** Moral de la Compagnie sur la Discipline (une difficulté) : bon moral −2, solide −1, grogne +1, crise +2. Sans Compagnie : 0. */
+export const moraleMod = s => 0 - (game.actors.get(s.source.actor)?.system.cohesionState?.discipline ?? 0);
+
 /** Libellé d'un type d'unité (catalogue de la Compagnie, sinon de la Maison). */
 export function typeLabel(key) {
   for (const prefix of ["AFC.CompanyCatalog.UnitType", "AFC.Catalog.UnitType"]) {

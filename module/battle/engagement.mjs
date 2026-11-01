@@ -10,6 +10,7 @@ import {
   MAX_LOSS, MOVING_ORDERS, OFFICER_TEST, ORDER_ICONS, STATE_ORDER, TERRAINS, TRIANGLE, TROOP_STATES, WEATHER
 } from "./battle-config.mjs";
 import { executeMoves } from "./moves.mjs";
+import { moraleMod } from "./troops.mjs";
 import { askHandlers, askUser, canCommand, getBattle, gmHandlers, requestGM, resetOrders, saveBattle, unitOf } from "./state.mjs";
 
 const { DialogV2 } = foundry.applications.api;
@@ -218,6 +219,7 @@ const readExtra = (f, p) => ({ b: Number(f[`${p}b`].value) || 0, p: Number(f[`${
 /** Case « Appliquer les pertes tout de suite » des dialogues de résolution. */
 const autoBox = () => `<label class="checkbox"><input type="checkbox" name="auto" checked> ${loc("AFC.Battle.AutoApply")}</label>`;
 const degreesOf = margin => Math.min(4, Math.floor(margin / 5) + 1);
+const moraleLabel = n => `${loc("AFC.Battle.Options.morale")} ${n > 0 ? "+" : "−"}${Math.abs(n)}`;
 
 /* ---------- Cartes de chat ---------- */
 
@@ -430,13 +432,15 @@ export async function rallyTroop(tokenId) {
   if (s.state === "fresh") return ui.notifications.info(loc("AFC.Battle.RallyFresh"));
   if (s.state === "destroyed") return;
   if (s.rallies >= s.ralliesMax) return ui.notifications.warn(loc("AFC.Battle.RallyLimit"));
+  const morale = moraleMod(s);
+  const discipline = Math.max(0, s.discipline + morale);
   const candidates = game.actors.filter(a => ["character", "npc"].includes(a.type) && a.isOwner && a.system.abilities?.warfare);
   if (!candidates.length) return ui.notifications.warn(loc("AFC.Battle.NoRallier"));
   const officerId = unitOf(getBattle(), tokenId).officer;
   const pick = await DialogV2.prompt({
     window: { title: fmt("AFC.Battle.RallyTitle", { name: token.name }) },
     classes: ["afc", "afc-dialog"],
-    content: `<div class="afc-test-dialog"><p>${fmt("AFC.Battle.RallyIntro", { d: s.discipline, n: s.rallies, max: s.ralliesMax })}</p>
+    content: `<div class="afc-test-dialog"><p>${fmt("AFC.Battle.RallyIntro", { d: discipline, n: s.rallies, max: s.ralliesMax })}</p>
       <label>${loc("AFC.Battle.Rallier")}<select name="who">${candidates.map(a => `<option value="${a.id}" ${a.id === officerId ? "selected" : ""}>${esc(a.name)}</option>`).join("")}</select></label>
       <label>+B<input type="number" name="b" value="0"></label></div>`,
     ok: { label: loc("AFC.Battle.Roll"), callback: (ev, button) => ({ id: button.form.elements.who.value, b: Number(button.form.elements.b.value) || 0 }) },
@@ -446,7 +450,7 @@ export async function rallyTroop(tokenId) {
   const rallier = game.actors.get(pick.id);
   const warfare = rallier.system.abilities.warfare;
   const p = { rank: warfare.rank, bonus: specialtyBonus(warfare, COMMAND) + pick.b };
-  const test = await rollDice({ ...p, difficulty: s.discipline });
+  const test = await rollDice({ ...p, difficulty: discipline });
   const success = test.outcome?.success;
   if (success) {
     // Le joueur qui commande par son officier sans posséder la troupe passe par le MJ.
@@ -461,8 +465,8 @@ export async function rallyTroop(tokenId) {
       subtitle: fmt("AFC.Battle.Card.RallyBy", { who: rallier.name, name: token.name }),
       total: test.total, dice: test.dice, success, degrees: test.outcome?.degrees,
       verdict: success ? fmt("AFC.Battle.RallyOk", { state: loc(TROOP_STATES[STATE_ORDER[s.stateIndex - 1]].label) }) : loc("AFC.Battle.RallyFail"),
-      detail: `${fmt("AFC.Battle.Card.AgainstDiscipline", { d: s.discipline })} · ${fmt("AFC.Battle.Card.RallyCount", { n: s.rallies + (success ? 1 : 0), max: s.ralliesMax })}`,
-      pool: poolLabel(p, test), tags: []
+      detail: `${fmt("AFC.Battle.Card.AgainstDiscipline", { d: discipline })} · ${fmt("AFC.Battle.Card.RallyCount", { n: s.rallies + (success ? 1 : 0), max: s.ralliesMax })}`,
+      pool: poolLabel(p, test), tags: morale ? [moraleLabel(morale)] : []
     })
   });
 }
@@ -471,10 +475,11 @@ gmHandlers.troopUpdate = ({ actor, changes }) => game.actors.get(actor)?.update(
 
 /* ---------- Commander (test d'officier, en option) ---------- */
 
-/** Difficulté : Discipline + 3, plus l'effectif : 100 hommes se dirigent plus facilement que 300. */
+/** Difficulté : Discipline + 3, plus l'effectif (100 hommes se dirigent plus facilement que 300) et le moral de la Compagnie. */
 export function commandDifficulty(s) {
   const size = Math.max(0, Math.ceil(s.men / 100) - 1) * OFFICER_TEST.perHundredMen;
-  return { total: s.discipline + OFFICER_TEST.margin + size, size };
+  const morale = moraleMod(s);
+  return { total: Math.max(0, s.discipline + OFFICER_TEST.margin + size + morale), size, morale };
 }
 
 /** L'officier peut-il encore commander cette troupe ce tour-ci ? C'est l'action qu'il choisit après la révélation. */
@@ -510,7 +515,7 @@ export async function commandTroop(tokenId) {
     const bonus = Math.min(OFFICER_TEST.max, Math.ceil(degrees / OFFICER_TEST.degreesPerBonus));
     const result = { id: tokenId, officer: officerId, bonus };
     await (game.user.isGM ? gmHandlers.setCommand(result) : requestGM("setCommand", result));
-    const detail = [fmt("AFC.Battle.Options.commandDetail", { d: s.discipline, m: OFFICER_TEST.margin }), ...(d.size ? [fmt("AFC.Battle.Options.commandSize", { n: d.size })] : [])].join(" + ");
+    const detail = [fmt("AFC.Battle.Options.commandDetail", { d: s.discipline, m: OFFICER_TEST.margin }), ...(d.size ? [fmt("AFC.Battle.Options.commandSize", { n: d.size })] : []), ...(d.morale ? [moraleLabel(d.morale)] : [])].join(" + ");
     return await ChatMessage.create({
       rolls: [test.roll], speaker: ChatMessage.getSpeaker({ actor: officer }),
       whisper: s.side === "company" && !token.hidden ? [] : ChatMessage.getWhisperRecipients("GM"),

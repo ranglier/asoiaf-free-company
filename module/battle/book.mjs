@@ -6,6 +6,7 @@
  */
 import { SYSTEM_ID } from "../config.mjs";
 import { defaultSkillKeys } from "../unit-mix.mjs";
+import { moraleMod } from "./troops.mjs";
 import { specialtyBonus } from "../data/actor-character.mjs";
 import { rollDice } from "../dice/test-roll.mjs";
 import {
@@ -211,6 +212,7 @@ export function orderDifficulty(token, key, book, battle, formation = null) {
   const s = token.actor.system, b = s.book;
   const parts = [{ label: loc(`${L}.Discipline`), value: s.discipline }];
   const add = (label, value) => { if (value) parts.push({ label, value }); };
+  add(loc("AFC.Battle.Options.morale"), moraleMod(s));
   add(loc(`${L}.Status.disorganized`), b.penalties * 3);
   if (unitOf(battle, token.id).officer) add(loc(`${L}.Attached`), -3);
   if (book.formations) add(loc(`${L}.Formation.${b.formation}`), BOOK_FORMATIONS[b.formation]?.discipline ?? 0);
