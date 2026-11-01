@@ -13,7 +13,7 @@
       {{#if t.canSet}}
       <select data-order>
         <option value="">{{localize "AFC.Battle.Waiting"}}</option>
-        {{#each t.orderOptions as |o|}}<option value="{{o.key}}" {{#if o.selected}}selected{{/if}}>{{o.label}}</option>{{/each}}
+        {{#each t.orderOptions as |o|}}<option value="{{o.key}}" {{#if o.selected}}selected{{/if}} {{#if o.disabled}}disabled{{/if}}>{{o.label}}</option>{{/each}}
       </select>
       {{else if t.showOrder}}
       <span class="tag order"><i class="fa-solid {{t.orderIcon}}"></i> {{t.orderText}}</span>

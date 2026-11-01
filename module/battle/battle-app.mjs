@@ -92,7 +92,7 @@ export class BattleApp extends HandlebarsApplicationMixin(ApplicationV2) {
         id: token.id, name: token.name, img: token.texture.src, hex: hexNumber(token), hidden: token.hidden, side: s.side,
         state: s.state, stateLabel: TROOP_STATES[s.state].label, known, mine,
         order: unit.order, orderText: orderLabel(unit.order),
-        orderOptions: ORDERS.map(k => ({ key: k, label: loc(`AFC.Battle.Order.${k}`), selected: k === unit.order })), orderIcon: ORDER_ICONS[unit.order] ?? "fa-flag",
+        orderOptions: ORDERS.map(k => ({ key: k, label: loc(`AFC.Battle.Order.${k}`), selected: k === unit.order, disabled: k === "shoot" && (battle.reload ?? []).includes(token.id) })), orderIcon: ORDER_ICONS[unit.order] ?? "fa-flag",
         // Avant la révélation, un joueur ne sait même pas si l'ennemi a reçu un ordre.
         showOrder: visible && !!unit.order, secret: !visible && !!unit.order && (isGM || s.side === "company"),
         canSet: mine && !(battle.revealed && unit.countered && !isGM),

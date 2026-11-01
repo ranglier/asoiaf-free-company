@@ -202,6 +202,39 @@ function walk(token, path, occupied) {
 }
 
 /**
+ * Case visée par plusieurs troupes : la plus rapide l'obtient ; à vitesse égale, personne. Les autres
+ * s'arrêtent juste avant. Renvoie les messages pour les troupes visibles.
+ */
+function resolveDisputes(moves) {
+  const notes = [];
+  const label = list => list.map(m => esc(m.token.name)).join(", ");
+  for (let changed = true; changed;) {
+    changed = false;
+    const byDest = new Map();
+    for (const move of moves.filter(m => m.path.length)) {
+      const dest = move.path.at(-1);
+      byDest.set(dest, [...(byDest.get(dest) ?? []), move]);
+    }
+    for (const group of byDest.values()) {
+      if (group.length < 2) continue;
+      changed = true;
+      const speed = m => m.token.actor.system.move;
+      const top = Math.max(...group.map(speed));
+      const fastest = group.filter(m => speed(m) === top);
+      const winner = fastest.length === 1 ? fastest[0] : null;
+      const losers = group.filter(m => m !== winner);
+      for (const loser of losers) loser.path = loser.path.slice(0, -1);
+      const seen = losers.filter(m => !m.token.hidden);
+      if (!seen.length) continue;
+      if (!winner) notes.push(fmt("AFC.Battle.Moves.DisputeTie", { list: label(seen) }));
+      else if (winner.token.hidden) notes.push(fmt("AFC.Battle.Moves.DisputeBlocked", { list: label(seen) }));
+      else notes.push(fmt("AFC.Battle.Moves.DisputeWon", { a: esc(winner.token.name), list: label(seen) }));
+    }
+  }
+  return notes;
+}
+
+/**
  * Manœuvres simultanées : d'abord ceux dont la case d'arrivée est libre (une place libérée sert au
  * suivant), puis les autres s'arrêtent à la dernière case libre de leur chemin.
  */
@@ -238,13 +271,13 @@ export async function executeMoves(scene = canvas.scene) {
   const moved = new Set(battle.moved ?? []);
   const units = troops(scene).filter(canMove).map(token => ({ token, unit: unitOf(battle, token.id) }));
 
-  const paths = units.filter(u => PATH_ORDERS.includes(u.unit.order) && u.unit.path?.length).map(u => ({ token: u.token, path: u.unit.path }));
-  const settled = settleMoves(paths, occupiedCells(scene, { all: true }));
+  const paths = units.filter(u => PATH_ORDERS.includes(u.unit.order) && u.unit.path?.length).map(u => ({ token: u.token, path: [...u.unit.path] }));
+  const notes = resolveDisputes(paths);
+  const settled = settleMoves(paths.filter(p => p.path.length), occupiedCells(scene, { all: true }));
   if (settled.length) await scene.updateEmbeddedDocuments("Token", settled.map(r => tokenUpdate(r.token, r.end)));
   settled.forEach(r => moved.add(r.token.id));
 
   // Les plus rapides d'abord. Chacun voit la carte telle que les précédents l'ont laissée.
-  const notes = [];
   const approaching = units.filter(u => APPROACH_ORDERS.includes(u.unit.order) && u.unit.target).sort((a, b) => b.token.actor.system.move - a.token.actor.system.move);
   for (const { token, unit } of approaching) {
     const occupied = occupiedCells(scene, { all: true });

@@ -84,6 +84,7 @@ export async function chooseOfficer(token) {
 
 /** Donne un ordre ; pour un ordre offensif, enchaîne sur la désignation de la cible. */
 export async function giveOrder(token, order) {
+  if (order === "shoot" && (getBattle().reload ?? []).includes(token.id)) return ui.notifications.warn(fmt("AFC.Battle.Reloading", { name: token.name }));
   await setUnit(token.id, { order });
   if (TARGETED_ORDERS.includes(order)) return startTargetPick(token);
   if (PATH_ORDERS.includes(order) && !hasMoved(token)) return startMovePick(token);

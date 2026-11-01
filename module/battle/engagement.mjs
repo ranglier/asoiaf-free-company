@@ -280,7 +280,8 @@ export async function resolveShoot(shooter, target) {
   const degrees = test.outcome?.success ? test.outcome.degrees : 0;
   const losses = m.uncapped ? degrees : Math.min(1, degrees);
   if (shooter.actor.system.has.reload) await setReload(shooter.id);
-  await markEngaged([], [shooter.id], [[shooter.id, "shots", 1], [shooter.id, "hits", degrees ? 1 : 0], [shooter.id, "inflicted", losses]]);
+  // Touchée, même si elle encaisse : pas de réorganisation en fin de tour.
+  await markEngaged(degrees ? [target.id] : [], [shooter.id], [[shooter.id, "shots", 1], [shooter.id, "hits", degrees ? 1 : 0], [shooter.id, "inflicted", losses]]);
   const apply = losses ? { token: target.id, losses } : null;
   const content = await renderCard("battle-test", {
     title: loc("AFC.Battle.Card.Shoot"),
@@ -455,6 +456,10 @@ export function plannedEngagements(battle = getBattle(), scene = canvas.scene) {
   return battle.units.filter(u => u.target && ["charge", "attack", "shoot"].includes(u.order) && !battle.done.includes(u.id)).map(u => {
     const from = scene.tokens.get(u.id), to = scene.tokens.get(u.target);
     if (!from?.actor || !to?.actor || ["routed", "destroyed"].includes(from.actor.system.state)) return null;
+    // Une cible dÃ©truite sort du combat ; une cible en dÃ©route ne combat plus, on peut encore lui tirer dessus.
+    if (to.actor.system.state === "destroyed" || (u.order !== "shoot" && to.actor.system.state === "routed")) return null;
+    // Rechargement : pas de tir au tour qui suit un tir.
+    if (u.order === "shoot" && (battle.reload ?? []).includes(u.id)) return null;
     // Après les mouvements, une mêlée demande le contact.
     if (battle.revealed && u.order !== "shoot" && !adjacent(from, to)) return null;
     return { from: u.id, to: u.target, fromName: from.name, toName: to.name, order: orderLabel(u.order), shoot: u.order === "shoot" };
