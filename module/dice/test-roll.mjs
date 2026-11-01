@@ -1,4 +1,5 @@
 import { ABILITIES, DIFFICULTIES, SYSTEM_ID } from "../config.mjs";
+import { isBook } from "../battle/rules.mjs";
 import { defaultDifficulty } from "../settings.mjs";
 
 const renderTemplate = (...args) => foundry.applications.handlebars.renderTemplate(...args);
@@ -56,6 +57,18 @@ export function autoPenalties(actor, abilityKey) {
     modifier -= s.armor.penalty;
     notes.push(game.i18n.format("AFC.Roll.Auto.armor", { n: s.armor.penalty }));
   }
+  if (actor.type === "troop") {
+    const book = isBook();
+    const n = book ? s.book.penalties : s.state === "disordered" ? 1 : 0;
+    if (n) {
+      dice += n;
+      notes.push(game.i18n.format("AFC.Roll.Auto.disorganized", { n }));
+    }
+    if (book && abilityKey === "agility" && s.book.armorPenalty) {
+      modifier -= s.book.armorPenalty;
+      notes.push(game.i18n.format("AFC.Roll.Auto.armor", { n: s.book.armorPenalty }));
+    }
+  }
   return { dice, modifier, notes };
 }
 
@@ -70,7 +83,8 @@ export function difficultyOptions(selected) {
  * - specialty : index de la spécialité à appliquer.
  */
 export async function rollAbilityTest(actor, abilityKey, { quick = false, specialty = null } = {}) {
-  const ability = actor.system.abilities[abilityKey];
+  // Une troupe n'a qu'un rang par compétence, sans spécialité.
+  const ability = actor.type === "troop" ? { rank: actor.system.book.abilities[abilityKey], specialties: [] } : actor.system.abilities[abilityKey];
   const label = game.i18n.localize(ABILITIES[abilityKey].label);
   const auto = autoPenalties(actor, abilityKey);
   const spec = specialty !== null ? ability.specialties[specialty] : null;

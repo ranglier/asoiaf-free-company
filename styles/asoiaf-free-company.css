@@ -517,6 +517,9 @@ body.detached .application.afc.afc-fill.afc-dialog .window-content { max-height:
 .afc .afc-battle .battle-troop.state-disordered .book-health span { background: #b5651d; }
 .afc .afc-battle .battle-troop .stats .warn { color: var(--afc-wax); }
 .afc .book-abilities { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.3rem 0.6rem; margin: 0.4rem 0; }
+.afc .book-ability { display: flex; flex-direction: column; gap: 2px; font-family: var(--afc-font-label); font-size: 15px; color: var(--afc-ink-soft); }
+.afc .book-ability .roll-skill { cursor: pointer; }
+.afc .book-ability .roll-skill:hover { color: var(--afc-wax); }
 .afc .cmd-subs { display: flex; flex-direction: column; max-height: 12rem; overflow-y: auto; }
 .afc-card.battle.book.failed > .verdict strong { color: var(--afc-ink); }
 .afc-card.battle.book .side + .side { border-top: 1px dotted var(--afc-line); padding-top: 0.25rem; }

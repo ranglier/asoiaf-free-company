@@ -1214,7 +1214,8 @@
       "Auto": {
         "wounds": "Wounds −{n}D",
         "injuries": "Injuries −{n}",
-        "armor": "Armor −{n}"
+        "armor": "Armor −{n}",
+        "disorganized": "Disorganized −{n}D"
       },
       "Against": "vs",
       "Success": {

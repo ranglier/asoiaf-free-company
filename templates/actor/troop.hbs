@@ -41,7 +41,7 @@
     <label class="checkbox"><input type="checkbox" name="system.book.upShoot" {{checked system.book.upShoot}}> {{localize "AFC.BattleBook.UpShoot"}}</label>
   </div>
   <div class="book-abilities">
-    {{#each bookAbilities as |a|}}<label>{{localize a.label}}<input type="number" name="system.book.abilities.{{a.key}}" value="{{a.value}}" min="1" max="9"></label>{{/each}}
+    {{#each bookAbilities as |a|}}<div class="book-ability">{{#if @root.editable}}<a class="roll-skill" data-action="rollSkill" data-ability="{{a.key}}" data-tooltip="AFC.Roll.QuickHint"><i class="fa-solid fa-dice-d6"></i> {{localize a.label}}</a>{{else}}<span>{{localize a.label}}</span>{{/if}}<input type="number" name="system.book.abilities.{{a.key}}" value="{{a.value}}" min="1" max="9" aria-label="{{localize a.label}}"></div>{{/each}}
   </div>
   <label>{{localize "AFC.Battle.Men"}}<input type="number" name="system.men" value="{{system.men}}" min="0"></label>
   {{else}}
@@ -70,7 +70,7 @@
   </div>
   <p class="hint">{{localize "AFC.Battle.SkillsHint"}}</p>
   <div class="book-abilities">
-    {{#each bookAbilities as |a|}}<label>{{localize a.label}}<input type="number" name="system.book.abilities.{{a.key}}" value="{{a.value}}" min="1" max="9"></label>{{/each}}
+    {{#each bookAbilities as |a|}}<div class="book-ability">{{#if @root.editable}}<a class="roll-skill" data-action="rollSkill" data-ability="{{a.key}}" data-tooltip="AFC.Roll.QuickHint"><i class="fa-solid fa-dice-d6"></i> {{localize a.label}}</a>{{else}}<span>{{localize a.label}}</span>{{/if}}<input type="number" name="system.book.abilities.{{a.key}}" value="{{a.value}}" min="1" max="9" aria-label="{{localize a.label}}"></div>{{/each}}
   </div>
 
   <div class="section-title"><h2>{{localize "AFC.Unit.Upgrade.title"}}</h2></div>

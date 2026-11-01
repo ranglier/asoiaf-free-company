@@ -2,6 +2,7 @@
  * Fiche de Troupe : type, entraînement, traits, état et compteurs de bataille.
  */
 import { SYSTEM_ID, UNIT_TRAININGS } from "../config.mjs";
+import { rollAbilityTest } from "../dice/test-roll.mjs";
 import { mergeTraits, STATE_ORDER, TRAITS, TROOP_STATES, TYPE_TRAITS } from "../battle/battle-config.mjs";
 import { BOOK_ABILITIES, BOOK_EQUIPMENT, BOOK_FORMATIONS, BOOK_STATUS } from "../battle/book-config.mjs";
 import { prepareBookTroop } from "../battle/book.mjs";
@@ -18,6 +19,7 @@ export class TroopSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     window: { resizable: true },
     form: { submitOnChange: true },
     actions: {
+      rollSkill: TroopSheet.#onRollSkill,
       editImage: TroopSheet.#onEditImage,
       resetImage: TroopSheet.#onResetImage,
       resetTraits: TroopSheet.#onResetTraits,
@@ -61,6 +63,11 @@ export class TroopSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     delete data.trait;
     foundry.utils.setProperty(data, "system.traits", traits);
     return data;
+  }
+
+  /** Clic : test rapide ; Maj + clic : dialogue complet. */
+  static #onRollSkill(event, target) {
+    return rollAbilityTest(this.document, target.dataset.ability, { quick: !event.shiftKey });
   }
 
   /** Règles du livre : compétences et équipement recalculés depuis le type et l'entraînement. */
