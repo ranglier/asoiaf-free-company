@@ -585,6 +585,8 @@
         "trainingBonusHint": "Skills above 3D: veteran 3D+1B, elite 3D+2B. Green: 2D+1B on key skills. Unchecked: each rank is a test die.",
         "singleDefense": "Single target roll",
         "singleDefenseHint": "A troop attacked by several rolls its defense dice once per round: the same dice count against each attacker.",
+        "holdBreaks": "Hold breaks the charge",
+        "holdBreaksHint": "A charge against a Holding troop loses Shock, Heavy Shock and volley. Only shields and pikes gain +1B. Unchecked: any Holding troop has +1B against a charge.",
         "flankLimit": "Limited flank (trial)",
         "flankLimitHint": "The flank bonus never exceeds +1B, however many allies touch the opponent.",
         "sameRoll": "Same roll",
@@ -747,7 +749,7 @@
       "Mod": {
         "triangle": "Winning order", "shockCancels": "Shock: cancels the Hold bonus", "flank": "Flank ({n})",
         "chargeUp": "Charging uphill", "crossing": "Crossing (ford or bridge)", "holdCrossing": "Holds the crossing",
-        "winded": "Winded", "mountedTerrain": "Cavalry hindered by terrain", "pikesHold": "Charging pikes", "volley": "Volley",
+        "winded": "Winded", "holdBreaks": "Hold breaks the charge", "mountedTerrain": "Cavalry hindered by terrain", "pikesHold": "Charging pikes", "volley": "Volley",
         "base": "Base", "cover": "Cover", "none": "No modifier"
       },
       "Warn": {

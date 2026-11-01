@@ -108,7 +108,12 @@ export function meleeMods(att, def, battle) {
 
   // Triangle (Choc : une cavalerie qui charge de l'infanterie annule le bonus de Tenir).
   if (TRIANGLE[aOrder] === dOrder) am.push(mod(loc("AFC.Battle.Mod.triangle"), { b: 1 }));
-  if (TRIANGLE[dOrder] === aOrder) {
+  // Tenir brise l'élan (option) : seuls les boucliers et les piques en tirent un bonus.
+  const breaksCharge = !!battle.holdBreaks && charging && dOrder === "hold";
+  if (breaksCharge) {
+    if (D.has.shields || D.has.pikes) dm.push(mod(loc("AFC.Battle.Mod.triangle"), { b: 1 }));
+    else am.push(mod(loc("AFC.Battle.Mod.holdBreaks")));
+  } else if (TRIANGLE[dOrder] === aOrder) {
     const wall = D.has.shields && dOrder === "hold";
     const shock = charging && (A.has.shock || A.has.heavyShock) && !D.has.mounted && !D.has.pikes && !wall;
     if (shock) am.push(mod(loc("AFC.Battle.Mod.shockCancels")));
@@ -152,7 +157,7 @@ export function meleeMods(att, def, battle) {
   }
   if (A.has.pikes && D.has.mounted) am.push(mod(loc("AFC.Battle.Trait.pikes.name"), { d: 1 }));
   // Volée des armes de jet.
-  if (A.has.javelins && charging) am.push(mod(loc("AFC.Battle.Mod.volley"), { b: 1 }));
+  if (A.has.javelins && charging && !breaksCharge) am.push(mod(loc("AFC.Battle.Mod.volley"), { b: 1 }));
   if (D.has.javelins && dOrder === "hold" && charging) dm.push(mod(loc("AFC.Battle.Mod.volley"), { b: 1 }));
   // Course : une troupe essoufflée combat mal ce tour-ci.
   if (aOrder === "run") am.push(mod(loc("AFC.Battle.Mod.winded"), { p: 1 }));
@@ -166,7 +171,7 @@ export function meleeMods(att, def, battle) {
   if (charging && A.state === "disordered") warnings.push(loc("AFC.Battle.Warn.chargeDisordered"));
   if (charging && (terrainHas(dTerrain, "noCharge") || WEATHER[battle.weather]?.noCharge)) warnings.push(loc("AFC.Battle.Warn.noCharge"));
   if (!adjacent(att, def)) warnings.push(loc("AFC.Battle.Warn.notAdjacent"));
-  return { am, dm, warnings, aOrder, dOrder, heavyShock: charging && A.has.heavyShock };
+  return { am, dm, warnings, aOrder, dOrder, heavyShock: charging && A.has.heavyShock && !breaksCharge };
 }
 
 /** Modificateurs de tir et difficulté. */
