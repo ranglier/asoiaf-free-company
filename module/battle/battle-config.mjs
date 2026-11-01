@@ -15,6 +15,9 @@ export const STATE_ORDER = Object.keys(TROOP_STATES);
 export const DISORDER_LOSS = 5;
 export const MAX_LOSS = 70;
 
+/** Test d'officier (option) : Discipline + 3, +1 par 100 hommes au-delà des 100 premiers ; +1B dès 1 degré, +2B dès 3 degrés. */
+export const OFFICER_TEST = { margin: 3, perHundredMen: 1, degreesPerBonus: 2, max: 2 };
+
 /** Entraînement : réserve d'encaissement. */
 export const TRAINING_BATTLE = {
   support: { cushion: 0 },

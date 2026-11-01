@@ -4,12 +4,13 @@
  */
 import { SYSTEM_ID } from "../config.mjs";
 import { specialtyBonus } from "../data/actor-character.mjs";
-import { rollDice } from "../dice/test-roll.mjs";
+import { autoPenalties, evaluateTest, rollDice } from "../dice/test-roll.mjs";
+import { defaultSkillKeys } from "../unit-mix.mjs";
 import {
-  MAX_LOSS, MOVING_ORDERS, ORDER_ICONS, STATE_ORDER, TERRAINS, TRIANGLE, TROOP_STATES, WEATHER
+  MAX_LOSS, MOVING_ORDERS, OFFICER_TEST, ORDER_ICONS, STATE_ORDER, TERRAINS, TRIANGLE, TROOP_STATES, WEATHER
 } from "./battle-config.mjs";
 import { executeMoves } from "./moves.mjs";
-import { askHandlers, askUser, getBattle, gmHandlers, requestGM, resetOrders, saveBattle, unitOf } from "./state.mjs";
+import { askHandlers, askUser, canCommand, getBattle, gmHandlers, requestGM, resetOrders, saveBattle, unitOf } from "./state.mjs";
 
 const { DialogV2 } = foundry.applications.api;
 const loc = key => game.i18n.localize(key);
@@ -68,16 +69,33 @@ function flankers(target, side, exclude) {
 /** Dés de bonus d'un officier : 1 par tranche de 2 rangs d'Art militaire, Tactiques comptant comme des rangs (au moins 1). */
 export const officerBonus = warfare => Math.max(1, Math.floor((warfare.rank + specialtyBonus(warfare, TACTICS)) / 2));
 
+/** Dés de bonus de l'officier ce tour-ci : résultat de son test (option), sinon bonus fixe. */
+export function officerDice(battle, tokenId, officerId, warfare) {
+  if (!battle.officerTest) return officerBonus(warfare);
+  return battle.command.find(c => c.id === tokenId && c.officer === officerId)?.bonus ?? 0;
+}
+
+/** Dés d'une compétence. Option : 3D au plus, le reste en dés de bonus ; un Bleu a 2D+1B sur ses compétences clés. */
+export function troopPool(s, ability, battle) {
+  const rank = s.book.abilities[ability];
+  if (!battle.trainingBonus) return { rank, bonus: 0 };
+  const keys = s.skillKeys?.length ? s.skillKeys : defaultSkillKeys(s.unitType, s.unitType2);
+  if (s.training === "green" && keys.includes(ability)) return { rank: 2, bonus: 1 };
+  return rank > 3 ? { rank: 3, bonus: rank - 3 } : { rank, bonus: 0 };
+}
+
 /** La troupe lance sa propre compétence (Corps à corps ou Tir) ; son officier lui donne des dés de bonus. */
 function roller(token, battle, kind = "melee") {
   const s = token.actor.system;
-  const skill = loc(`AFC.Ability.${kind === "shoot" ? s.shootSkill : "fighting"}`);
+  const ability = kind === "shoot" ? s.shootSkill : "fighting";
+  const skill = loc(`AFC.Ability.${ability}`);
   const officerId = unitOf(battle, token.id).officer;
   const officer = officerId ? game.actors.get(officerId) : null;
   const warfare = officer?.system.abilities?.warfare;
+  const base = troopPool(s, ability, battle);
   return {
-    name: warfare ? `${skill}, ${officer.name}` : skill, rank: kind === "shoot" ? s.shootRank : s.melee,
-    bonus: warfare ? officerBonus(warfare) : 0, officer: !!warfare
+    name: warfare ? `${skill}, ${officer.name}` : skill, rank: base.rank,
+    bonus: base.bonus + (warfare ? officerDice(battle, token.id, officerId, warfare) : 0), officer: !!warfare
   };
 }
 
@@ -210,10 +228,27 @@ const poolLabel = (p, test) => `${p.rank}D${test.bonus ? ` +${test.bonus}B` : ""
 const modTags = mods => mods.map(m => `${m.label}${m.b ? ` +${m.b}B` : ""}${m.d ? ` +${m.d}D` : ""}${m.p ? ` −${m.p}D` : ""}`);
 const lossLabel = (name, n) => (n > 0 ? fmt(n === 1 ? "AFC.Battle.Card.Lose1" : "AFC.Battle.Card.LoseN", { l: name, n }) : loc("AFC.Battle.Card.NoLoss"));
 
+/** Jet unique de la cible (option) : une fois par tour, les mêmes dés servent contre chaque attaquant. */
+async function defenseRoll(p, id) {
+  const battle = getBattle();
+  const kept = battle.defenseDice.find(e => e.id === id)?.dice ?? [];
+  const bonus = Math.max(0, Math.min(p.bonus, p.rank));
+  const count = p.rank + bonus;
+  let roll = null, dice = kept;
+  if (kept.length < count) {
+    roll = await new Roll(`${count - kept.length}d6`).evaluate();
+    dice = [...kept, ...roll.dice[0].results.map(d => d.result)];
+    battle.defenseDice = [...battle.defenseDice.filter(e => e.id !== id), { id, dice }];
+    await saveBattle(battle);
+  }
+  return { roll, bonus, reused: kept.length > 0, ...evaluateTest(dice.slice(0, count), p) };
+}
+
 /** Mêlée entre deux jetons (attaquant : jeton contrôlé ; défenseur : cible). */
 export async function resolveMelee(att, def) {
   const battle = getBattle();
   const m = meleeMods(att, def, battle);
+  m.warnings.push(...uncommanded([att, def], battle));
   const ra = roller(att, battle), rd = roller(def, battle);
   const opts = await DialogV2.prompt({
     window: { title: fmt("AFC.Battle.MeleeTitle", { a: att.name, d: def.name }) },
@@ -229,7 +264,7 @@ export async function resolveMelee(att, def) {
   if (!opts) return;
   const pa = pool(ra, m.am, opts.a), pd = pool(rd, m.dm, opts.d);
   const ta = await rollDice(pa);
-  const td = await rollDice(pd);
+  const td = battle.singleDefense ? await defenseRoll(pd, def.id) : await rollDice(pd);
   let winner = null, loser = null, degrees = 0;
   if (ta.total > td.total) { winner = att; loser = def; degrees = degreesOf(ta.total - td.total); }
   else if (td.total > ta.total) { winner = def; loser = att; degrees = degreesOf(td.total - ta.total); }
@@ -242,7 +277,7 @@ export async function resolveMelee(att, def) {
   await markEngaged([att.id, def.id], mutual ? [att.id, def.id] : [att.id], winner ? [[winner.id, "won", 1], [loser.id, "lost", 1], [winner.id, "inflicted", losses]] : []);
   const side = (token, r, mods, p, test, order) => ({
     name: token.name, roller: r.name, order: orderLabel(order), total: test.total, dice: test.dice,
-    pool: poolLabel(p, test), tags: modTags(mods), winner: winner === token
+    pool: poolLabel(p, test), tags: [...modTags(mods), ...(test.reused ? [loc("AFC.Battle.Options.sameRoll")] : [])], winner: winner === token
   });
   const apply = loser && losses > 0 ? { token: loser.id, losses } : null;
   const sides = [side(att, ra, m.am, pa, ta, m.aOrder), side(def, rd, m.dm, pd, td, m.dOrder)];
@@ -254,13 +289,14 @@ export async function resolveMelee(att, def) {
     detail: winner ? [lossLabel(loser.name, losses), ...notes].join(" · ") : loc("AFC.Battle.Card.TieDetail"),
     ...cardApply(apply, opts.auto)
   });
-  return postResult({ content, rolls: [ta.roll, td.roll], apply, auto: opts.auto });
+  return postResult({ content, rolls: [ta.roll, td.roll].filter(Boolean), apply, auto: opts.auto });
 }
 
 /** Tir (tireur : jeton contrôlé ; cible : jeton ciblé). */
 export async function resolveShoot(shooter, target) {
   const battle = getBattle();
   const m = shootMods(shooter, target, battle);
+  m.warnings.push(...uncommanded([shooter], battle));
   const r = roller(shooter, battle, "shoot");
   const opts = await DialogV2.prompt({
     window: { title: fmt("AFC.Battle.ShootTitle", { a: shooter.name, d: target.name }) },
@@ -433,6 +469,69 @@ export async function rallyTroop(tokenId) {
 
 gmHandlers.troopUpdate = ({ actor, changes }) => game.actors.get(actor)?.update(changes);
 
+/* ---------- Commander (test d'officier, en option) ---------- */
+
+/** Difficulté : Discipline + 3, plus l'effectif : 100 hommes se dirigent plus facilement que 300. */
+export function commandDifficulty(s) {
+  const size = Math.max(0, Math.ceil(s.men / 100) - 1) * OFFICER_TEST.perHundredMen;
+  return { total: s.discipline + OFFICER_TEST.margin + size, size };
+}
+
+/** L'officier peut-il encore commander cette troupe ce tour-ci ? C'est l'action qu'il choisit après la révélation. */
+export function mayCommand(token, battle = getBattle()) {
+  const officerId = unitOf(battle, token.id).officer;
+  return !!battle.officerTest && battle.revealed && !!game.actors.get(officerId)?.system.abilities?.warfare && alive(token)
+    && canCommand(token, battle) && !battle.command.some(c => c.id === token.id && c.officer === officerId);
+}
+
+/** Officiers qui n'ont pas encore commandé : rappel au MJ avant de résoudre. */
+const uncommanded = (tokens, battle) => (battle.officerTest ? tokens.filter(t => mayCommand(t, battle)).map(t => fmt("AFC.Battle.Options.notCommanded", { name: t.name })) : []);
+
+const commanding = new Set();
+
+/** Action Commander : le joueur lance le test de son officier ; la carte de l'ennemi et des troupes cachées reste au MJ. */
+export async function commandTroop(tokenId) {
+  const token = canvas.scene.tokens.get(tokenId);
+  const battle = getBattle();
+  if (!token?.actor || commanding.has(tokenId) || !mayCommand(token, battle)) return;
+  if (!game.users.activeGM) return ui.notifications.warn(loc("AFC.BattleBook.NoGM"));
+  commanding.add(tokenId);
+  try {
+    const s = token.actor.system;
+    const officerId = unitOf(battle, tokenId).officer;
+    const officer = game.actors.get(officerId);
+    const warfare = officer.system.abilities.warfare;
+    const d = commandDifficulty(s);
+    const auto = autoPenalties(officer, "warfare");
+    const p = { rank: warfare.rank, bonus: specialtyBonus(warfare, TACTICS), penalty: auto.dice, modifier: auto.modifier };
+    const test = await rollDice({ ...p, difficulty: d.total });
+    const success = test.outcome.success;
+    const degrees = success ? test.outcome.degrees : 0;
+    const bonus = Math.min(OFFICER_TEST.max, Math.ceil(degrees / OFFICER_TEST.degreesPerBonus));
+    const result = { id: tokenId, officer: officerId, bonus };
+    await (game.user.isGM ? gmHandlers.setCommand(result) : requestGM("setCommand", result));
+    const detail = [fmt("AFC.Battle.Options.commandDetail", { d: s.discipline, m: OFFICER_TEST.margin }), ...(d.size ? [fmt("AFC.Battle.Options.commandSize", { n: d.size })] : [])].join(" + ");
+    return await ChatMessage.create({
+      rolls: [test.roll], speaker: ChatMessage.getSpeaker({ actor: officer }),
+      whisper: s.side === "company" && !token.hidden ? [] : ChatMessage.getWhisperRecipients("GM"),
+      content: await renderCard("battle-test", {
+        title: loc("AFC.Battle.Options.commandButton"),
+        subtitle: fmt("AFC.Battle.Options.commandBy", { who: officer.name, name: token.name }),
+        total: test.total, dice: test.dice, success, degrees,
+        verdict: bonus ? fmt("AFC.Battle.Options.commandOk", { n: bonus }) : loc("AFC.Battle.Options.noBonus"),
+        detail: fmt("AFC.Battle.Card.Against", { n: d.total, detail }),
+        pool: poolLabel(p, test), tags: auto.notes
+      })
+    });
+  } finally { commanding.delete(tokenId); }
+}
+
+gmHandlers.setCommand = async ({ id, officer, bonus }) => {
+  const battle = getBattle();
+  battle.command = [...battle.command.filter(c => c.id !== id), { id, officer, bonus }];
+  await saveBattle(battle);
+};
+
 /* ---------- Suivi du tour ---------- */
 
 /** Note les troupes engagées en mêlée et les engagements résolus ce tour-ci. */
@@ -526,6 +625,8 @@ export async function endTurn() {
   battle.reload = battle.reloadNext ?? [];
   battle.reloadNext = [];
   battle.moved = [];
+  battle.command = [];
+  battle.defenseDice = [];
   await saveBattle(battle);
   // On garde l'officier ; ordre, cible et contre-ordre repartent de zéro.
   await resetOrders();

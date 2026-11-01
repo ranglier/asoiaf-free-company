@@ -7,15 +7,25 @@ import { ORDERS, TRIANGLE, TROOP_STATES, WEATHER } from "./battle-config.mjs";
 import { bookContext, bookReport, chooseCommanders, freeAttack, giveBookOrder, nextStep, resetBook, switchRules } from "./book.mjs";
 import { battleRules, isBook, RULES } from "./rules.mjs";
 import { TerrainPainter } from "./terrain.mjs";
-import { battleReport, endTurn, officerBonus, orderLabel, plannedEngagements, rallyTroop, resolveMelee, resolvePlanned, resolveShoot, revealOrders } from "./engagement.mjs";
+import { battleReport, commandTroop, endTurn, mayCommand, officerBonus, orderLabel, plannedEngagements, rallyTroop, resolveMelee, resolvePlanned, resolveShoot, revealOrders, troopPool } from "./engagement.mjs";
 import { chooseOfficer, giveOrder, hexNumber, hexNumbersOn, ORDER_ICONS, orderVisible, startTargetPick, TARGETED_ORDERS } from "./map.mjs";
 import { APPROACH_ORDERS, hasMoved, PATH_ORDERS, startMovePick } from "./moves.mjs";
-import { canCommand, clearBattle, getBattle, saveBattle, setUnit, unitOf } from "./state.mjs";
+import { BATTLE_OPTIONS, canCommand, clearBattle, getBattle, saveBattle, setUnit, unitOf } from "./state.mjs";
 import { createEnemyTroop } from "./troops.mjs";
 
 const { ApplicationV2, HandlebarsApplicationMixin, DialogV2 } = foundry.applications.api;
 const loc = key => game.i18n.localize(key);
 const COMMAND = ["commandement", "command"];
+const poolText = p => `${p.rank}D${p.bonus ? `+${p.bonus}B` : ""}`;
+
+/** Bonus de l'officier sur la fiche : bonus fixe, ou résultat de son test une fois lancé. */
+function officerNote(battle, tokenId, officerId, officer) {
+  const warfare = officer?.system.abilities?.warfare;
+  if (!warfare) return "";
+  if (!battle.officerTest) return `+${officerBonus(warfare)}B`;
+  const done = battle.command.find(c => c.id === tokenId && c.officer === officerId);
+  return done ? `+${done.bonus}B` : "";
+}
 
 /** Applique l'ordre choisi par l'utilisateur ; une troupe qu'il n'a pas encore rangée vient à la fin. */
 function sortTroops(list, side, scene) {
@@ -44,6 +54,7 @@ export class BattleApp extends HandlebarsApplicationMixin(ApplicationV2) {
       clearTarget: BattleApp.#onClearTarget,
       officer: BattleApp.#onOfficer,
       rally: BattleApp.#onRally,
+      command: BattleApp.#onCommand,
       focus: BattleApp.#onFocus,
       openTroop: BattleApp.#onOpenTroop,
       bookNext: BattleApp.#onBookNext,
@@ -102,10 +113,11 @@ export class BattleApp extends HandlebarsApplicationMixin(ApplicationV2) {
         canPickMove: mine && !hasMoved(token) && (PATH_ORDERS.includes(unit.order) || (APPROACH_ORDERS.includes(unit.order) && !!unit.target)),
         moveSet: !!unit.path?.length,
         officerName: officer?.name ?? null,
-        officerBonus: officer?.system.abilities?.warfare ? officerBonus(officer.system.abilities.warfare) : 0,
+        officerNote: officerNote(battle, token.id, unit.officer, officer),
+        canOfficerCommand: mayCommand(token, battle),
         overload: officer && officerLoad[unit.officer] > commandMax(unit.officer) ? commandMax(unit.officer) : 0,
         cushion: s.cushion, cushionMax: s.cushionMax, disorders: s.disorders, rallies: s.rallies, ralliesMax: s.ralliesMax,
-        move: s.move, range: s.range, melee: s.melee, shootRank: s.shootRank, units: s.units, weight: s.weight,
+        move: s.move, range: s.range, meleeLabel: poolText(troopPool(s, "fighting", battle)), shootLabel: poolText(troopPool(s, s.shootSkill, battle)), units: s.units, weight: s.weight,
         traits: [
           ...s.traits.map(k => ({ name: loc(`AFC.Battle.Trait.${k}.name`), effect: loc(`AFC.Battle.Trait.${k}.effect`) })),
           ...["armor", "melee", "shoot"].filter(k => s.upgrades[k]).map(k => ({ name: loc(`AFC.Unit.Upgrade.${k}`), effect: loc(`AFC.Unit.Upgrade.${k}Effect`) }))
@@ -122,7 +134,8 @@ export class BattleApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
     const context = {
       battle, isGM, hasScene: !!scene, book,
-      rules: scene ? battleRules(scene) : "house", rulesLabel: `AFC.Battle.Rules.${scene ? battleRules(scene) : "house"}`, settingsOpen: this.settingsOpen, hexNumbers: hexNumbersOn(scene), freeMove: !!battle.freeMove, outnumber: !!battle.outnumber,
+      rules: scene ? battleRules(scene) : "house", rulesLabel: `AFC.Battle.Rules.${scene ? battleRules(scene) : "house"}`, settingsOpen: this.settingsOpen, hexNumbers: hexNumbersOn(scene), freeMove: !!battle.freeMove,
+      battleOptions: BATTLE_OPTIONS.map(key => ({ key, on: !!battle[key], label: `AFC.Battle.Options.${key}`, hint: `AFC.Battle.Options.${key}Hint` })),
       ruleOptions: Object.fromEntries(RULES.map(k => [k, `AFC.Battle.Rules.${k}`])),
       orders: ORDERS.map(k => ({ key: k, label: loc(`AFC.Battle.Order.${k}`), icon: ORDER_ICONS[k], help: loc(`AFC.Battle.OrderHelp.${k}`) })),
       triangle: Object.entries(TRIANGLE).map(([a, b]) => ({ a: orderLabel(a), b: orderLabel(b) })),
@@ -155,9 +168,9 @@ export class BattleApp extends HandlebarsApplicationMixin(ApplicationV2) {
     // Paramètres : restent ouverts d'un affichage à l'autre ; annuler le changement de règles remet le choix en place.
     this.element.querySelector(".battle-settings")?.addEventListener("toggle", event => { this.settingsOpen = event.target.open; });
     this.element.querySelector('[name="hexNumbers"]')?.addEventListener("change", event => canvas.scene.setFlag(SYSTEM_ID, "hexNumbers", event.target.checked));
-    this.element.querySelector('[name="outnumber"]')?.addEventListener("change", async event => {
+    for (const key of BATTLE_OPTIONS) this.element.querySelector(`[name="${key}"]`)?.addEventListener("change", async event => {
       const battle = getBattle();
-      battle.outnumber = event.target.checked;
+      battle[key] = event.target.checked;
       await saveBattle(battle);
     });
     this.element.querySelector('[name="freeMove"]')?.addEventListener("change", async event => {
@@ -239,6 +252,7 @@ export class BattleApp extends HandlebarsApplicationMixin(ApplicationV2) {
   static #onClearTarget(event, target) { const t = BattleApp.#token(target); if (t) setUnit(t.id, { target: "" }); }
   static #onOfficer(event, target) { const t = BattleApp.#token(target); if (t) chooseOfficer(t); }
   static #onRally(event, target) { const t = BattleApp.#token(target); if (t) rallyTroop(t.id); }
+  static #onCommand(event, target) { const t = BattleApp.#token(target); if (t) commandTroop(t.id); }
   static #onOpenTroop(event, target) { BattleApp.#token(target)?.actor?.sheet.render(true); }
 
   /** Centre la vue sur la troupe et la sélectionne. */
@@ -277,8 +291,10 @@ export class BattleApp extends HandlebarsApplicationMixin(ApplicationV2) {
     const ok = await DialogV2.confirm({ window: { title: loc("AFC.Battle.Reset") }, content: `<p>${loc("AFC.Battle.ResetConfirm")}</p>`, rejectClose: false });
     if (!ok) return;
     if (isBook()) return resetBook();
-    const rules = getBattle().rules;
+    const old = getBattle();
+    const kept = Object.fromEntries(BATTLE_OPTIONS.map(k => [k, old[k]]));
+    if (old.rules) kept.rules = old.rules;
     await clearBattle();
-    if (rules) await canvas.scene.setFlag(SYSTEM_ID, "battle", { rules });
+    await canvas.scene.setFlag(SYSTEM_ID, "battle", kept);
   }
 }

@@ -88,7 +88,7 @@ export async function switchRules(rules) {
     });
     if (!ok) return;
   }
-  Object.assign(battle, { rules, round: 1, revealed: false, weather: "clear", engaged: [], done: [], reload: [], reloadNext: [], moved: [] });
+  Object.assign(battle, { rules, round: 1, revealed: false, weather: "clear", engaged: [], done: [], reload: [], reloadNext: [], moved: [], command: [], defenseDice: [] });
   battle.book = newBook(battle.book);
   await saveBattle(battle);
   await resetOrders();
