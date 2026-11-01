@@ -31,10 +31,10 @@ export const TRAINING_BATTLE = {
 };
 
 /** Ordres. Ordres gagnants : Charger bat Tirer, Tenir bat Charger (Attaquer est neutre, Tirer n'a pas de bonus contre Tenir depuis la v0.27.5). */
-export const ORDERS = ["charge", "attack", "hold", "shoot", "maneuver", "withdraw"];
+export const ORDERS = ["charge", "attack", "hold", "shoot", "maneuver", "run", "withdraw"];
 export const TRIANGLE = { charge: "shoot", hold: "charge" };
 /** Ordres « en mouvement » (pertes au tir non plafonnées). */
-export const MOVING_ORDERS = ["charge", "attack", "maneuver"];
+export const MOVING_ORDERS = ["charge", "attack", "maneuver", "run"];
 
 /** Traits d'équipement et de type. Le libellé et l'effet sont dans les fichiers de langue. */
 export const TRAITS = [
@@ -115,5 +115,5 @@ export const WEATHER = { clear: {}, rain: { shoot: 1, noCharge: true }, fog: { r
 /** Icône de chaque ordre (carte, fenêtre Bataille, carte de chat). */
 export const ORDER_ICONS = {
   charge: "fa-horse-head", attack: "fa-hand-fist", hold: "fa-shield-halved",
-  shoot: "fa-bullseye", maneuver: "fa-arrows-up-down-left-right", withdraw: "fa-person-walking-arrow-loop-left"
+  shoot: "fa-bullseye", maneuver: "fa-arrows-up-down-left-right", run: "fa-person-running", withdraw: "fa-person-walking-arrow-loop-left"
 };

@@ -30,16 +30,18 @@ export async function splitTroop({ token: id, units, officer, name = null }) {
   const at = freeNeighbor(token);
   if (!at) { ui.notifications.warn(loc("AFC.Battle.Split.NoRoom")); return null; }
   const men = Math.round(s.men * units / s.units);
+  // L'encaissement se partage au prorata, arrondi au profit du bloc d'origine : découper n'en crée pas.
+  const cushion = Math.floor(s.cushion * units / s.units);
   const data = token.actor.toObject();
   delete data._id;
   foundry.utils.mergeObject(data, {
     name: name ?? `${token.name} (${units})`,
-    "system.units": units, "system.men": men,
+    "system.units": units, "system.men": men, "system.cushion": cushion,
     [`flags.asoiaf-free-company.unit`]: { order: "", target: "", officer, countered: false, path: [] },
     "prototypeToken.name": name ?? `${token.name} (${units})`
   });
   const actor = await Actor.create(data);
-  await token.actor.update({ "system.units": s.units - units, "system.men": s.men - men });
+  await token.actor.update({ "system.units": s.units - units, "system.men": s.men - men, "system.cushion": s.cushion - cushion });
   const doc = await actor.getTokenDocument({ x: at.x - canvas.grid.sizeX / 2, y: at.y - canvas.grid.sizeY / 2, hidden: token.hidden });
   const [created] = await scene.createEmbeddedDocuments("Token", [doc.toObject()]);
   return created;

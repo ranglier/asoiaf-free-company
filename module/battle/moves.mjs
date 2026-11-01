@@ -11,7 +11,7 @@ const loc = key => game.i18n.localize(key);
 const fmt = (key, data) => game.i18n.format(key, data);
 const esc = s => foundry.utils.escapeHTML(String(s ?? ""));
 /** Ordres dont on choisit soi-même la case d'arrivée, et ordres qui rejoignent leur cible. */
-export const PATH_ORDERS = ["maneuver", "withdraw"];
+export const PATH_ORDERS = ["maneuver", "run", "withdraw"];
 export const APPROACH_ORDERS = ["charge", "attack"];
 
 const keyOf = o => `${o.i},${o.j}`;
@@ -40,7 +40,9 @@ export function occupiedCells(scene, { all = false } = {}) {
 export function moveRange(token, order) {
   const s = token.actor.system;
   if (order === "withdraw") return 1;
-  return s.move + (order === "maneuver" && (s.has.mounted || s.has.light || getBattle(token.parent).fastManeuver) ? 1 : 0);
+  const quick = s.has.mounted || s.has.light ? 1 : 0;
+  if (order === "run") return s.move + quick + 1;
+  return s.move + (order === "maneuver" ? quick : 0);
 }
 
 /**

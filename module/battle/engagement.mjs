@@ -125,8 +125,9 @@ export function meleeMods(att, def, battle) {
   if (A.upgrades.melee) am.push(mod(loc("AFC.Unit.Upgrade.melee"), { b: 1 }));
   if (D.upgrades.melee) dm.push(mod(loc("AFC.Unit.Upgrade.melee"), { b: 1 }));
   // Flancs : chaque troupe alliée supplémentaire au contact de l'adversaire.
-  const aFlank = flankers(def, A.side, [att.id]);
-  const dFlank = flankers(att, D.side, [def.id]);
+  const flankMax = battle.flankLimit ? 1 : Infinity;
+  const aFlank = Math.min(flankMax, flankers(def, A.side, [att.id]));
+  const dFlank = Math.min(flankMax, flankers(att, D.side, [def.id]));
   if (aFlank) am.push(mod(fmt("AFC.Battle.Mod.flank", { n: aFlank }), { b: aFlank }));
   if (dFlank) dm.push(mod(fmt("AFC.Battle.Mod.flank", { n: dFlank }), { b: dFlank }));
   // Terrain du défenseur. La colline ne joue que contre un adversaire plus bas.
@@ -153,6 +154,9 @@ export function meleeMods(att, def, battle) {
   // Volée des armes de jet.
   if (A.has.javelins && charging) am.push(mod(loc("AFC.Battle.Mod.volley"), { b: 1 }));
   if (D.has.javelins && dOrder === "hold" && charging) dm.push(mod(loc("AFC.Battle.Mod.volley"), { b: 1 }));
+  // Course : une troupe essoufflée combat mal ce tour-ci.
+  if (aOrder === "run") am.push(mod(loc("AFC.Battle.Mod.winded"), { p: 1 }));
+  if (dOrder === "run") dm.push(mod(loc("AFC.Battle.Mod.winded"), { p: 1 }));
   // États.
   if (A.state === "disordered") am.push(mod(loc("AFC.Battle.State.disordered"), { p: 1 }));
   if (D.state === "disordered") dm.push(mod(loc("AFC.Battle.State.disordered"), { p: 1 }));

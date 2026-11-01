@@ -585,8 +585,8 @@
         "trainingBonusHint": "Skills above 3D: veteran 3D+1B, elite 3D+2B. Green: 2D+1B on key skills. Unchecked: each rank is a test die.",
         "singleDefense": "Single target roll",
         "singleDefenseHint": "A troop attacked by several rolls its defense dice once per round: the same dice count against each attacker.",
-        "fastManeuver": "Fast maneuver (trial)",
-        "fastManeuverHint": "Every troop gains +1 space on Maneuver, not only cavalry and light troops. Charges do not reach further.",
+        "flankLimit": "Limited flank (trial)",
+        "flankLimitHint": "The flank bonus never exceeds +1B, however many allies touch the opponent.",
         "sameRoll": "Same roll",
         "morale": "Morale",
         "noBonus": "No bonus",
@@ -651,6 +651,7 @@
         "hold": "stays put and defends; reorganizes if neither engaged nor hit",
         "shoot": "shoots a visible target in range; designate the target",
         "maneuver": "moves without fighting (cavalry and Light: +1 space, flank next turn); choose the destination, the token moves on reveal",
+        "run": "moves one space further than Maneuver, without fighting; winded, −1D if attacked in melee this round; pick the space, the token moves at the reveal",
         "withdraw": "steps back one space and limits losses; choose the space, the token moves on reveal"
       },
       "PickTarget": "{name}: click the targeted troop (Esc to cancel).",
@@ -683,7 +684,7 @@
       "Weather": { "clear": "Clear", "rain": "Rain", "fog": "Fog" },
       "Side": { "label": "Side", "company": "Company", "enemy": "Enemies" },
       "State": { "fresh": "Fresh", "shaken": "Shaken", "disordered": "Disordered", "routed": "Routed", "destroyed": "Destroyed" },
-      "Order": { "charge": "Charge", "attack": "Attack", "hold": "Hold", "shoot": "Shoot", "maneuver": "Maneuver", "withdraw": "Withdraw", "ambush": "Ambush", "blitz": "Blitz", "defend": "Defend", "envelop": "Envelop", "forceBack": "Force back", "formation": "Change formation", "hammerAnvil": "Hammer & anvil", "move": "Move", "organize": "Organize", "probing": "Probing attack", "rally": "Rally", "ready": "Ready", "reform": "Reform", "regroup": "Regroup", "retreat": "Retreat", "sap": "Sap", "scaleWalls": "Scale walls", "setCharge": "Set for a charge", "slashBurn": "Slash & burn", "splitAttack": "Split attack", "suppress": "Suppressing fire", "trample": "Trample", "withdrawFight": "Fighting withdrawal" },
+      "Order": { "charge": "Charge", "attack": "Attack", "hold": "Hold", "shoot": "Shoot", "maneuver": "Maneuver", "run": "Run", "withdraw": "Withdraw", "ambush": "Ambush", "blitz": "Blitz", "defend": "Defend", "envelop": "Envelop", "forceBack": "Force back", "formation": "Change formation", "hammerAnvil": "Hammer & anvil", "move": "Move", "organize": "Organize", "probing": "Probing attack", "rally": "Rally", "ready": "Ready", "reform": "Reform", "regroup": "Regroup", "retreat": "Retreat", "sap": "Sap", "scaleWalls": "Scale walls", "setCharge": "Set for a charge", "slashBurn": "Slash & burn", "splitAttack": "Split attack", "suppress": "Suppressing fire", "trample": "Trample", "withdrawFight": "Fighting withdrawal" },
       "Trait": {
         "heavyArmor": { "name": "Heavy armor", "effect": "Loses 1 fewer state when losing a melee by 2+ degrees; shots against it +3; movement −1." },
         "shields": { "name": "Shields", "effect": "Shots against it +3; with Hold: shield wall, immune to Shock." },
@@ -746,7 +747,7 @@
       "Mod": {
         "triangle": "Winning order", "shockCancels": "Shock: cancels the Hold bonus", "flank": "Flank ({n})",
         "chargeUp": "Charging uphill", "crossing": "Crossing (ford or bridge)", "holdCrossing": "Holds the crossing",
-        "mountedTerrain": "Cavalry hindered by terrain", "pikesHold": "Charging pikes", "volley": "Volley",
+        "winded": "Winded", "mountedTerrain": "Cavalry hindered by terrain", "pikesHold": "Charging pikes", "volley": "Volley",
         "base": "Base", "cover": "Cover", "none": "No modifier"
       },
       "Warn": {
