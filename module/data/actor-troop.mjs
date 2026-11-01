@@ -5,7 +5,7 @@
 import { UNIT_TRAININGS } from "../config.mjs";
 import { typeMight } from "../unit-mix.mjs";
 import {
-  DISORDER_LOSS, MAX_LOSS, RANGES, STATE_ORDER, TRAINING_BATTLE, TRAITS, TROOP_STATES
+  DISORDER_LOSS, MAX_LOSS, MOUNTED_UNIT_STRENGTH, RANGES, STATE_ORDER, TRAINING_BATTLE, TRAITS, TROOP_STATES
 } from "../battle/battle-config.mjs";
 import { BOOK_ABILITIES, BOOK_EQUIPMENT, BOOK_FORMATIONS, BOOK_MOVE, BOOK_RANGES, BOOK_STATUS } from "../battle/book-config.mjs";
 
@@ -33,7 +33,7 @@ export default class TroopData extends foundry.abstract.TypeDataModel {
       disorders: int(0, { min: 0 }),
       rallies: int(0, { min: 0 }),
       men: int(100, { min: 0 }),
-      // Unités du bloc et Puissance de chacune : le poids de la troupe pour le surnombre.
+      // Unités du bloc et Puissance de chacune.
       units: int(1, { min: 1 }),
       mightPerUnit: int(0, { min: 0 }),
       source: new fields.SchemaField({
@@ -82,7 +82,9 @@ export default class TroopData extends foundry.abstract.TypeDataModel {
     this.move = Math.max(1, move);
     this.range = Math.max(0, ...this.traits.map(k => RANGES[k] ?? 0));
     this.stateIndex = STATE_ORDER.indexOf(this.state);
+    // Puissance de la troupe (repère, hors des règles de bataille) et force pour le surnombre : ses hommes, ou ses unités montées.
     this.weight = this.units * (this.mightPerUnit || typeMight(this.unitType, this.unitType2));
+    this.strength = this.has.mounted ? Math.max(this.men, this.units * MOUNTED_UNIT_STRENGTH) : this.men;
     // Pertes en fin de bataille : état + 5 % par désorganisation, plafonnées.
     this.loss = Math.min(MAX_LOSS, (TROOP_STATES[this.state]?.loss ?? 0) + this.disorders * DISORDER_LOSS);
     this.lostMen = Math.round(this.men * this.loss / 100);

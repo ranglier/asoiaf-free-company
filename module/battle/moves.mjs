@@ -3,7 +3,7 @@
  * (Manœuvrer, Se replier) ou la cible (Charger, Attaquer) ; le mouvement prévu est dessiné pour qui
  * commande la troupe, et les jetons ne bougent qu'à la révélation, tous en même temps.
  */
-import { adjacent, center, regionTerrainKey } from "./engagement.mjs";
+import { adjacent, center, distance, regionTerrainKey, shootRange } from "./engagement.mjs";
 import { isBook } from "./rules.mjs";
 import { getBattle, gmHandlers, requestGM, saveBattle, setUnit, unitOf } from "./state.mjs";
 
@@ -288,6 +288,13 @@ export async function executeMoves(scene = canvas.scene) {
     }
     const target = scene.tokens.get(unit.target);
     if (target && !adjacent(token, target) && !token.hidden && !target.hidden) notes.push(fmt("AFC.Battle.Moves.NotReached", { a: esc(token.name), d: esc(target.name) }));
+  }
+  // Tirs devenus impossibles : la cible est sortie de portée pendant les mouvements.
+  for (const token of troops(scene)) {
+    const s = token.actor.system, unit = unitOf(battle, token.id), target = unit.target ? scene.tokens.get(unit.target) : null;
+    if (unit.order !== "shoot" || !target || token.hidden || target.hidden || ["routed", "destroyed"].includes(s.state)) continue;
+    const dist = distance(token, target), range = shootRange(s, battle);
+    if (dist > range) notes.push(fmt("AFC.Battle.Moves.ShotOutOfRange", { a: esc(token.name), d: esc(target.name), n: dist, r: range }));
   }
   battle.moved = [...moved];
   await saveBattle(battle, scene);

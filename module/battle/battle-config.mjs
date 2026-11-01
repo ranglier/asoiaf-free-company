@@ -15,6 +15,9 @@ export const STATE_ORDER = Object.keys(TROOP_STATES);
 export const DISORDER_LOSS = 5;
 export const MAX_LOSS = 70;
 
+/** Surnombre : une unité montée compte pour ce nombre d'hommes (20 chevaliers pèsent plus que 20 fantassins). */
+export const MOUNTED_UNIT_STRENGTH = 200;
+
 /** Test d'officier (option) : Discipline + 3, +1 par 100 hommes au-delà des 100 premiers ; +1B dès 1 degré, +2B dès 3 degrés. */
 export const OFFICER_TEST = { margin: 3, perHundredMen: 1, degreesPerBonus: 2, max: 2 };
 
@@ -27,9 +30,9 @@ export const TRAINING_BATTLE = {
   elite: { cushion: 3 }
 };
 
-/** Ordres. Triangle : Charger bat Tirer, Tirer bat Tenir, Tenir bat Charger (Attaquer est neutre). */
+/** Ordres. Ordres gagnants : Charger bat Tirer, Tenir bat Charger (Attaquer est neutre, Tirer n'a pas de bonus contre Tenir depuis la v0.27.5). */
 export const ORDERS = ["charge", "attack", "hold", "shoot", "maneuver", "withdraw"];
-export const TRIANGLE = { charge: "shoot", shoot: "hold", hold: "charge" };
+export const TRIANGLE = { charge: "shoot", hold: "charge" };
 /** Ordres « en mouvement » (pertes au tir non plafonnées). */
 export const MOVING_ORDERS = ["charge", "attack", "maneuver"];
 

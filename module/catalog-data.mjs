@@ -146,7 +146,7 @@ export const COMPANY_UNIT_TYPES = {
   archers: { cost: 2, discipline: 3, abilities: ["agility", "marksmanship", "awareness"], classes: "A" },
   crossbowmen: { cost: 3, discipline: 1, abilities: ["agility", "marksmanship", "awareness"], classes: "A" },
   lightCavalry: { cost: 2, discipline: -2, abilities: ["agility", "fighting", "animalHandling"], classes: "C", men: 30, mounted: true },
-  heavyCavalry: { cost: 3, discipline: -4, abilities: ["agility", "fighting", "animalHandling"], classes: "C", men: 20, mounted: true },
+  heavyCavalry: { cost: 5, discipline: -4, abilities: ["agility", "fighting", "animalHandling"], classes: "C", men: 20, mounted: true },
   support: { cost: 0, discipline: 4, abilities: [], classes: "S" },
   lightShips: { cost: 4, discipline: 0, abilities: ["fighting", "marksmanship", "awareness"], classes: "M", men: 5 },
   heavyShips: { cost: 6, discipline: 0, abilities: ["fighting", "marksmanship", "awareness"], classes: "M", men: 5 },

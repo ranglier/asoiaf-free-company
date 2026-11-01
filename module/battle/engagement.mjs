@@ -52,6 +52,9 @@ export function adjacent(a, b) {
   return canvas.grid.testAdjacency(canvas.grid.getOffset(center(a)), canvas.grid.getOffset(center(b)));
 }
 
+/** Portée réelle d'une troupe, météo comprise. */
+export const shootRange = (s, battle) => (WEATHER[battle.weather]?.rangeHalf ? Math.floor(s.range / 2) : s.range);
+
 /** Distance en cases entre deux jetons. */
 export function distance(a, b) {
   return canvas.grid.measurePath([center(a), center(b)]).spaces;
@@ -111,10 +114,10 @@ export function meleeMods(att, def, battle) {
     if (shock) am.push(mod(loc("AFC.Battle.Mod.shockCancels")));
     else dm.push(mod(loc("AFC.Battle.Mod.triangle"), { b: 1 }));
   }
-  // Surnombre (option de la bataille) : rapport des Puissances des deux blocs.
+  // Surnombre (option de la bataille) : rapport des hommes des deux blocs, une unité montée comptant à part.
   if (battle.outnumber) {
     const edge = ratio => (ratio >= 3 ? 2 : ratio >= 1.5 ? 1 : 0);
-    const aEdge = edge(A.weight / Math.max(1, D.weight)), dEdge = edge(D.weight / Math.max(1, A.weight));
+    const aEdge = edge(A.strength / Math.max(1, D.strength)), dEdge = edge(D.strength / Math.max(1, A.strength));
     if (aEdge) am.push(mod(loc("AFC.Battle.Split.Outnumber"), { b: aEdge }));
     if (dEdge) dm.push(mod(loc("AFC.Battle.Split.Outnumber"), { b: dEdge }));
   }
@@ -175,14 +178,13 @@ export function shootMods(shooter, target, battle) {
   if (cover) diff.push({ label: loc("AFC.Battle.Mod.cover"), value: cover });
   if (terrainValue(sTerrain, "defense") && !terrainValue(tTerrain, "defense")) mods.push(mod(loc("AFC.Battle.Terrain.hill"), { b: 1 }));
   if (S.upgrades.shoot) mods.push(mod(loc("AFC.Unit.Upgrade.shoot"), { b: 1 }));
-  if (TRIANGLE.shoot === tOrder) mods.push(mod(loc("AFC.Battle.Mod.triangle"), { b: 1 }));
   if (weather.shoot) mods.push(mod(loc("AFC.Battle.Weather.rain"), { p: 1 }));
   if (S.state === "disordered") mods.push(mod(loc("AFC.Battle.State.disordered"), { p: 1 }));
   // Pertes non plafonnées : cible prise de flanc (au contact d'un allié du tireur), en mouvement ou désorganisée.
   const flanked = flankers(target, S.side, [shooter.id]) > 0;
   const uncapped = flanked || MOVING_ORDERS.includes(tOrder) || T.state === "disordered";
   if (!S.range) warnings.push(loc("AFC.Battle.Warn.noRange"));
-  const range = weather.rangeHalf ? Math.floor(S.range / 2) : S.range;
+  const range = shootRange(S, battle);
   const dist = distance(shooter, target);
   if (S.range && dist > range) warnings.push(fmt("AFC.Battle.Warn.outOfRange", { d: dist, r: range }));
   if (sOrder !== "shoot") warnings.push(loc("AFC.Battle.Warn.notShooting"));
@@ -209,6 +211,8 @@ const readExtra = (f, p) => ({ b: Number(f[`${p}b`].value) || 0, p: Number(f[`${
 /** Case « Appliquer les pertes tout de suite » des dialogues de résolution. */
 const autoBox = () => `<label class="checkbox"><input type="checkbox" name="auto" checked> ${loc("AFC.Battle.AutoApply")}</label>`;
 const degreesOf = margin => Math.min(4, Math.floor(margin / 5) + 1);
+/** Destinataires d'une carte qui montre la Discipline : tout le monde pour la Compagnie, le MJ pour l'ennemi et les troupes cachées (elle trahirait l'entraînement). */
+const disciplineWhisper = token => (token.actor.system.side === "company" && !token.hidden ? [] : ChatMessage.getWhisperRecipients("GM"));
 const moraleLabel = n => `${loc("AFC.Battle.Options.morale")} ${n > 0 ? "+" : "−"}${Math.abs(n)}`;
 
 /* ---------- Cartes de chat ---------- */
@@ -424,9 +428,10 @@ export async function rallyTroop(tokenId) {
   if (s.rallies >= s.ralliesMax) return ui.notifications.warn(loc("AFC.Battle.RallyLimit"));
   const morale = moraleMod(s);
   const discipline = Math.max(0, s.discipline + morale);
-  const candidates = game.actors.filter(a => ["character", "npc"].includes(a.type) && a.isOwner && a.system.abilities?.warfare);
-  if (!candidates.length) return ui.notifications.warn(loc("AFC.Battle.NoRallier"));
   const officerId = unitOf(getBattle(), tokenId).officer;
+  // Ses propres personnages, et l'officier de la troupe, comme pour Commander.
+  const candidates = game.actors.filter(a => ["character", "npc"].includes(a.type) && (a.isOwner || a.id === officerId) && a.system.abilities?.warfare);
+  if (!candidates.length) return ui.notifications.warn(loc("AFC.Battle.NoRallier"));
   const pick = await DialogV2.prompt({
     window: { title: fmt("AFC.Battle.RallyTitle", { name: token.name }) },
     classes: ["afc", "afc-dialog"],
@@ -449,7 +454,7 @@ export async function rallyTroop(tokenId) {
     else requestGM("troopUpdate", { actor: actor.id, changes });
   }
   return ChatMessage.create({
-    rolls: [test.roll], speaker: ChatMessage.getSpeaker({ actor: rallier }),
+    rolls: [test.roll], speaker: ChatMessage.getSpeaker({ actor: rallier }), whisper: disciplineWhisper(token),
     content: await renderCard("battle-test", {
       title: loc("AFC.Battle.Card.Rally"),
       subtitle: fmt("AFC.Battle.Card.RallyBy", { who: rallier.name, name: token.name }),
@@ -472,11 +477,11 @@ export function commandDifficulty(s) {
   return { total: Math.max(0, s.discipline + OFFICER_TEST.margin + size + morale), size, morale };
 }
 
-/** L'officier peut-il encore commander cette troupe ce tour-ci ? C'est l'action qu'il choisit après la révélation. */
+/** L'officier peut-il encore commander cette troupe ce tour-ci ? C'est l'action qu'il choisit après la révélation, avant le jet de la troupe. */
 export function mayCommand(token, battle = getBattle()) {
   const officerId = unitOf(battle, token.id).officer;
   return !!battle.officerTest && battle.revealed && !!game.actors.get(officerId)?.system.abilities?.warfare && alive(token)
-    && canCommand(token, battle) && !battle.command.some(c => c.id === token.id && c.officer === officerId);
+    && canCommand(token, battle) && !battle.done.includes(token.id) && !battle.command.some(c => c.id === token.id && c.officer === officerId);
 }
 
 /** Officiers qui n'ont pas encore commandé : rappel au MJ avant de résoudre. */
@@ -558,7 +563,7 @@ export async function commandTroop(tokenId) {
     await (game.user.isGM ? gmHandlers.setCommand(result) : requestGM("setCommand", result));
     return await ChatMessage.create({
       rolls: [test.roll], speaker: ChatMessage.getSpeaker({ actor: officer }),
-      whisper: s.side === "company" && !token.hidden ? [] : ChatMessage.getWhisperRecipients("GM"),
+      whisper: disciplineWhisper(token),
       content: await renderCard("battle-test", {
         title: loc("AFC.Battle.Options.commandButton"),
         subtitle: fmt("AFC.Battle.Options.commandBy", { who: officer.name, name: token.name }),
@@ -604,7 +609,9 @@ export function plannedEngagements(battle = getBattle(), scene = canvas.scene) {
     if (to.actor.system.state === "destroyed" || (u.order !== "shoot" && to.actor.system.state === "routed")) return null;
     // Rechargement : pas de tir au tour qui suit un tir.
     if (u.order === "shoot" && (battle.reload ?? []).includes(u.id)) return null;
-    // Après les mouvements, une mêlée demande le contact.
+    // Après les mouvements, un tir demande la portée (la carte des mouvements le signale)...
+    if (battle.revealed && u.order === "shoot" && distance(from, to) > shootRange(from.actor.system, battle)) return null;
+    // ... et une mêlée demande le contact.
     if (battle.revealed && u.order !== "shoot" && !adjacent(from, to)) return null;
     return { from: u.id, to: u.target, fromName: from.name, toName: to.name, order: orderLabel(u.order), shoot: u.order === "shoot" };
   }).filter(Boolean).sort((a, b) => b.shoot - a.shoot);

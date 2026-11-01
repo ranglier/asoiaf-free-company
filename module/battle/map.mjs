@@ -9,7 +9,7 @@ import { ORDER_ICONS, ORDERS, TROOP_STATES } from "./battle-config.mjs";
 import { SYSTEM_ID } from "../config.mjs";
 import { BOOK_STATUS_CHIP, isBookTargeted } from "./book-config.mjs";
 import { drawBookHealth, fillBookHUD } from "./book.mjs";
-import { center, commandTroop, mayCommand, plannedEngagements, rallyTroop, resolvePlanned } from "./engagement.mjs";
+import { center, commandTroop, distance, mayCommand, plannedEngagements, rallyTroop, resolvePlanned, shootRange } from "./engagement.mjs";
 import { afterPlan, APPROACH_ORDERS, cellCenter, hasMoved, PATH_ORDERS, plannedPath, startMovePick } from "./moves.mjs";
 import { chooseSplit } from "./split.mjs";
 import { isAutoIcon } from "./troops.mjs";
@@ -48,6 +48,12 @@ export function startTargetPick(token, onPick = null) {
     if (onPick) return onPick(hit.document);
     setUnit(token.id, { target: hit.document.id }).then(() => afterPlan(token));
     ui.notifications.info(fmt("AFC.Battle.PlanSetDone", { a: token.name, d: hit.document.name }));
+    // La cible peut encore approcher : on prévient sans refuser.
+    const battle = getBattle();
+    if (unitOf(battle, token.id).order === "shoot") {
+      const dist = distance(token, hit.document), range = shootRange(token.actor.system, battle);
+      if (dist > range) ui.notifications.warn(fmt("AFC.Battle.Moves.TargetFar", { a: token.name, d: hit.document.name, n: dist, r: range }));
+    }
   };
   const onKey = event => { if (event.key === "Escape") cancelTargetPick(); };
   view.addEventListener("pointerdown", onDown, { capture: true });
