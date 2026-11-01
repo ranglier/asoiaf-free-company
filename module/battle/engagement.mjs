@@ -2,7 +2,7 @@
  * Résolution des engagements : tir et mêlée (bonus calculés depuis les ordres, le terrain, les
  * traits et les flancs), pertes d'états avec encaissement, ralliement, fin de tour et bilan.
  */
-import { SYSTEM_ID } from "../config.mjs";
+import { ABILITIES, SYSTEM_ID } from "../config.mjs";
 import { specialtyBonus } from "../data/actor-character.mjs";
 import { autoPenalties, evaluateTest, rollDice } from "../dice/test-roll.mjs";
 import { defaultSkillKeys } from "../unit-mix.mjs";
@@ -494,6 +494,56 @@ const uncommanded = (tokens, battle) => (battle.officerTest ? tokens.filter(t =>
 
 const commanding = new Set();
 
+/**
+ * Fenêtre de l'action Commander : compétence ou spécialité de l'officier (Art militaire, Tactiques par défaut),
+ * dés de bonus, de malus, modificateur et difficulté. Renvoie null si le joueur referme la fenêtre.
+ */
+function commandDialog(token, officer, d, detail) {
+  const abilities = officer.system.abilities;
+  const title = key => loc(ABILITIES[key].label);
+  const keys = Object.keys(ABILITIES).filter(k => abilities[k]).sort((x, y) => title(x).localeCompare(title(y)));
+  const tactics = abilities.warfare.specialties.findIndex(sp => TACTICS.includes(sp.name.trim().toLowerCase()));
+  const selected = tactics >= 0 ? `warfare:${tactics}` : "warfare";
+  const option = (value, label) => `<option value="${value}" ${value === selected ? "selected" : ""}>${esc(label)}</option>`;
+  const options = keys.map(k => [
+    option(k, `${title(k)} (${abilities[k].rank})`),
+    ...abilities[k].specialties.map((sp, i) => option(`${k}:${i}`, `${title(k)} (${abilities[k].rank}), ${sp.name} +${sp.bonus}${loc("AFC.Roll.BonusAbbr")}`))
+  ].join("")).join("");
+  // Le malus d'armure ne joue que sur l'Agilité : il ne s'affiche pas ici, le calcul final suit la compétence choisie.
+  const notes = autoPenalties(officer, "warfare").notes;
+  return DialogV2.prompt({
+    window: { title: fmt("AFC.Battle.Options.commandDialog", { name: token.name }) },
+    classes: ["afc", "afc-dialog"],
+    content: `<div class="afc-test-dialog">
+      <p class="hint">${esc(officer.name)} · ${loc("AFC.Battle.Options.commandOutcome")}</p>
+      <label>${loc("AFC.Battle.Options.commandSkill")}<select name="skill">${options}</select></label>
+      <div class="row">
+        <label>${loc("AFC.Roll.Bonus")}<input type="number" name="bonus" value="0" min="0"></label>
+        <label>${loc("AFC.Roll.Penalty")}<input type="number" name="penalty" value="0" min="0"></label>
+        <label>${loc("AFC.Roll.Modifier")}<input type="number" name="modifier" value="0"></label>
+      </div>
+      ${notes.length ? `<label class="checkbox"><input type="checkbox" name="auto" checked> ${loc("AFC.Roll.ApplyAuto")} : ${notes.map(n => `<span class="tag">${esc(n)}</span>`).join("")}</label>` : ""}
+      <label>${loc("AFC.Roll.Difficulty")}<input type="number" name="difficulty" value="${d.total}" min="0"></label>
+      <p class="hint">${esc(detail)}</p></div>`,
+    ok: {
+      label: loc("AFC.Roll.Roll"),
+      callback: (ev, button) => {
+        const f = button.form.elements;
+        const [key, index] = f.skill.value.split(":");
+        const ability = abilities[key];
+        const sp = index === undefined ? null : ability.specialties[Number(index)];
+        const auto = (f.auto?.checked ?? true) ? autoPenalties(officer, key) : { dice: 0, modifier: 0, notes: [] };
+        const difficulty = f.difficulty.value === "" ? d.total : Number(f.difficulty.value);
+        return {
+          skill: sp ? `${title(key)}, ${sp.name}` : title(key), notes: auto.notes, difficulty,
+          pool: { rank: ability.rank, bonus: (sp?.bonus ?? 0) + (Number(f.bonus.value) || 0), penalty: (Number(f.penalty.value) || 0) + auto.dice, modifier: (Number(f.modifier.value) || 0) + auto.modifier }
+        };
+      }
+    },
+    rejectClose: false
+  });
+}
+
 /** Action Commander : le joueur lance le test de son officier ; la carte de l'ennemi et des troupes cachées reste au MJ. */
 export async function commandTroop(tokenId) {
   const token = canvas.scene.tokens.get(tokenId);
@@ -505,17 +555,17 @@ export async function commandTroop(tokenId) {
     const s = token.actor.system;
     const officerId = unitOf(battle, tokenId).officer;
     const officer = game.actors.get(officerId);
-    const warfare = officer.system.abilities.warfare;
     const d = commandDifficulty(s);
-    const auto = autoPenalties(officer, "warfare");
-    const p = { rank: warfare.rank, bonus: specialtyBonus(warfare, TACTICS), penalty: auto.dice, modifier: auto.modifier };
-    const test = await rollDice({ ...p, difficulty: d.total });
+    const detail = [fmt("AFC.Battle.Options.commandDetail", { d: s.discipline, m: OFFICER_TEST.margin }), ...(d.size ? [fmt("AFC.Battle.Options.commandSize", { n: d.size })] : []), ...(d.morale ? [moraleLabel(d.morale)] : [])].join(" + ");
+    const opts = await commandDialog(token, officer, d, fmt("AFC.Battle.Card.Against", { n: d.total, detail }));
+    if (!opts) return;
+    const p = opts.pool;
+    const test = await rollDice({ ...p, difficulty: opts.difficulty });
     const success = test.outcome.success;
     const degrees = success ? test.outcome.degrees : 0;
     const bonus = Math.min(OFFICER_TEST.max, Math.ceil(degrees / OFFICER_TEST.degreesPerBonus));
     const result = { id: tokenId, officer: officerId, bonus };
     await (game.user.isGM ? gmHandlers.setCommand(result) : requestGM("setCommand", result));
-    const detail = [fmt("AFC.Battle.Options.commandDetail", { d: s.discipline, m: OFFICER_TEST.margin }), ...(d.size ? [fmt("AFC.Battle.Options.commandSize", { n: d.size })] : []), ...(d.morale ? [moraleLabel(d.morale)] : [])].join(" + ");
     return await ChatMessage.create({
       rolls: [test.roll], speaker: ChatMessage.getSpeaker({ actor: officer }),
       whisper: s.side === "company" && !token.hidden ? [] : ChatMessage.getWhisperRecipients("GM"),
@@ -524,8 +574,8 @@ export async function commandTroop(tokenId) {
         subtitle: fmt("AFC.Battle.Options.commandBy", { who: officer.name, name: token.name }),
         total: test.total, dice: test.dice, success, degrees,
         verdict: bonus ? fmt("AFC.Battle.Options.commandOk", { n: bonus }) : loc("AFC.Battle.Options.noBonus"),
-        detail: fmt("AFC.Battle.Card.Against", { n: d.total, detail }),
-        pool: poolLabel(p, test), tags: auto.notes
+        detail: opts.difficulty === d.total ? fmt("AFC.Battle.Card.Against", { n: d.total, detail }) : fmt("AFC.Battle.Options.commandCustom", { n: opts.difficulty, d: d.total }),
+        pool: poolLabel(p, test), tags: [opts.skill, ...opts.notes]
       })
     });
   } finally { commanding.delete(tokenId); }
