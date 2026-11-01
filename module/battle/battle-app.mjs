@@ -105,7 +105,7 @@ export class BattleApp extends HandlebarsApplicationMixin(ApplicationV2) {
         officerBonus: officer?.system.abilities?.warfare ? officerBonus(officer.system.abilities.warfare) : 0,
         overload: officer && officerLoad[unit.officer] > commandMax(unit.officer) ? commandMax(unit.officer) : 0,
         cushion: s.cushion, cushionMax: s.cushionMax, disorders: s.disorders, rallies: s.rallies, ralliesMax: s.ralliesMax,
-        move: s.move, range: s.range, melee: s.melee, shootRank: s.shootRank,
+        move: s.move, range: s.range, melee: s.melee, shootRank: s.shootRank, units: s.units, weight: s.weight,
         traits: [
           ...s.traits.map(k => ({ name: loc(`AFC.Battle.Trait.${k}.name`), effect: loc(`AFC.Battle.Trait.${k}.effect`) })),
           ...["armor", "melee", "shoot"].filter(k => s.upgrades[k]).map(k => ({ name: loc(`AFC.Unit.Upgrade.${k}`), effect: loc(`AFC.Unit.Upgrade.${k}Effect`) }))
@@ -122,7 +122,7 @@ export class BattleApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
     const context = {
       battle, isGM, hasScene: !!scene, book,
-      rules: scene ? battleRules(scene) : "house", rulesLabel: `AFC.Battle.Rules.${scene ? battleRules(scene) : "house"}`, settingsOpen: this.settingsOpen, hexNumbers: hexNumbersOn(scene), freeMove: !!battle.freeMove,
+      rules: scene ? battleRules(scene) : "house", rulesLabel: `AFC.Battle.Rules.${scene ? battleRules(scene) : "house"}`, settingsOpen: this.settingsOpen, hexNumbers: hexNumbersOn(scene), freeMove: !!battle.freeMove, outnumber: !!battle.outnumber,
       ruleOptions: Object.fromEntries(RULES.map(k => [k, `AFC.Battle.Rules.${k}`])),
       orders: ORDERS.map(k => ({ key: k, label: loc(`AFC.Battle.Order.${k}`), icon: ORDER_ICONS[k], help: loc(`AFC.Battle.OrderHelp.${k}`) })),
       triangle: Object.entries(TRIANGLE).map(([a, b]) => ({ a: orderLabel(a), b: orderLabel(b) })),
@@ -155,6 +155,11 @@ export class BattleApp extends HandlebarsApplicationMixin(ApplicationV2) {
     // Paramètres : restent ouverts d'un affichage à l'autre ; annuler le changement de règles remet le choix en place.
     this.element.querySelector(".battle-settings")?.addEventListener("toggle", event => { this.settingsOpen = event.target.open; });
     this.element.querySelector('[name="hexNumbers"]')?.addEventListener("change", event => canvas.scene.setFlag(SYSTEM_ID, "hexNumbers", event.target.checked));
+    this.element.querySelector('[name="outnumber"]')?.addEventListener("change", async event => {
+      const battle = getBattle();
+      battle.outnumber = event.target.checked;
+      await saveBattle(battle);
+    });
     this.element.querySelector('[name="freeMove"]')?.addEventListener("change", async event => {
       const battle = getBattle();
       battle.freeMove = event.target.checked;

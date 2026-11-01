@@ -102,6 +102,13 @@ export function meleeMods(att, def, battle) {
     if (shock) am.push(mod(loc("AFC.Battle.Mod.shockCancels")));
     else dm.push(mod(loc("AFC.Battle.Mod.triangle"), { b: 1 }));
   }
+  // Surnombre (option de la bataille) : rapport des Puissances des deux blocs.
+  if (battle.outnumber) {
+    const edge = ratio => (ratio >= 3 ? 2 : ratio >= 1.5 ? 1 : 0);
+    const aEdge = edge(A.weight / Math.max(1, D.weight)), dEdge = edge(D.weight / Math.max(1, A.weight));
+    if (aEdge) am.push(mod(loc("AFC.Battle.Split.Outnumber"), { b: aEdge }));
+    if (dEdge) dm.push(mod(loc("AFC.Battle.Split.Outnumber"), { b: dEdge }));
+  }
   // Armes de mêlée améliorées.
   if (A.upgrades.melee) am.push(mod(loc("AFC.Unit.Upgrade.melee"), { b: 1 }));
   if (D.upgrades.melee) dm.push(mod(loc("AFC.Unit.Upgrade.melee"), { b: 1 }));

@@ -27,7 +27,7 @@ function cellTerrains(offset, scene) {
 }
 
 /** Cases occupées. Pour un joueur, une troupe cachée n'existe pas : le tracé ne la trahit pas. */
-function occupiedCells(scene, { all = false } = {}) {
+export function occupiedCells(scene, { all = false } = {}) {
   const cells = new Map();
   for (const t of troops(scene)) {
     if (t.actor.system.state === "destroyed" || (t.hidden && !all && !game.user.isGM)) continue;
@@ -76,7 +76,7 @@ function reach(token, range, occupied, { roadOnly = false } = {}) {
 }
 
 /** Cases d'arrivée possibles pour cet ordre (Route : une case de plus à qui Manœuvre le long de la route). */
-function destinations(token, order, occupied) {
+export function destinations(token, order, occupied) {
   const range = moveRange(token, order);
   const cells = reach(token, range, occupied);
   if (order === "maneuver" && cellTerrains(cellOf(token), token.parent).includes("road")) {

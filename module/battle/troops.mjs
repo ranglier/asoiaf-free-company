@@ -67,7 +67,7 @@ function viewPosition() {
 }
 
 /** Crée l'acteur Troupe et son jeton au centre de la vue. */
-async function createTroop({ name, side, unitType, unitType2 = "", skillKeys = [], upgrades = {}, training, men, discipline = null, traits = null, source = {}, ownership = {}, hidden = false }) {
+async function createTroop({ name, side, unitType, unitType2 = "", skillKeys = [], upgrades = {}, units = 1, mightPerUnit = 0, training, men, discipline = null, traits = null, source = {}, ownership = {}, hidden = false }) {
   if (!canvas.scene) return ui.notifications.warn(loc("AFC.Battle.NoScene"));
   const typeOf = key => COMPANY_UNIT_TYPES[key] ?? HOUSE_UNIT_TYPES[key];
   const typeData = typeOf(unitType) ? combineTypes(typeOf(unitType), typeOf(unitType2)) : {};
@@ -75,7 +75,7 @@ async function createTroop({ name, side, unitType, unitType2 = "", skillKeys = [
   const actor = await Actor.create({
     name, type: "troop", img, folder: (await battleFolder()).id, ownership,
     system: {
-      side, unitType, unitType2, skillKeys, upgrades, training, men, source,
+      side, unitType, unitType2, skillKeys, upgrades, units, mightPerUnit, training, men, source,
       traits: traits ?? mergeTraits([unitType, unitType2]),
       discipline: discipline ?? Math.max(0, (UNIT_TRAININGS[training]?.discipline ?? 6) + (typeData.discipline ?? 0)),
       cushion: (TRAINING_BATTLE[training]?.cushion ?? 0) + (upgrades.armor ? 1 : 0)
@@ -100,7 +100,7 @@ export async function deployUnit(owner, item) {
   ownership.default = CONST.DOCUMENT_OWNERSHIP_LEVELS.LIMITED;
   const actor = await createTroop({
     name: item.name, side: "company", unitType: types.at(-1) ?? "", unitType2: types.length > 1 ? types[0] : "",
-    skillKeys: item.system.skillKeys, upgrades: item.system.upgrades, training: item.system.training,
+    skillKeys: item.system.skillKeys, upgrades: item.system.upgrades, units: item.system.count, mightPerUnit: item.system.mightCost, training: item.system.training,
     traits: mergeTraits(types),
     men: item.system.totalMen, discipline: item.system.discipline, source: { actor: owner.id, item: item.id }, ownership
   });
@@ -119,13 +119,14 @@ export async function createEnemyTroop() {
       <label>${loc("AFC.Unit.unitType2")}<select name="type2"><option value="">${loc("AFC.Unit.NoSecondType")}</option>${types}</select></label>
       <label>${loc("AFC.Unit.training")}<select name="training">${trainings}</select></label>
       <label>${loc("AFC.Battle.Name")}<input type="text" name="name" placeholder="${loc("AFC.Battle.NamePlaceholder")}"></label>
+      <label>${loc("AFC.Unit.count")}<input type="number" name="units" value="1" min="1"></label>
       <label>${loc("AFC.Battle.Men")}<input type="number" name="men" value="100" min="0"></label>
       <label class="checkbox"><input type="checkbox" name="hidden" checked> ${loc("AFC.Battle.Hidden")}</label></div>`,
     ok: {
       label: loc("AFC.Battle.Create"),
       callback: (ev, button) => {
         const f = button.form.elements;
-        return { type: f.type.value, type2: f.type2.value === f.type.value ? "" : f.type2.value, training: f.training.value, name: f.name.value.trim(), men: Number(f.men.value) || 0, hidden: f.hidden.checked };
+        return { type: f.type.value, type2: f.type2.value === f.type.value ? "" : f.type2.value, training: f.training.value, name: f.name.value.trim(), men: Number(f.men.value) || 0, units: Number(f.units.value) || 1, hidden: f.hidden.checked };
       }
     },
     rejectClose: false
@@ -133,7 +134,7 @@ export async function createEnemyTroop() {
   if (!data) return;
   return createTroop({
     name: data.name || typeLabel(data.type), side: "enemy", unitType: data.type, unitType2: data.type2, training: data.training,
-    men: data.men, hidden: data.hidden
+    men: data.men, units: data.units, hidden: data.hidden
   });
 }
 

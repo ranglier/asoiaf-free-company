@@ -36,6 +36,12 @@ export function combineTypes(a, b) {
   };
 }
 
+/** Puissance d'une unité d'après ses types (troupes créées sans passer par un catalogue). */
+export function typeMight(unitType, unitType2) {
+  const a = typeData(unitType), b = unitType2 && unitType2 !== unitType ? typeData(unitType2) : null;
+  return (a?.cost ?? 1) + (b?.cost ?? 0);
+}
+
 /** Cases à cocher du catalogue : 3 compétences clés au plus, proposées seulement pour une unité à deux types. */
 export function bindSkillChoice(root, types) {
   const box = root.querySelector("[data-unit-skills]");

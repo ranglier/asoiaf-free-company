@@ -572,6 +572,7 @@
     }
 ,
     "Battle": {
+      "Split": { "Button": "Split the battalion", "Title": "Split: {name}", "Hint": "{n} units in this block. The new block needs its own officer.", "Units": "Units to detach", "NoRoom": "No free adjacent space.", "TooSmall": "This block has a single unit.", "NeedOfficer": "This block must already have an officer.", "NoOfficer": "No officer available.", "Outnumber": "Outnumbering", "Option": "Outnumbering and splitting", "OptionHint": "+1B at 1.5 to 1 and +2B at 3 to 1 in Power; a battalion may split, one officer per block." },
       "Moves": { "Button": "Choose the destination", "Pick": "{name}: click the destination space (the troop itself to stay put, Esc to cancel).", "Nowhere": "{name} has nowhere to go.", "OutOfRange": "Space out of range.", "NeedTarget": "Pick the target first.", "NotReached": "{a} does not reach {d} this turn.", "Locked": "During orders, your troops move through their order: they will move on reveal." },
       "ReportCard": { "Title": "Report", "Rounds": "{n} turns", "Lost": "−{lost} of {men} · {pct}%", "NoLoss": "no losses", "Advantage": "Advantage: {side}", "Undecided": "Undecided", "Won1": "{n} melee won", "WonN": "{n} melees won", "Lost1": "{n} lost", "LostN": "{n} lost", "Shots": "{hits}/{shots} shots hit", "Rally1": "{n} rally", "RallyN": "{n} rallies", "Disorder1": "{n} disorder", "DisorderN": "{n} disorders", "Best": "Feat of arms: {name}, {n} states inflicted", "Intact1": "{n} troop unscathed", "IntactN": "{n} troops unscathed", "Publish": "Show to players" },
       "Skills": "Skills",

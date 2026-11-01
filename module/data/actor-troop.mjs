@@ -3,6 +3,7 @@
  * Compagnie (source) ou être créée directement par le MJ (ennemis).
  */
 import { UNIT_TRAININGS } from "../config.mjs";
+import { typeMight } from "../unit-mix.mjs";
 import {
   DISORDER_LOSS, MAX_LOSS, RANGES, STATE_ORDER, TRAINING_BATTLE, TRAITS, TROOP_STATES
 } from "../battle/battle-config.mjs";
@@ -32,6 +33,9 @@ export default class TroopData extends foundry.abstract.TypeDataModel {
       disorders: int(0, { min: 0 }),
       rallies: int(0, { min: 0 }),
       men: int(100, { min: 0 }),
+      // Unités du bloc et Puissance de chacune : le poids de la troupe pour le surnombre.
+      units: int(1, { min: 1 }),
+      mightPerUnit: int(0, { min: 0 }),
       source: new fields.SchemaField({
         actor: new fields.StringField({ blank: true }),
         item: new fields.StringField({ blank: true })
@@ -76,6 +80,7 @@ export default class TroopData extends foundry.abstract.TypeDataModel {
     this.move = Math.max(1, move);
     this.range = Math.max(0, ...this.traits.map(k => RANGES[k] ?? 0));
     this.stateIndex = STATE_ORDER.indexOf(this.state);
+    this.weight = this.units * (this.mightPerUnit || typeMight(this.unitType, this.unitType2));
     // Pertes en fin de bataille : état + 5 % par désorganisation, plafonnées.
     this.loss = Math.min(MAX_LOSS, (TROOP_STATES[this.state]?.loss ?? 0) + this.disorders * DISORDER_LOSS);
     this.lostMen = Math.round(this.men * this.loss / 100);

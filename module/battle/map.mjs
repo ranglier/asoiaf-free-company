@@ -11,6 +11,7 @@ import { BOOK_STATUS_CHIP, isBookTargeted } from "./book-config.mjs";
 import { drawBookHealth, fillBookHUD } from "./book.mjs";
 import { center, plannedEngagements, rallyTroop, resolvePlanned } from "./engagement.mjs";
 import { afterPlan, APPROACH_ORDERS, cellCenter, hasMoved, PATH_ORDERS, plannedPath, startMovePick } from "./moves.mjs";
+import { chooseSplit } from "./split.mjs";
 import { isAutoIcon } from "./troops.mjs";
 import { isBook } from "./rules.mjs";
 import { canCommand, getBattle, setUnit, unitOf } from "./state.mjs";
@@ -149,6 +150,7 @@ export function onRenderTokenHUD(hud, html) {
   if (!book && plan) button(plan.shoot ? "fa-bullseye" : "fa-swords", fmt("AFC.Battle.ResolveHud", { d: plan.toName }), () => { hud.close(); resolvePlanned(plan); });
   if (commander) button("fa-user-tie", loc(book ? "AFC.BattleBook.Attach" : "AFC.Battle.OfficerButton"), () => { hud.close(); chooseOfficer(token); }, { active: !!unit.officer });
   if (!book && commander && token.actor.system.state !== "fresh") button("fa-flag-checkered", `${loc("AFC.Battle.Rally")} (${token.actor.system.rallies}/${token.actor.system.ralliesMax})`, () => rallyTroop(token.id));
+  if (!book && battle.outnumber && commander && token.actor.system.units > 1) button("fa-code-branch", loc("AFC.Battle.Split.Button"), () => { hud.close(); chooseSplit(token); });
   // Colonne de droite, avec cacher/révéler : fiche de la troupe et fenêtre Bataille.
   const right = html.querySelector(".col.right");
   if (token.actor.testUserPermission(game.user, "OBSERVER")) {
