@@ -35,6 +35,16 @@
       <p>{{localize "AFC.Battle.HelpTurn"}}</p>
     </details>
 
+    <section class="battle-plan">
+      <h3>{{localize "AFC.Battle.Plan.Title"}} <b class="plan-count">{{planPoints}}</b> <small class="hint">{{localize "AFC.Battle.Plan.Hint"}}</small></h3>
+      <div class="plan-line">
+        {{#if isGM}}<button type="button" class="small icon" data-action="planAdd" data-tooltip="AFC.Battle.Plan.Add"><i class="fa-solid fa-plus"></i></button>
+        <button type="button" class="small icon" data-action="planRemove" data-tooltip="AFC.Battle.Plan.Remove"><i class="fa-solid fa-minus"></i></button>{{/if}}
+        <select data-plan-use>{{selectOptions planUses}}</select>
+        <button type="button" class="small" data-action="planSpend" {{#unless planPoints}}disabled{{/unless}}><i class="fa-solid fa-scroll"></i> {{localize "AFC.Battle.Plan.Spend"}}</button>
+      </div>
+    </section>
+
     <section class="battle-pcs">
       <h3>{{localize "AFC.Battle.PcActions.Title"}} <small class="hint">{{localize "AFC.Battle.PcActions.Hint" n=sceneRounds}}</small></h3>
       {{#each pcs as |p|}}

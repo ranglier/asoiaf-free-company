@@ -588,8 +588,6 @@
         "singleDefenseHint": "Une troupe attaquée par plusieurs ne lance ses dés de défense qu'une fois par tour : les mêmes dés servent contre chaque attaquant.",
         "holdBreaks": "Tenir brise l'élan",
         "holdBreaksHint": "Une charge contre une troupe qui Tient perd Choc, Choc lourd et volée. Seuls les boucliers et les piques en tirent +1B. Décoché : toute troupe qui Tient a +1B contre une charge.",
-        "runShot": "Course sous les tirs",
-        "runShotHint": "Tirer sur une troupe qui Court donne un dé de malus (−1D) au tireur.",
         "flankLimit": "Flanc limité (à l'essai)",
         "flankLimitHint": "Le bonus de flanc ne dépasse pas +1B, quel que soit le nombre d'alliés au contact de l'adversaire.",
         "sameRoll": "Même jet",
@@ -759,7 +757,6 @@
         "holdCrossing": "Tient le passage",
         "mountedTerrain": "Cavalerie gênée par le terrain",
         "winded": "Essoufflée",
-        "runTarget": "Cible qui court",
         "holdBreaks": "Tenir brise l'élan",
         "pikesHold": "Charge sur des piques",
         "volley": "Volée",
@@ -812,6 +809,19 @@
       "RemoveTroop": "Retirer du groupe",
       "TooMany": "Trop de troupes pour cet officier (maximum {n}).",
       "NoGroup": "Aucun groupe.",
+      "Plan": {
+        "Title": "Points de plan",
+        "Hint": "Test de Stratégie avant la bataille : 1 point par degré, sans plafond. Perdus à la fin de la bataille.",
+        "Spend": "Dépenser",
+        "Add": "Ajouter un point (MJ)",
+        "Remove": "Retirer un point sans le dépenser (MJ)",
+        "Empty": "Plus aucun point de plan.",
+        "Spent": "{user} dépense un point de plan : {use}. Il en reste {n}.",
+        "Use": {
+          "asPlanned": "Comme prévu (+1B à un test)", "signal": "Signal convenu (contre-ordre)", "reserve": "Réserve (entrée en jeu)",
+          "terrain": "Préparer le terrain", "ambush": "Embuscade", "field": "Choisir le champ"
+        }
+      },
       "PcActions": {
         "Title": "Actions des PJ",
         "Hint": "Par tour : une action de bataille, ou une scène individuelle de {n} rounds.",

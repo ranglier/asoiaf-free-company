@@ -588,8 +588,6 @@
         "singleDefenseHint": "A troop attacked by several rolls its defense dice once per round: the same dice count against each attacker.",
         "holdBreaks": "Hold breaks the charge",
         "holdBreaksHint": "A charge against a Holding troop loses Shock, Heavy Shock and volley. Only shields and pikes gain +1B. Unchecked: any Holding troop has +1B against a charge.",
-        "runShot": "Running under fire",
-        "runShotHint": "Shooting at a Running troop gives the shooter a penalty die (−1D).",
         "flankLimit": "Limited flank (trial)",
         "flankLimitHint": "The flank bonus never exceeds +1B, however many allies touch the opponent.",
         "sameRoll": "Same roll",
@@ -753,7 +751,7 @@
       "Mod": {
         "triangle": "Winning order", "shockCancels": "Shock: cancels the Hold bonus", "flank": "Flank ({n})",
         "chargeUp": "Charging uphill", "crossing": "Crossing (ford or bridge)", "holdCrossing": "Holds the crossing",
-        "winded": "Winded", "runTarget": "Running target", "holdBreaks": "Hold breaks the charge", "mountedTerrain": "Cavalry hindered by terrain", "pikesHold": "Charging pikes", "volley": "Volley",
+        "winded": "Winded", "holdBreaks": "Hold breaks the charge", "mountedTerrain": "Cavalry hindered by terrain", "pikesHold": "Charging pikes", "volley": "Volley",
         "base": "Base", "cover": "Cover", "none": "No modifier"
       },
       "Warn": {
@@ -801,6 +799,19 @@
       "RemoveTroop": "Remove from group",
       "TooMany": "Too many troops for this officer (maximum {n}).",
       "NoGroup": "No group.",
+      "Plan": {
+        "Title": "Plan points",
+        "Hint": "Strategy test before the battle: 1 point per degree, no cap. Lost when the battle ends.",
+        "Spend": "Spend",
+        "Add": "Add a point (GM)",
+        "Remove": "Remove a point without spending it (GM)",
+        "Empty": "No plan points left.",
+        "Spent": "{user} spends a plan point: {use}. {n} left.",
+        "Use": {
+          "asPlanned": "As planned (+1B to a test)", "signal": "Agreed signal (counter-order)", "reserve": "Reserve (enters play)",
+          "terrain": "Prepare the ground", "ambush": "Ambush", "field": "Choose the field"
+        }
+      },
       "PcActions": {
         "Title": "PC actions",
         "Hint": "Each round: one battle action, or a personal scene of {n} rounds.",

@@ -425,6 +425,13 @@ body.detached .application.afc.afc-fill.afc-dialog .window-content { max-height:
 .afc .afc-battle .battle-plans li { display: flex; gap: 0.4rem; align-items: center; border-top: 1px dotted var(--afc-line); padding: 0.2rem 0; color: var(--afc-ink); }
 .afc .afc-battle .battle-plans button { margin-left: auto; width: auto; flex: none; }
 /* Actions des PJ (v0.27.13) : une ligne par PJ ou officier, grisée une fois son action faite. */
+/* Points de plan (v0.27.15). */
+.afc .afc-battle .battle-plan { border-top: 2px solid var(--afc-border); margin-top: 0.6rem; padding-top: 0.4rem; }
+.afc .afc-battle .battle-plan h3 small { font-weight: normal; }
+.afc .afc-battle .battle-plan .plan-count { font-size: 1.2em; padding: 0 0.3rem; }
+.afc .afc-battle .battle-plan .plan-line { display: flex; gap: 0.3rem; align-items: center; }
+.afc .afc-battle .battle-plan .plan-line select { width: auto; flex: 1; }
+.afc .afc-battle .battle-plan .plan-line button { width: auto; flex: none; }
 .afc .afc-battle .battle-pcs { border-top: 2px solid var(--afc-border); margin-top: 0.6rem; padding-top: 0.4rem; }
 .afc .afc-battle .battle-pcs h3 small { font-weight: normal; }
 .afc .afc-battle .pc-line { display: flex; gap: 0.4rem; align-items: center; border-top: 1px dotted var(--afc-line); padding: 0.2rem 0; color: var(--afc-ink); }

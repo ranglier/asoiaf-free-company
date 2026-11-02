@@ -11,6 +11,7 @@ import { battleReport, commandTroop, endTurn, mayCommand, officerBonus, orderLab
 import { chooseOfficer, giveOrder, hexNumber, hexNumbersOn, ORDER_ICONS, orderVisible, startMoveChoice, startTargetPick, TARGETED_ORDERS } from "./map.mjs";
 import { APPROACH_ORDERS, hasMoved, PATH_ORDERS } from "./moves.mjs";
 import { MANUAL_ACTIONS, mayAct, officerBusy, pcLines, recordAction, SCENE_ROUNDS } from "./pc-actions.mjs";
+import { changePlan, PLAN_USES, planPoints } from "./plan-points.mjs";
 import { BATTLE_OPTIONS, canCommand, clearBattle, getBattle, saveBattle, setUnit, unitOf } from "./state.mjs";
 import { createEnemyTroop, troopPool } from "./troops.mjs";
 
@@ -64,7 +65,10 @@ export class BattleApp extends HandlebarsApplicationMixin(ApplicationV2) {
       bookFree: BattleApp.#onBookFree,
       pcAct: BattleApp.#onPcAct,
       pcRound: BattleApp.#onPcRound,
-      pcClear: BattleApp.#onPcClear
+      pcClear: BattleApp.#onPcClear,
+      planAdd: () => changePlan(1),
+      planRemove: () => changePlan(-1),
+      planSpend: BattleApp.#onPlanSpend
     }
   };
 
@@ -150,6 +154,8 @@ export class BattleApp extends HandlebarsApplicationMixin(ApplicationV2) {
       weatherLabel: `AFC.Battle.Weather.${battle.weather}`,
       plans,
       pcs: scene && !book ? pcLines(battle, scene) : [],
+      planPoints: planPoints(battle),
+      planUses: Object.fromEntries(PLAN_USES.map(k => [k, loc(`AFC.Battle.Plan.Use.${k}`)])),
       pcActionOptions: Object.fromEntries(MANUAL_ACTIONS.map(k => [k, loc(`AFC.Battle.PcActions.Action.${k}`)])),
       sceneRounds: SCENE_ROUNDS,
       controlled: controlled?.actor?.type === "troop" ? controlled.name : null,
@@ -300,6 +306,12 @@ export class BattleApp extends HandlebarsApplicationMixin(ApplicationV2) {
   }
   static #onPcRound(event, target) { return recordAction(target.closest("[data-pc]").dataset.pc, "round"); }
   static #onPcClear(event, target) { return recordAction(target.closest("[data-pc]").dataset.pc, null); }
+
+  /** Points de plan : dépense d'un point pour l'usage choisi, annoncée dans le chat. */
+  static #onPlanSpend(event, target) {
+    const use = target.closest(".battle-plan")?.querySelector("select[data-plan-use]")?.value;
+    if (use) return changePlan(-1, use);
+  }
 
   static #onTerrainPainter() { return TerrainPainter.open(); }
   static #onBookNext() { return nextStep(); }
