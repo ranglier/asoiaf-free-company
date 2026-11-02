@@ -33,28 +33,23 @@ function orderCount(battle, scene) {
 }
 
 /**
- * Carrousel de combat (module Carousel Combat Tracker, `combat-tracker-dock`) : quand il s'affiche en haut
- * de l'écran, la barre passe dessous ; elle remonte quand il disparaît.
+ * Place de la barre : juste au-dessus de la barre de raccourcis, centrée sur elle (hors du milieu de la
+ * carte et loin du carrousel de combat en haut). Sans barre de raccourcis : en bas de l'écran.
  */
 function placeBar() {
   const bar = document.getElementById(ID);
   if (!bar) return;
-  const dock = document.getElementById("combat-dock");
-  const r = dock && !dock.classList.contains("hidden") ? dock.getBoundingClientRect() : null;
-  bar.style.top = r?.height && r.top < window.innerHeight / 3 ? `${Math.round(r.bottom + 8)}px` : "";
+  const hotbar = document.getElementById("hotbar");
+  const r = hotbar?.offsetParent ? hotbar.getBoundingClientRect() : null;
+  bar.style.bottom = r?.height ? `${Math.round(window.innerHeight - r.top + 6)}px` : "";
+  bar.style.left = r?.width ? `${Math.round(r.left + r.width / 2)}px` : "";
 }
-let dockWatch = null;
-function watchDock() {
-  if (dockWatch || !window.ResizeObserver) return;
-  const top = document.getElementById("ui-top") ?? document.body;
-  dockWatch = new ResizeObserver(() => placeBar());
-  dockWatch.observe(top);
-  // Le carrousel se crée ou se remplace au début d'un combat : on le suit aussi.
-  new MutationObserver(() => {
-    const dock = document.getElementById("combat-dock");
-    if (dock && dock !== dockWatch.dock) { dockWatch.observe(dock); dockWatch.dock = dock; }
-    placeBar();
-  }).observe(top, { childList: true, subtree: true, attributes: true, attributeFilter: ["class", "style"] });
+let barWatch = null;
+function watchHotbar() {
+  if (barWatch || !window.ResizeObserver) return;
+  barWatch = new ResizeObserver(() => placeBar());
+  const hotbar = document.getElementById("hotbar");
+  if (hotbar) barWatch.observe(hotbar);
   window.addEventListener("resize", () => placeBar());
 }
 
@@ -73,7 +68,7 @@ export function renderBattleBar() {
     bar.addEventListener("click", onClick);
     document.body.append(bar);
   }
-  watchDock();
+  watchHotbar();
   placeBar();
   const battle = getBattle(scene);
   const count = orderCount(battle, scene);
