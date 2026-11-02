@@ -591,8 +591,6 @@
         "singleDefenseHint": "Une troupe attaquée par plusieurs ne lance ses dés de défense qu'une fois par tour : les mêmes dés servent contre chaque attaquant.",
         "holdBreaks": "Tenir brise l'élan",
         "holdBreaksHint": "Une charge contre une troupe qui Tient perd Choc, Choc lourd et volée. Seuls les boucliers et les piques en tirent +1B. Décoché : toute troupe qui Tient a +1B contre une charge.",
-        "flankLimit": "Flanc limité (à l'essai)",
-        "flankLimitHint": "Le bonus de flanc ne dépasse pas +1B, quel que soit le nombre d'alliés au contact de l'adversaire.",
         "fog": "Brouillard de guerre par case (à l'essai)",
         "fogHint": "Foundry calcule ce que voit la Compagnie : cases non vues assombries, troupes ennemies cachées hors de vue, « ? » au-delà de 3 cases (4 pour des éclaireurs). Bois, collines, village et ruines, embuscade en lisière. Le MJ garde la main par le menu du jeton.",
         "sameRoll": "Même jet",
@@ -756,7 +754,8 @@
       "Mod": {
         "triangle": "Ordre gagnant",
         "shockCancels": "Choc : annule le bonus de Tenir",
-        "flank": "Flanc ({n})",
+        "flank": "Flanc ({n} au contact)",
+        "ambush": "Embuscade",
         "chargeUp": "Charge vers le haut",
         "crossing": "Traversée (gué ou pont)",
         "holdCrossing": "Tient le passage",

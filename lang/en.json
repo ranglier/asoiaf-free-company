@@ -591,8 +591,6 @@
         "singleDefenseHint": "A troop attacked by several rolls its defense dice once per round: the same dice count against each attacker.",
         "holdBreaks": "Hold breaks the charge",
         "holdBreaksHint": "A charge against a Holding troop loses Shock, Heavy Shock and volley. Only shields and pikes gain +1B. Unchecked: any Holding troop has +1B against a charge.",
-        "flankLimit": "Limited flank (trial)",
-        "flankLimitHint": "The flank bonus never exceeds +1B, however many allies touch the opponent.",
         "fog": "Fog of war by hex (trial)",
         "fogHint": "Foundry works out what the Company sees: unseen hexes are darkened, enemy troops out of sight are hidden, \"?\" beyond 3 hexes (4 for scouts). Woods, hills, villages and ruins, ambush at the wood's edge. The GM keeps control through the token menu.",
         "sameRoll": "Same roll",
@@ -754,7 +752,7 @@
       },
       "Terrain": { "hill": "Hill", "obstacle": "Obstacles", "village": "Village" },
       "Mod": {
-        "triangle": "Winning order", "shockCancels": "Shock: cancels the Hold bonus", "flank": "Flank ({n})",
+        "triangle": "Winning order", "shockCancels": "Shock: cancels the Hold bonus", "flank": "Flank ({n} in contact)", "ambush": "Ambush",
         "chargeUp": "Charging uphill", "crossing": "Crossing (ford or bridge)", "holdCrossing": "Holds the crossing",
         "winded": "Winded", "holdBreaks": "Hold breaks the charge", "mountedTerrain": "Cavalry hindered by terrain", "pikesHold": "Charging pikes", "volley": "Volley",
         "base": "Base", "cover": "Cover", "none": "No modifier"

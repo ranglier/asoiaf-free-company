@@ -97,6 +97,13 @@ function roller(token, battle, kind = "melee") {
 
 /* ---------- Calcul des modificateurs ---------- */
 
+/**
+ * Embuscade (décision de Jules du 2026-11-02) : une troupe cachée au moment de la révélation (brouillard de
+ * guerre ou MJ), qui n'avait encore jamais agi et qui Charge, Attaque ou Tire, gagne +1B à cette action.
+ */
+const ambushing = (battle, token) => (battle.ambush ?? []).includes(token.id);
+const OFFENSIVE = ["charge", "attack", "shoot"];
+
 /** Une ligne de modificateur : dés de bonus (b), dés de test en plus (d), dés de malus (p). */
 const mod = (label, { b = 0, d = 0, p = 0 } = {}) => ({ label, b, d, p });
 
@@ -131,12 +138,13 @@ export function meleeMods(att, def, battle) {
   // Armes de mêlée améliorées.
   if (A.upgrades.melee) am.push(mod(loc("AFC.Unit.Upgrade.melee"), { b: 1 }));
   if (D.upgrades.melee) dm.push(mod(loc("AFC.Unit.Upgrade.melee"), { b: 1 }));
-  // Flancs : chaque troupe alliée supplémentaire au contact de l'adversaire.
-  const flankMax = battle.flankLimit ? 1 : Infinity;
-  const aFlank = Math.min(flankMax, flankers(def, A.side, [att.id]));
-  const dFlank = Math.min(flankMax, flankers(att, D.side, [def.id]));
-  if (aFlank) am.push(mod(fmt("AFC.Battle.Mod.flank", { n: aFlank }), { b: aFlank }));
-  if (dFlank) dm.push(mod(fmt("AFC.Battle.Mod.flank", { n: dFlank }), { b: dFlank }));
+  // Embuscade : troupe cachée à la révélation, qui frappe pour la première fois.
+  if (ambushing(battle, att)) am.push(mod(loc("AFC.Battle.Mod.ambush"), { b: 1 }));
+  // Flanc : d'autres troupes alliées au contact de l'adversaire donnent +1B, quel que soit leur nombre
+  // (décision de Jules du 2026-11-02, ancienne option « Flanc limité »).
+  const aFlank = flankers(def, A.side, [att.id]), dFlank = flankers(att, D.side, [def.id]);
+  if (aFlank) am.push(mod(fmt("AFC.Battle.Mod.flank", { n: aFlank }), { b: 1 }));
+  if (dFlank) dm.push(mod(fmt("AFC.Battle.Mod.flank", { n: dFlank }), { b: 1 }));
   // Terrain du défenseur. La colline ne joue que contre un adversaire plus bas.
   const sameHeight = terrainValue(aTerrain, "defense") > 0;
   if (terrainValue(dTerrain, "defense") && !sameHeight) dm.push(mod(loc("AFC.Battle.Terrain.hill"), { b: 1 }));
@@ -189,6 +197,7 @@ export function shootMods(shooter, target, battle) {
   if (cover) diff.push({ label: loc("AFC.Battle.Mod.cover"), value: cover });
   if (terrainValue(sTerrain, "defense") && !terrainValue(tTerrain, "defense")) mods.push(mod(loc("AFC.Battle.Terrain.hill"), { b: 1 }));
   if (S.upgrades.shoot) mods.push(mod(loc("AFC.Unit.Upgrade.shoot"), { b: 1 }));
+  if (ambushing(battle, shooter)) mods.push(mod(loc("AFC.Battle.Mod.ambush"), { b: 1 }));
   if (weather.shoot) mods.push(mod(loc("AFC.Battle.Weather.rain"), { p: 1 }));
   if (S.state === "disordered") mods.push(mod(loc("AFC.Battle.State.disordered"), { p: 1 }));
   // Pertes non plafonnées : cible prise de flanc (au contact d'un allié du tireur), en mouvement ou désorganisée.
@@ -735,6 +744,9 @@ export async function revealOrders() {
   const battle = getBattle();
   battle.revealed = true;
   battle.moved = [];
+  // Embuscades du tour : relevées avant les mouvements, qui peuvent révéler les troupes.
+  battle.ambush = canvas.scene.tokens.filter(t => t.actor?.type === "troop" && t.hidden && alive(t) && !t.getFlag(SYSTEM_ID, "fog")?.acted
+    && OFFENSIVE.includes(unitOf(battle, t.id).order)).map(t => t.id);
   await saveBattle(battle);
   // Les troupes cachées n'apparaissent pas dans la carte publique.
   const line = t => {
@@ -802,6 +814,7 @@ async function endTurnNow() {
   battle.round += 1;
   battle.revealed = false;
   battle.engaged = [];
+  battle.ambush = [];
   battle.done = [];
   battle.reload = battle.reloadNext ?? [];
   battle.reloadNext = [];
