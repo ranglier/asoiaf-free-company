@@ -112,8 +112,11 @@ export const TERRAINS = {
   ruins: { match: /ruine|fortif|muraille|rempart|ruin|wall/i, cover: 3, fortified: true }
 };
 
-/** Météo de la bataille. */
-export const WEATHER = { clear: {}, rain: { shoot: 1, noCharge: true }, fog: { rangeHalf: true, sight: 2 } };
+/**
+ * Météo de la bataille. Brouillard : vue à 2 cases ; la portée n'est plus divisée par deux (décision de
+ * Jules, 2026-11-02) : au-delà de la vue, on tire à l'aveugle.
+ */
+export const WEATHER = { clear: {}, rain: { shoot: 1, noCharge: true }, fog: { sight: 2 } };
 
 /** Icône de chaque ordre (carte, fenêtre Bataille, carte de chat). */
 export const ORDER_ICONS = {
