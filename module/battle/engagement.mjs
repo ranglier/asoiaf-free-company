@@ -190,6 +190,8 @@ export function shootMods(shooter, target, battle) {
   if (S.upgrades.shoot) mods.push(mod(loc("AFC.Unit.Upgrade.shoot"), { b: 1 }));
   if (weather.shoot) mods.push(mod(loc("AFC.Battle.Weather.rain"), { p: 1 }));
   if (S.state === "disordered") mods.push(mod(loc("AFC.Battle.State.disordered"), { p: 1 }));
+  // Course sous les tirs (option) : une troupe qui court est plus dure à toucher.
+  if (battle.runShot && tOrder === "run") mods.push(mod(loc("AFC.Battle.Mod.runTarget"), { p: 1 }));
   // Pertes non plafonnées : cible prise de flanc (au contact d'un allié du tireur), en mouvement ou désorganisée.
   const flanked = flankers(target, S.side, [shooter.id]) > 0;
   const uncapped = flanked || MOVING_ORDERS.includes(tOrder) || T.state === "disordered";

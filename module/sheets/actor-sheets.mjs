@@ -1,5 +1,6 @@
 import * as CONFIG_AFC from "../config.mjs";
 import { rollAbilityTest } from "../dice/test-roll.mjs";
+import { initiativeLabel, rollActorInitiative } from "../dice/initiative.mjs";
 import { rollAttack, weaponProfile, weaponQualities } from "../dice/attack.mjs";
 import { runCreation } from "../creation.mjs";
 import { HoldingCatalog } from "../apps/holding-catalog.mjs";
@@ -43,7 +44,8 @@ class AFCActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       addRow: AFCActorSheet.#onAddRow,
       removeRow: AFCActorSheet.#onRemoveRow,
       openActor: AFCActorSheet.#onOpenActor,
-      deployUnit: AFCActorSheet.#onDeployUnit
+      deployUnit: AFCActorSheet.#onDeployUnit,
+      rollInitiative: AFCActorSheet.#onRollInitiative
     }
   };
 
@@ -90,6 +92,7 @@ class AFCActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       injuries: pips(s.injuries.value, s.injuries.max)
     };
     context.healthPct = s.health.max ? Math.round(100 * s.health.value / s.health.max) : 0;
+    context.initiativeLabel = initiativeLabel(actor);
     context.weapons = (context.items.weapon ?? []).map(item => ({
       item, profile: weaponProfile(actor, item), qualities: weaponQualities(item)
     }));
@@ -106,6 +109,11 @@ class AFCActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       if (list && !Array.isArray(list)) data.system[key] = Object.values(list);
     }
     return data;
+  }
+
+  /** Initiative du combat en cours (le jeton du personnage y est ajouté s'il n'y est pas). */
+  static #onRollInitiative() {
+    return rollActorInitiative(this.document);
   }
 
   /** Clic : test rapide ; Maj + clic : dialogue complet. */

@@ -588,6 +588,8 @@
         "singleDefenseHint": "A troop attacked by several rolls its defense dice once per round: the same dice count against each attacker.",
         "holdBreaks": "Hold breaks the charge",
         "holdBreaksHint": "A charge against a Holding troop loses Shock, Heavy Shock and volley. Only shields and pikes gain +1B. Unchecked: any Holding troop has +1B against a charge.",
+        "runShot": "Running under fire",
+        "runShotHint": "Shooting at a Running troop gives the shooter a penalty die (−1D).",
         "flankLimit": "Limited flank (trial)",
         "flankLimitHint": "The flank bonus never exceeds +1B, however many allies touch the opponent.",
         "sameRoll": "Same roll",
@@ -751,7 +753,7 @@
       "Mod": {
         "triangle": "Winning order", "shockCancels": "Shock: cancels the Hold bonus", "flank": "Flank ({n})",
         "chargeUp": "Charging uphill", "crossing": "Crossing (ford or bridge)", "holdCrossing": "Holds the crossing",
-        "winded": "Winded", "holdBreaks": "Hold breaks the charge", "mountedTerrain": "Cavalry hindered by terrain", "pikesHold": "Charging pikes", "volley": "Volley",
+        "winded": "Winded", "runTarget": "Running target", "holdBreaks": "Hold breaks the charge", "mountedTerrain": "Cavalry hindered by terrain", "pikesHold": "Charging pikes", "volley": "Volley",
         "base": "Base", "cover": "Cover", "none": "No modifier"
       },
       "Warn": {
@@ -1025,6 +1027,8 @@
       "armorPenalty": "penalty",
       "movement": "Movement",
       "sprint": "Sprint",
+      "initiative": "Initiative",
+      "initiativeHint": "Rolls initiative in the current combat: Agility test, Quickness bonus dice. The token is added to the combat if needed.",
       "biography": "Biography"
     },
     "Npc": {
@@ -1257,6 +1261,9 @@
     },
     "Roll": {
       "DialogTitle": "Test: {ability}",
+      "InitiativeNoToken": "No token of this character on the scene: place it first.",
+      "InitiativeNoCombat": "No combat in progress: the GM must start one.",
+      "InitiativeDone": "Initiative already rolled for this combat.",
       "Roll": "Roll",
       "Rank": "Rank",
       "Bonus": "Bonus dice",

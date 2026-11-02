@@ -14,7 +14,7 @@ const UNIT = "unit";
 const CHANNEL = `system.${SYSTEM_ID}`;
 const EMPTY_UNIT = { order: "", target: "", officer: "", countered: false, path: [] };
 /** Options de la bataille (règles maison), actives par défaut sauf celles à l'essai. */
-export const BATTLE_OPTIONS = ["outnumber", "officerTest", "trainingBonus", "singleDefense", "holdBreaks", "flankLimit"];
+export const BATTLE_OPTIONS = ["outnumber", "officerTest", "trainingBonus", "singleDefense", "holdBreaks", "runShot", "flankLimit"];
 const TRIAL_OPTIONS = ["flankLimit"];
 
 /** Ordre, cible, officier et contre-ordre d'un jeton de troupe (versions 0.27.9 et avant : sur l'acteur). */

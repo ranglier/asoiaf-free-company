@@ -588,6 +588,8 @@
         "singleDefenseHint": "Une troupe attaquée par plusieurs ne lance ses dés de défense qu'une fois par tour : les mêmes dés servent contre chaque attaquant.",
         "holdBreaks": "Tenir brise l'élan",
         "holdBreaksHint": "Une charge contre une troupe qui Tient perd Choc, Choc lourd et volée. Seuls les boucliers et les piques en tirent +1B. Décoché : toute troupe qui Tient a +1B contre une charge.",
+        "runShot": "Course sous les tirs",
+        "runShotHint": "Tirer sur une troupe qui Court donne un dé de malus (−1D) au tireur.",
         "flankLimit": "Flanc limité (à l'essai)",
         "flankLimitHint": "Le bonus de flanc ne dépasse pas +1B, quel que soit le nombre d'alliés au contact de l'adversaire.",
         "sameRoll": "Même jet",
@@ -757,6 +759,7 @@
         "holdCrossing": "Tient le passage",
         "mountedTerrain": "Cavalerie gênée par le terrain",
         "winded": "Essoufflée",
+        "runTarget": "Cible qui court",
         "holdBreaks": "Tenir brise l'élan",
         "pikesHold": "Charge sur des piques",
         "volley": "Volée",
@@ -1035,6 +1038,8 @@
       "armorPenalty": "malus",
       "movement": "Déplacement",
       "sprint": "Sprint",
+      "initiative": "Initiative",
+      "initiativeHint": "Lance l'initiative du combat en cours : test d'Agilité, dés de bonus de Vivacité. Le jeton est ajouté au combat s'il n'y est pas.",
       "biography": "Biographie"
     },
     "Npc": {
@@ -1267,6 +1272,9 @@
     },
     "Roll": {
       "DialogTitle": "Test : {ability}",
+      "InitiativeNoToken": "Aucun jeton de ce personnage sur la scène : posez-le d'abord.",
+      "InitiativeNoCombat": "Aucun combat en cours : le MJ doit en commencer un.",
+      "InitiativeDone": "Initiative déjà lancée pour ce combat.",
       "Roll": "Lancer",
       "Rank": "Rang",
       "Bonus": "Dés de bonus",
