@@ -576,6 +576,7 @@
 ,
     "Battle": {
       "Reloading": "{name} is reloading: no shot this turn.",
+      "Fog": { "Unknown": "Unknown troop", "Identify": "Identify for the players (Read the Field)", "Forget": "Stop identifying for the players", "Release": "Give back to the fog (hidden or shown by hand)" },
       "Split": { "Button": "Split the battalion", "Title": "Split: {name}", "Hint": "{n} units in this block. The new block may have no officer.", "Units": "Units to detach", "NoRoom": "No free adjacent space.", "TooSmall": "This block has a single unit.", "Outnumber": "Outnumbering" },
       "Options": {
         "outnumber": "Outnumbering and splitting",
@@ -590,6 +591,8 @@
         "holdBreaksHint": "A charge against a Holding troop loses Shock, Heavy Shock and volley. Only shields and pikes gain +1B. Unchecked: any Holding troop has +1B against a charge.",
         "flankLimit": "Limited flank (trial)",
         "flankLimitHint": "The flank bonus never exceeds +1B, however many allies touch the opponent.",
+        "fog": "Fog of war by hex (trial)",
+        "fogHint": "Foundry works out what the Company sees: unseen hexes are darkened, enemy troops out of sight are hidden, \"?\" beyond 4 hexes (5 for scouts). Woods, hills, villages and ruins, ambush at the wood's edge. The GM keeps control through the token menu.",
         "sameRoll": "Same roll",
         "morale": "Morale",
         "noBonus": "No bonus",

@@ -15,6 +15,7 @@ import { chooseSplit } from "./split.mjs";
 import { isAutoIcon } from "./troops.mjs";
 import { isBook } from "./rules.mjs";
 import { canCommand, getBattle, setUnit, unitOf } from "./state.mjs";
+import { drawUnknownMask, fogName, fogOn, fogState, releaseToFog, toggleKnown, unknownToMe } from "./vision.mjs";
 
 const { DialogV2 } = foundry.applications.api;
 const loc = key => game.i18n.localize(key);
@@ -50,12 +51,12 @@ export function startTargetPick(token, onPick = null) {
     // L'ordre a pu changer depuis : on ne pose pas de cible sur un ordre qui n'en a pas.
     if (!isBook(token.parent) && !TARGETED_ORDERS.includes(unitOf(getBattle(), token.id).order)) return;
     setUnit(token.id, { target: hit.document.id }).then(() => afterPlan(token));
-    ui.notifications.info(fmt("AFC.Battle.PlanSetDone", { a: token.name, d: hit.document.name }));
+    ui.notifications.info(fmt("AFC.Battle.PlanSetDone", { a: token.name, d: fogName(hit.document) }));
     // La cible peut encore approcher : on prévient sans refuser.
     const battle = getBattle();
     if (unitOf(battle, token.id).order === "shoot") {
       const dist = distance(token, hit.document), range = shootRange(token.actor.system, battle);
-      if (dist > range) ui.notifications.warn(fmt("AFC.Battle.Moves.TargetFar", { a: token.name, d: hit.document.name, n: dist, r: range }));
+      if (dist > range) ui.notifications.warn(fmt("AFC.Battle.Moves.TargetFar", { a: token.name, d: fogName(hit.document), n: dist, r: range }));
     }
   };
   const onKey = event => { if (event.key === "Escape") cancelTargetPick(); };
@@ -179,6 +180,12 @@ export function onRenderTokenHUD(hud, html) {
   if (!book && mayCommand(token, battle)) button("fa-bullhorn", loc("AFC.Battle.Options.commandHint"), () => { hud.close(); commandTroop(token.id); });
   if (!book && commander && token.actor.system.state !== "fresh") button("fa-flag-checkered", `${loc("AFC.Battle.Rally")} (${token.actor.system.rallies}/${token.actor.system.ralliesMax})`, () => rallyTroop(token.id));
   if (!book && battle.outnumber && commander && token.actor.system.units > 1) button("fa-code-branch", loc("AFC.Battle.Split.Button"), () => { hud.close(); chooseSplit(token); });
+  // Brouillard (MJ, troupe ennemie) : identifier pour les joueurs (Lire le champ), rendre au brouillard un jeton caché ou montré à la main.
+  if (game.user.isGM && token.actor.system.side === "enemy" && fogOn(token.parent)) {
+    const fog = fogState(token);
+    button("fa-magnifying-glass", loc(fog.known ? "AFC.Battle.Fog.Forget" : "AFC.Battle.Fog.Identify"), () => { hud.close(); toggleKnown(token); }, { active: !!fog.known });
+    if (fog.manual) button("fa-cloud", loc("AFC.Battle.Fog.Release"), () => { hud.close(); releaseToFog(token); });
+  }
   // Colonne de droite, avec cacher/révéler : fiche de la troupe et fenêtre Bataille.
   const right = html.querySelector(".col.right");
   if (token.actor.testUserPermission(game.user, "OBSERVER")) {
@@ -436,7 +443,7 @@ export async function drawStateMarker(token) {
   if (actor?.type !== "troop") return;
   const state = isBook(token.document.parent) ? BOOK_STATUS_CHIP[actor.system.book.status] : actor.system.state;
   const color = STATE_COLORS[state];
-  if (!color) return;
+  if (!color || unknownToMe(token.document)) return;
   const marker = new PIXI.Container();
   marker.name = "afcState";
   const r = token.w * 0.17;
@@ -468,7 +475,7 @@ export async function drawOfficerMarker(token) {
   const doc = token.document;
   if (doc.actor?.type !== "troop" || !doc.parent) return;
   const officer = game.actors.get(unitOf(getBattle(doc.parent), doc.id).officer);
-  if (!officer) return;
+  if (!officer || unknownToMe(doc)) return;
   const texture = await foundry.canvas.loadTexture(officer.img).catch(() => null) ?? await foundry.canvas.loadTexture("icons/svg/mystery-man.svg");
   if (token.destroyed || !texture) return;
   token.children.filter(c => c.name === "afcOfficer").forEach(c => c.destroy({ children: true }));
@@ -502,11 +509,12 @@ function drawSideFrame(token) {
   token.addChild(frame);
 }
 
-/** Pastille d'ordre et marqueur d'état d'un jeton de troupe. */
+/** Pastille d'ordre et marqueur d'état d'un jeton de troupe ; troupe inconnue (brouillard) : un « ? ». */
 export function drawTroopMarks(token) {
   drawSideFrame(token);
   drawOfficerMarker(token);
   drawOrderBadge(token);
   drawStateMarker(token);
   drawBookHealth(token);
+  drawUnknownMask(token);
 }

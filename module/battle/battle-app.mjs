@@ -14,8 +14,10 @@ import { MANUAL_ACTIONS, mayAct, officerBusy, pcLines, recordAction, SCENE_ROUND
 import { changePlan, PLAN_USES, planPoints } from "./plan-points.mjs";
 import { BATTLE_OPTIONS, canCommand, clearBattle, getBattle, saveBattle, setUnit, unitOf } from "./state.mjs";
 import { createEnemyTroop, troopPool } from "./troops.mjs";
+import { fogName, unknownToMe } from "./vision.mjs";
 
 const { ApplicationV2, HandlebarsApplicationMixin, DialogV2 } = foundry.applications.api;
+const UNKNOWN_IMG = "icons/svg/mystery-man.svg";
 const loc = key => game.i18n.localize(key);
 const COMMAND = ["commandement", "command"];
 const poolText = p => `${p.rank}D${p.bonus ? `+${p.bonus}B` : ""}`;
@@ -107,9 +109,11 @@ export class BattleApp extends HandlebarsApplicationMixin(ApplicationV2) {
       const target = unit.target ? scene.tokens.get(unit.target) : null;
       const officer = unit.officer ? game.actors.get(unit.officer) : null;
       const known = isGM || s.side === "company";
+      // Brouillard : une troupe vue mais pas identifiée n'a ni nom ni image pour un joueur.
+      const unknown = unknownToMe(token);
       return {
-        id: token.id, name: token.name, img: token.texture.src, hex: hexNumber(token), hidden: token.hidden, side: s.side,
-        state: s.state, stateLabel: TROOP_STATES[s.state].label, known, mine,
+        id: token.id, name: fogName(token), img: unknown ? UNKNOWN_IMG : token.texture.src, hex: hexNumber(token), hidden: token.hidden, side: s.side, unknown,
+        state: unknown ? "fresh" : s.state, stateLabel: TROOP_STATES[s.state].label, known, mine,
         order: unit.order, orderText: orderLabel(unit.order),
         orderOptions: ORDERS.map(k => ({ key: k, label: loc(`AFC.Battle.Order.${k}`), selected: k === unit.order, disabled: k === "shoot" && (!s.range || (battle.reload ?? []).includes(token.id)) })), orderIcon: ORDER_ICONS[unit.order] ?? "fa-flag",
         // Avant la révélation, un joueur ne sait même pas si l'ennemi a reçu un ordre.
@@ -117,7 +121,7 @@ export class BattleApp extends HandlebarsApplicationMixin(ApplicationV2) {
         canSet: mine && !(battle.revealed && unit.countered && !isGM),
         countered: unit.countered,
         targeted: TARGETED_ORDERS.includes(unit.order),
-        targetName: target && (isGM || !target.hidden) ? target.name : null,
+        targetName: target && (isGM || !target.hidden) ? fogName(target) : null,
         canPickMove: mine && !hasMoved(token) && (PATH_ORDERS.includes(unit.order) || (APPROACH_ORDERS.includes(unit.order) && !!unit.target)),
         moveSet: !!unit.path?.length,
         officerName: officer?.name ?? null,
@@ -159,7 +163,7 @@ export class BattleApp extends HandlebarsApplicationMixin(ApplicationV2) {
       pcActionOptions: Object.fromEntries(MANUAL_ACTIONS.map(k => [k, loc(`AFC.Battle.PcActions.Action.${k}`)])),
       sceneRounds: SCENE_ROUNDS,
       controlled: controlled?.actor?.type === "troop" ? controlled.name : null,
-      target: targeted?.actor?.type === "troop" ? targeted.name : null,
+      target: targeted?.actor?.type === "troop" ? fogName(targeted) : null,
       ...(book ? bookContext(battle, scene, { orderLabel }) : {})
     };
     context.company = sortTroops(context.company, "company", scene);

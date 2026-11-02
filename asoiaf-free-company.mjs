@@ -22,6 +22,7 @@ import { cancelMovePick } from "./module/battle/moves.mjs";
 import { getBattle } from "./module/battle/state.mjs";
 import { cancelTargetPick, drawHexNumbers, drawPlanArrows, drawRegionLabels, drawTroopMarks, onRenderTokenHUD, refreshOrderBadges, scheduleArrows } from "./module/battle/map.mjs";
 import { refreshTroopImage, registerTroopStatuses, syncTroopStatus } from "./module/battle/troops.mjs";
+import { drawFog, invalidateFog, markActed, onPreUpdateToken, scheduleFog, unknownToMe } from "./module/battle/vision.mjs";
 import { evaluateTest, rollAbilityTest, rollTest } from "./module/dice/test-roll.mjs";
 import { onRenderChatMessage, resolveDamage, rollAttack } from "./module/dice/attack.mjs";
 import { registerSettings } from "./module/settings.mjs";
@@ -104,6 +105,7 @@ Hooks.on("getSceneControlButtons", controls => {
 /** La fenêtre Bataille et les pastilles d'ordre suivent la scène, les troupes, la sélection et les cibles. */
 Hooks.on("updateScene", (scene, changes) => {
   if (scene.id !== canvas.scene?.id || !foundry.utils.hasProperty(changes, `flags.${AFC.SYSTEM_ID}`)) return;
+  scheduleFog();
   BattleApp.refresh();
   drawHexNumbers();
   refreshOrderBadges();
@@ -122,6 +124,8 @@ Hooks.on("canvasReady", () => {
   }
   TerrainPainter.refresh();
   migrateBattle();
+  invalidateFog();
+  scheduleFog();
   drawHexNumbers();
   BattleApp.refresh();
   refreshOrderBadges();
@@ -135,16 +139,24 @@ for (const hook of ["createRegion", "updateRegion", "deleteRegion"]) {
     TerrainPainter.refresh();
     drawRegionLabels();
     renderBattleBar();
+    invalidateFog();
+    scheduleFog();
   });
 }
 // Les flèches suivent les jetons image par image (déplacements animés), et leur visibilité.
 Hooks.on("refreshToken", (token, flags) => {
   if (flags.refreshPosition || flags.refreshVisibility) scheduleArrows();
+  // Troupe inconnue (brouillard) : ni nom ni infobulle pour un joueur.
+  if (unknownToMe(token.document)) {
+    if (token.nameplate) token.nameplate.visible = false;
+    if (token.tooltip) token.tooltip.visible = false;
+  }
 });
 for (const hook of ["createToken", "deleteToken"]) {
   Hooks.on(hook, doc => {
     // Une troupe posée reçoit ses compétences et son équipement.
     if (hook === "createToken" && game.users.activeGM === game.user && doc.actor?.type === "troop") prepareBookTroop(doc.actor);
+    if (doc.actor?.type === "troop") scheduleFog();
     scheduleArrows();
     drawRegionLabels();
     renderBattleBar();
@@ -161,6 +173,8 @@ Hooks.on("preUpdateToken", (doc, changes) => {
   ui.notifications.warn(game.i18n.localize("AFC.Battle.Moves.Locked"));
   return false;
 });
+// Brouillard : un jeton ennemi caché ou montré à la main par le MJ sort du brouillard.
+Hooks.on("preUpdateToken", onPreUpdateToken);
 // Une troupe déplacée peut ouvrir ou fermer un engagement ; une image changée redessine ses marques.
 Hooks.on("updateToken", (doc, changes) => {
   if (doc.object && "texture" in changes) drawTroopMarks(doc.object);
@@ -171,7 +185,11 @@ Hooks.on("updateToken", (doc, changes) => {
     refreshOrderBadges();
     scheduleArrows();
   }
-  if (doc.actor?.type !== "troop" || !("x" in changes || "y" in changes)) return;
+  // Brouillard : une troupe déplacée, cachée ou montrée change ce qu'on voit ; un ennemi qui bouge après la révélation a agi.
+  const moved = "x" in changes || "y" in changes;
+  if (doc.actor?.type === "troop" && doc.parent?.id === canvas.scene?.id && (moved || "hidden" in changes || foundry.utils.hasProperty(changes, `flags.${AFC.SYSTEM_ID}.fog`))) scheduleFog();
+  if (moved && game.users.activeGM === game.user && doc.actor?.type === "troop" && getBattle(doc.parent).revealed) markActed(doc);
+  if (doc.actor?.type !== "troop" || !moved) return;
   BattleApp.refresh();
   renderBattleBar();
   scheduleArrows();
@@ -188,6 +206,8 @@ Hooks.on("updateActor", (actor, changes, options, userId) => {
   }
   BattleApp.refresh();
   renderBattleBar();
+  // Brouillard : camp, état (troupe détruite) ou type (éclaireurs) changent ce que voit la Compagnie.
+  if (["side", "state", "unitType", "unitType2", "traits"].some(k => foundry.utils.hasProperty(changes, `system.${k}`))) scheduleFog();
   // Ordre ou cible changés (drapeau de la troupe) : pastilles et flèches.
   if (foundry.utils.hasProperty(changes, `flags.${AFC.SYSTEM_ID}`)) {
     refreshOrderBadges();

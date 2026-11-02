@@ -100,7 +100,8 @@ async function createTroop({ name, side, unitType, unitType2 = "", skillKeys = [
       displayName: CONST.TOKEN_DISPLAY_MODES.HOVER
     }
   });
-  const token = await actor.getTokenDocument({ ...viewPosition(), hidden });
+  // Brouillard de guerre : une troupe posée cachée par cette fenêtre reste gérée par le brouillard.
+  const token = await actor.getTokenDocument({ ...viewPosition(), hidden, flags: { [SYSTEM_ID]: { fog: { manual: false } } } });
   await canvas.scene.createEmbeddedDocuments("Token", [token.toObject()]);
   return actor;
 }

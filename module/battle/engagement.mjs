@@ -12,6 +12,7 @@ import { executeMoves } from "./moves.mjs";
 import { mayAct, recordAction, withAction } from "./pc-actions.mjs";
 import { moraleMod, troopPool } from "./troops.mjs";
 import { askHandlers, askUser, canCommand, getBattle, gmHandlers, requestGM, resetOrders, saveBattle, sceneOf, unitOf } from "./state.mjs";
+import { fogName, markActed } from "./vision.mjs";
 
 const { DialogV2 } = foundry.applications.api;
 const loc = key => game.i18n.localize(key);
@@ -278,6 +279,7 @@ function stale(before, att, def, scene) {
 
 /** Mêlée entre deux jetons (attaquant : jeton contrôlé ; défenseur : cible). */
 export function resolveMelee(att, def) {
+  markActed(att);
   return guarded(att, def, () => meleeOnce(att, def));
 }
 
@@ -339,6 +341,7 @@ async function meleeOnce(att, def) {
 
 /** Tir (tireur : jeton contrôlé ; cible : jeton ciblé). */
 export function resolveShoot(shooter, target) {
+  markActed(shooter);
   return guarded(shooter, target, () => shootOnce(shooter, target));
 }
 
@@ -373,9 +376,9 @@ async function shootOnce(shooter, target) {
   const apply = losses ? { token: target.id, losses, scene: scene.id } : null;
   const content = await renderCard("battle-test", {
     title: loc("AFC.Battle.Card.Shoot"),
-    subtitle: fmt("AFC.Battle.Card.ShootAt", { a: shooter.name, d: target.name }),
+    subtitle: fmt("AFC.Battle.Card.ShootAt", { a: fogName(shooter, { forAll: true }), d: fogName(target, { forAll: true }) }),
     total: test.total, dice: test.dice, success: degrees > 0, degrees,
-    verdict: degrees ? `${loc("AFC.Battle.Card.Hit")} : ${lossLabel(target.name, losses)}` : loc("AFC.Battle.Card.Miss"),
+    verdict: degrees ? `${loc("AFC.Battle.Card.Hit")} : ${lossLabel(fogName(target, { forAll: true }), losses)}` : loc("AFC.Battle.Card.Miss"),
     detail: fmt("AFC.Battle.Card.Against", { n: m.difficulty, detail: m.diff.map(d => `${d.label} ${d.value}`).join(" + ") }),
     pool: poolLabel(p, test), tags: [r.name, ...modTags(m.mods)],
     ...cardApply(apply, opts.auto, volley)
@@ -738,7 +741,7 @@ export async function revealOrders() {
     const u = unitOf(battle, t.id);
     const target = u.target ? canvas.scene.tokens.get(u.target) : null;
     const icon = ORDER_ICONS[u.order] ?? "fa-minus";
-    return `<li><i class="fa-solid ${icon}"></i><b>${esc(t.name)}</b> <span class="order">${esc(orderLabel(u.order))}${target && !target.hidden ? ` → ${esc(target.name)}` : ""}</span></li>`;
+    return `<li><i class="fa-solid ${icon}"></i><b>${esc(fogName(t, { forAll: true }))}</b> <span class="order">${esc(orderLabel(u.order))}${target && !target.hidden ? ` → ${esc(fogName(target, { forAll: true }))}` : ""}</span></li>`;
   };
   const troops = side => canvas.scene.tokens.filter(t => t.actor?.type === "troop" && t.actor.system.side === side && !t.hidden && alive(t));
   const group = side => {
@@ -792,9 +795,9 @@ async function endTurnNow() {
     if (unitOf(battle, token.id).order === "hold" && !battle.engaged.includes(token.id) && ["shaken", "disordered"].includes(s.state)) {
       const state = STATE_ORDER[s.stateIndex - 1];
       await token.actor.update({ "system.state": state });
-      lines.push(fmt("AFC.Battle.Reorganized", { name: esc(token.name), state: loc(TROOP_STATES[state].label) }));
+      lines.push(fmt("AFC.Battle.Reorganized", { name: esc(fogName(token, { forAll: true })), state: loc(TROOP_STATES[state].label) }));
     }
-    if (s.state === "routed") lines.push(fmt("AFC.Battle.Fleeing", { name: esc(token.name) }));
+    if (s.state === "routed") lines.push(fmt("AFC.Battle.Fleeing", { name: esc(fogName(token, { forAll: true })) }));
   }
   battle.round += 1;
   battle.revealed = false;

@@ -14,8 +14,8 @@ const UNIT = "unit";
 const CHANNEL = `system.${SYSTEM_ID}`;
 const EMPTY_UNIT = { order: "", target: "", officer: "", countered: false, path: [] };
 /** Options de la bataille (règles maison), actives par défaut sauf celles à l'essai. */
-export const BATTLE_OPTIONS = ["outnumber", "officerTest", "trainingBonus", "singleDefense", "holdBreaks", "flankLimit"];
-const TRIAL_OPTIONS = ["flankLimit"];
+export const BATTLE_OPTIONS = ["outnumber", "officerTest", "trainingBonus", "singleDefense", "holdBreaks", "flankLimit", "fog"];
+const TRIAL_OPTIONS = ["flankLimit", "fog"];
 
 /** Ordre, cible, officier et contre-ordre d'un jeton de troupe (versions 0.27.9 et avant : sur l'acteur). */
 function readUnit(token, legacy) {
@@ -55,11 +55,13 @@ export async function saveBattle(battle, scene = canvas.scene) {
 /**
  * Efface la bataille de la scène, les ordres et les officiers des troupes (MJ). Ce qui vaut « par
  * bataille » repart à neuf : encaissement, ralliements, Indéfectible (et l'ancien drapeau de première
- * perte des Bleus, trait retiré). L'état des troupes ne change pas.
+ * perte des Bleus, trait retiré), comme les embuscades et identifications du brouillard. L'état des
+ * troupes ne change pas.
  */
 export async function clearBattle(scene = canvas.scene) {
   for (const t of scene.tokens.filter(t => t.actor?.type === "troop")) {
     await t.unsetFlag(SYSTEM_ID, UNIT);
+    if (t.getFlag(SYSTEM_ID, "fog")) await t.setFlag(SYSTEM_ID, "fog", { acted: false, known: false });
     const a = t.actor;
     if (a.getFlag(SYSTEM_ID, UNIT)) await a.unsetFlag(SYSTEM_ID, UNIT);
     await a.update({ "system.cushion": a.system.cushionMax, "system.rallies": 0, [`flags.${SYSTEM_ID}.-=steadfastUsed`]: null, [`flags.${SYSTEM_ID}.-=firstLoss`]: null });
