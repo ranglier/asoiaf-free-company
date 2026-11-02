@@ -266,6 +266,24 @@ function settleMoves(moves, occupied) {
       progress = true;
     }
   }
+  // Échanges de cases entre alliés (décision de Jules du 2026-11-02) : deux troupes, ou plus en cercle,
+  // qui visent chacune la case de la suivante bougent ensemble, si aucun ennemi ne barre leur chemin.
+  const at = new Map(pending.map(m => [keyOf(cellOf(m.token)), m]));
+  for (const move of [...pending]) {
+    if (!pending.includes(move)) continue;
+    const cycle = [];
+    let next = move;
+    while (next && !cycle.includes(next)) { cycle.push(next); next = at.get(next.path.at(-1)); }
+    const side = move.token.actor.system.side;
+    const clear = c => c.path.slice(0, -1).every(key => { const other = occupied.get(key); return !other || other.actor.system.side === side; });
+    if (next !== move || cycle.some(c => c.token.actor.system.side !== side || !clear(c))) continue;
+    for (const c of cycle) occupied.delete(keyOf(cellOf(c.token)));
+    for (const c of cycle) {
+      occupied.set(c.path.at(-1), c.token);
+      results.push({ token: c.token, end: c.path.at(-1) });
+    }
+    pending = pending.filter(m => !cycle.includes(m));
+  }
   for (const move of pending) {
     const end = walk(move.token, move.path, occupied);
     if (end) commit(move, end);
@@ -275,13 +293,44 @@ function settleMoves(moves, occupied) {
 
 const canMove = token => !["routed", "destroyed"].includes(token.actor.system.state);
 
-/** Joue les mouvements de la révélation : manœuvres et replis, puis charges et attaques vers la position réelle de leur cible. */
+/* ---------- Contact (décision de Jules du 2026-11-02) ---------- */
+
+/** Ordres qu'une troupe au contact d'un ennemi ne peut pas recevoir : elle ne rompt le contact qu'en Se repliant. */
+export const CONTACT_FORBIDDEN = ["maneuver", "run"];
+
+/** Troupes qui touchent une troupe ennemie active (positions du moment). */
+function contactIds(scene) {
+  const list = troops(scene).filter(canMove);
+  return new Set(list.filter(t => list.some(o => o.actor.system.side !== t.actor.system.side && adjacent(t, o))).map(t => t.id));
+}
+
+/**
+ * La troupe est-elle au contact d'un ennemi au début du tour ? Avant la révélation : positions du moment ;
+ * après (contre-ordre) : relevé fait à la révélation, avant les mouvements.
+ */
+export function inContact(token, battle = getBattle(token.parent)) {
+  if (battle.revealed) return (battle.contact ?? []).includes(token.id);
+  return contactIds(token.parent).has(token.id);
+}
+
+/**
+ * Joue les mouvements de la révélation : manœuvres et replis, puis charges et attaques vers la position
+ * réelle de leur cible. Une troupe au contact qui Se replie reste sur place jusqu'à la fin du tour (elle
+ * encaisse les tirs et les mêlées d'abord) ; une troupe qui vise sa case pour la relever attend avec elle.
+ */
 export async function executeMoves(scene = canvas.scene) {
   const battle = getBattle(scene);
   const moved = new Set(battle.moved ?? []);
   const units = troops(scene).filter(canMove).map(token => ({ token, unit: unitOf(battle, token.id) }));
+  const contact = contactIds(scene);
+  battle.contact = [...contact];
+  const withdrawing = units.filter(u => u.unit.order === "withdraw" && contact.has(u.token.id) && u.unit.path?.length);
+  const held = new Set(withdrawing.map(u => keyOf(cellOf(u.token))));
+  const relief = units.filter(u => PATH_ORDERS.includes(u.unit.order) && u.unit.order !== "withdraw" && !contact.has(u.token.id) && held.has(u.unit.path?.at(-1)));
+  battle.deferred = [...withdrawing, ...relief].map(u => u.token.id);
+  const deferred = new Set(battle.deferred);
 
-  const paths = units.filter(u => PATH_ORDERS.includes(u.unit.order) && u.unit.path?.length).map(u => ({ token: u.token, path: [...u.unit.path] }));
+  const paths = units.filter(u => PATH_ORDERS.includes(u.unit.order) && u.unit.path?.length && !deferred.has(u.token.id)).map(u => ({ token: u.token, path: [...u.unit.path] }));
   const notes = resolveDisputes(paths);
   const settled = settleMoves(paths.filter(p => p.path.length), occupiedCells(scene, { all: true }));
   if (settled.length) await scene.updateEmbeddedDocuments("Token", settled.map(r => tokenUpdate(r.token, r.end)));
@@ -311,6 +360,26 @@ export async function executeMoves(scene = canvas.scene) {
   if (notes.length) await ChatMessage.create({ content: `<div class="afc-card battle"><ul class="month-lines">${notes.map(n => `<li>${n}</li>`).join("")}</ul></div>` });
 }
 
+/**
+ * Fin de tour : les troupes qui se repliaient au contact reculent, après les tirs et les mêlées, et les
+ * troupes venues les relever prennent leur place (échange de cases compris). Une troupe en déroute ou
+ * détruite ne recule pas ; sa relève n'entre que si la case est libre. Renvoie les lignes de la carte.
+ */
+export async function executeDeferredMoves(scene = canvas.scene) {
+  const battle = getBattle(scene);
+  const ids = battle.deferred ?? [];
+  if (!ids.length) return [];
+  const moves = ids.map(id => scene.tokens.get(id)).filter(t => t?.actor && canMove(t))
+    .map(token => ({ token, path: [...(unitOf(battle, token.id).path ?? [])] })).filter(m => m.path.length);
+  const notes = resolveDisputes(moves);
+  const settled = settleMoves(moves.filter(m => m.path.length), occupiedCells(scene, { all: true }));
+  if (settled.length) await scene.updateEmbeddedDocuments("Token", settled.map(r => tokenUpdate(r.token, r.end)));
+  for (const r of settled) notes.push(fmt("AFC.Battle.Moves.Disengaged", { name: esc(r.token.name) }));
+  battle.deferred = [];
+  await saveBattle(battle, scene);
+  return notes;
+}
+
 /** Mouvement d'une seule troupe (contre-ordre). */
 gmHandlers.troopMove = data => {
   const id = data.token;
@@ -325,6 +394,11 @@ gmHandlers.troopMove = data => {
     const battle = getBattle(scene);
     if ((battle.moved ?? []).includes(id)) return;
     const unit = unitOf(battle, id);
+    // Repli au contact (contre-ordre) : la troupe reculera en fin de tour, après les mêlées.
+    if (unit.order === "withdraw" && (battle.contact ?? []).includes(id)) {
+      battle.deferred = [...new Set([...(battle.deferred ?? []), id])];
+      return saveBattle(battle, scene);
+    }
     const occupied = occupiedCells(scene, { all: true });
     const path = PATH_ORDERS.includes(unit.order) ? unit.path ?? [] : APPROACH_ORDERS.includes(unit.order) && unit.target ? approachPath(token, unit, occupied) : [];
     const end = walk(token, path, occupied);

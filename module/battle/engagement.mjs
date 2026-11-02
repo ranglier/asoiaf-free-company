@@ -8,7 +8,7 @@ import { autoPenalties, evaluateTest, rollDice } from "../dice/test-roll.mjs";
 import {
   MAX_LOSS, MOVING_ORDERS, OFFICER_TEST, ORDER_ICONS, STATE_ORDER, TERRAINS, TRIANGLE, TROOP_STATES, WEATHER
 } from "./battle-config.mjs";
-import { executeMoves } from "./moves.mjs";
+import { executeDeferredMoves, executeMoves } from "./moves.mjs";
 import { mayAct, recordAction, withAction } from "./pc-actions.mjs";
 import { moraleMod, troopPool } from "./troops.mjs";
 import { askHandlers, askUser, canCommand, getBattle, gmHandlers, requestGM, resetOrders, saveBattle, sceneOf, unitOf } from "./state.mjs";
@@ -800,8 +800,9 @@ export async function endTurn() {
 }
 
 async function endTurnNow() {
+  // Replis au contact et relèves : après les tirs et les mêlées.
+  const lines = await executeDeferredMoves(canvas.scene);
   const battle = getBattle();
-  const lines = [];
   for (const token of canvas.scene.tokens.filter(t => t.actor?.type === "troop")) {
     const s = token.actor.system;
     if (unitOf(battle, token.id).order === "hold" && !battle.engaged.includes(token.id) && ["shaken", "disordered"].includes(s.state)) {
@@ -815,6 +816,8 @@ async function endTurnNow() {
   battle.revealed = false;
   battle.engaged = [];
   battle.ambush = [];
+  battle.contact = [];
+  battle.deferred = [];
   battle.done = [];
   battle.reload = battle.reloadNext ?? [];
   battle.reloadNext = [];
