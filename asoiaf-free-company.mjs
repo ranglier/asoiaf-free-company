@@ -176,7 +176,7 @@ Hooks.on("preUpdateToken", (doc, changes) => {
 // Brouillard : un jeton ennemi caché ou montré à la main par le MJ sort du brouillard.
 Hooks.on("preUpdateToken", onPreUpdateToken);
 // Une troupe déplacée peut ouvrir ou fermer un engagement ; une image changée redessine ses marques.
-Hooks.on("updateToken", (doc, changes) => {
+Hooks.on("updateToken", (doc, changes, options, userId) => {
   if (doc.object && "texture" in changes) drawTroopMarks(doc.object);
   // Ordre ou cible changés (drapeau du jeton) : fenêtre, barre, pastilles et flèches.
   if (doc.actor?.type === "troop" && foundry.utils.hasProperty(changes, `flags.${AFC.SYSTEM_ID}`) && doc.parent?.id === canvas.scene?.id) {
@@ -188,7 +188,7 @@ Hooks.on("updateToken", (doc, changes) => {
   // Brouillard : une troupe déplacée, cachée ou montrée change ce qu'on voit ; un ennemi qui bouge après la révélation a agi.
   const moved = "x" in changes || "y" in changes;
   if (doc.actor?.type === "troop" && doc.parent?.id === canvas.scene?.id && (moved || "hidden" in changes || foundry.utils.hasProperty(changes, `flags.${AFC.SYSTEM_ID}.fog`))) scheduleFog();
-  if (moved && game.users.activeGM === game.user && doc.actor?.type === "troop" && getBattle(doc.parent).revealed) markActed(doc);
+  if (moved && userId === game.user.id && doc.actor?.type === "troop" && getBattle(doc.parent).revealed) markActed(doc);
   if (doc.actor?.type !== "troop" || !moved) return;
   BattleApp.refresh();
   renderBattleBar();

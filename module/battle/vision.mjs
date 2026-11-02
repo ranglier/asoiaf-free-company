@@ -161,22 +161,34 @@ function sees(a, b, { scout = false, mist = false }, t) {
   return true;
 }
 
-/** Troupes de la Compagnie qui regardent : case et éclaireurs. Une troupe cachée par le MJ (réserve) ne regarde pas. */
-function observers(scene) {
-  return scene.tokens.filter(t => isTroop(t) && t.actor.system.side === "company" && !t.hidden && t.actor.system.state !== "destroyed")
+/**
+ * Troupes d'un camp qui regardent : case et éclaireurs. Une troupe de la Compagnie cachée par le MJ
+ * (réserve) ne regarde pas ; côté ennemi, toutes regardent (le MJ les cache aux joueurs).
+ */
+function observers(scene, side = "company") {
+  return scene.tokens.filter(t => isTroop(t) && t.actor.system.side === side && !(side === "company" && t.hidden) && t.actor.system.state !== "destroyed")
     .map(t => ({ cell: cellOf(t), scout: isScout(t.actor) }));
 }
 
 /** Cases que voit la Compagnie. */
-export function companyView(scene = canvas.scene) {
+export const companyView = (scene = canvas.scene) => sideView(scene, "company", { foes: false }).cells;
+
+/**
+ * Ce que voit un camp : les cases vues, et pour chaque troupe adverse, vue ou non, identifiée ou non.
+ * Sert au brouillard (Compagnie) et aux tests, qui l'appliquent aux deux camps.
+ */
+export function sideView(scene = canvas.scene, side = "company", { foes = true } = {}) {
   const t = terrainOf(scene);
   const mist = getBattle(scene).weather === "fog";
-  const seen = new Set();
-  for (const o of observers(scene)) for (const cell of t.cells) if (!seen.has(keyOf(cell)) && sees(o.cell, cell, { scout: o.scout, mist }, t)) seen.add(keyOf(cell));
-  return seen;
+  const eyes = observers(scene, side);
+  const cells = new Set();
+  for (const o of eyes) for (const cell of t.cells) if (!cells.has(keyOf(cell)) && sees(o.cell, cell, { scout: o.scout, mist }, t)) cells.add(keyOf(cell));
+  const troops = new Map();
+  if (foes) for (const token of scene.tokens.filter(x => isTroop(x) && x.actor.system.side !== side)) troops.set(token.id, enemyView(token, eyes, t, mist));
+  return { cells, troops };
 }
 
-/** Une troupe ennemie : vue de la Compagnie ? identifiée ? */
+/** Une troupe adverse : vue du camp qui regarde ? identifiée ? */
 function enemyView(token, eyes, t, mist) {
   const cell = cellOf(token);
   const flag = fogFlag(token);
@@ -241,9 +253,9 @@ export function onPreUpdateToken(doc, changes, options) {
   foundry.utils.setProperty(changes, `flags.${SYSTEM_ID}.${FOG}.auto`, false);
 }
 
-/** Une troupe ennemie a agi (combat, tir, mouvement après la révélation) : fin de son embuscade. */
+/** Une troupe a agi (combat, tir, mouvement après la révélation) : fin de son embuscade en lisière. */
 export function markActed(token) {
-  if (game.user.isGM && isEnemy(token) && !fogFlag(token).acted) return token.setFlag(SYSTEM_ID, FOG, { acted: true });
+  if (token.isOwner && isTroop(token) && !fogFlag(token).acted) return token.setFlag(SYSTEM_ID, FOG, { acted: true });
 }
 
 /** Rend le jeton au brouillard (après l'avoir caché ou montré à la main). */
