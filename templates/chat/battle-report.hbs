@@ -1,5 +1,5 @@
 <div class="afc-card battle report">
-  <div class="report-head"><strong>{{localize "AFC.Battle.ReportCard.Title"}}</strong><small>{{localize "AFC.Battle.ReportCard.Rounds" n=rounds}}</small></div>
+  <div class="report-head"><strong>{{localize "AFC.Battle.ReportCard.Title"}}</strong><small>{{localize roundsKey n=rounds}}</small></div>
   {{#each sides as |side|}}
   <div class="report-side side-{{side.key}}"><b>{{side.label}}</b><span>{{localize "AFC.Battle.ReportCard.Lost" lost=side.lost men=side.men pct=side.pct}}</span></div>
   {{#each side.rows as |r|}}

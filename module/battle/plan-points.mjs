@@ -4,7 +4,7 @@
  * pendant la bataille. Le MJ ajuste la réserve ; le MJ et les joueurs la dépensent, et chaque dépense
  * laisse une ligne dans le chat. Nouvelle bataille la remet à zéro. L'ennemi n'a pas de points.
  */
-import { getBattle, gmHandlers, requestGM, saveBattle, sceneOf, tellUser } from "./state.mjs";
+import { getBattle, gmHandlers, requestGM, saveBattle, sceneOf, serialGM, tellUser } from "./state.mjs";
 
 const fmt = (key, data) => game.i18n.format(key, data);
 const loc = key => game.i18n.localize(key);
@@ -23,7 +23,7 @@ export function changePlan(delta, use = null, scene = canvas.scene) {
   return game.user.isGM ? gmHandlers.planPoints({ ...data, user: game.user.id }) : requestGM("planPoints", data);
 }
 
-gmHandlers.planPoints = async data => {
+gmHandlers.planPoints = serialGM(async data => {
   const scene = sceneOf(data);
   const user = game.users.get(data.user);
   if (!scene || !user || (data.delta > 0 && !user.isGM)) return;
@@ -36,4 +36,4 @@ gmHandlers.planPoints = async data => {
     const text = fmt("AFC.Battle.Plan.Spent", { user: user.name, use: loc(`AFC.Battle.Plan.Use.${data.use}`), n: battle.planPoints });
     await ChatMessage.create({ speaker: { alias: user.name }, content: `<div class="afc-card battle"><p><i class="fa-solid fa-scroll"></i> ${esc(text)}</p></div>` });
   }
-};
+});

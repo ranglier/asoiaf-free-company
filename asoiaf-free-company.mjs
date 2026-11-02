@@ -196,6 +196,17 @@ Hooks.on("updateToken", (doc, changes, options, userId) => {
 });
 Hooks.on("drawToken", token => drawTroopMarks(token));
 Hooks.on("renderTokenHUD", onRenderTokenHUD);
+// Personnage joueur : jeton lié à la fiche par défaut (les dégâts vont au personnage, pas à une copie).
+Hooks.on("preCreateActor", (actor, data) => {
+  if (actor.type === "character" && foundry.utils.getProperty(data, "prototypeToken.actorLink") === undefined) actor.updateSource({ "prototypeToken.actorLink": true });
+});
+// Endurance changée : la Santé gagne (ou perd) la différence de maximum, les dégâts déjà subis restent.
+Hooks.on("preUpdateActor", (actor, changes) => {
+  const rank = foundry.utils.getProperty(changes, "system.abilities.endurance.rank");
+  if (!["character", "npc"].includes(actor.type) || rank === undefined || foundry.utils.hasProperty(changes, "system.health.value")) return;
+  const delta = (Number(rank) - actor.system.abilities.endurance.rank) * 3;
+  if (delta) foundry.utils.setProperty(changes, "system.health.value", Math.max(0, actor.system.health.value + delta));
+});
 Hooks.on("controlToken", () => BattleApp.refresh());
 Hooks.on("targetToken", () => BattleApp.refresh());
 Hooks.on("updateActor", (actor, changes, options, userId) => {

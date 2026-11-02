@@ -43,13 +43,22 @@ function defaultSteward(house) {
   return house.system.household.find(m => m.actor && /intendan|steward|mestre|maester/i.test(m.role))?.actor ?? "";
 }
 
+/** Maisons dont l'événement est ouvert (un double clic n'en ouvre qu'un). */
+const running = new Set();
+
 export async function runHouseEvent(house) {
+  if (running.has(house.id)) return ui.notifications.warn(game.i18n.localize("AFC.Month.AlreadyOpen"));
+  running.add(house.id);
+  try { return await houseEvent(house); } finally { running.delete(house.id); }
+}
+
+async function houseEvent(house) {
   const s = house.system;
   const bonuses = holdingBonuses(house);
   const content = await renderTemplate(`systems/${SYSTEM_ID}/templates/dialog/house-event.hbs`, {
     law: s.resources.law.value, lawMod: pick(HOUSE_LAW_MODS, s.resources.law.value),
     population: s.resources.population.value, popMod: pick(HOUSE_POPULATION_MODS, s.resources.population.value),
-    bonuses, influence: s.resources.influence.value,
+    bonuses, influence: s.resources.influence.available ?? s.resources.influence.value,
     market: hasHolding(house, "market") ? game.i18n.format("AFC.HouseEvent.MarketHint", { bonus: hasHolding(house, "port") ? "1d6" : "1" }) : "",
     stewardOptions: Object.fromEntries(game.actors.filter(a => ["character", "npc"].includes(a.type)).map(a => [a.id, a.name])),
     steward: defaultSteward(house),
@@ -96,7 +105,8 @@ export async function runHouseEvent(house) {
     const value = typeof b.bonus === "string" ? (await new Roll(b.bonus).evaluate()).total : b.bonus;
     mods.push({ label: typeof b.bonus === "string" ? `${b.name} (${b.bonus})` : b.name, value });
   }
-  const influenceDice = Math.min(opts.influence, s.resources.influence.value) / 5;
+  // Influence disponible (hors patrimoine investi), par tranches entières de 5.
+  const influenceDice = Math.floor(Math.min(opts.influence, s.resources.influence.available ?? s.resources.influence.value) / 5);
   if (influenceDice) {
     const value = (await new Roll(`${influenceDice}d6`).evaluate()).total;
     mods.push({ label: game.i18n.format("AFC.HouseEvent.ModInfluence", { n: influenceDice * 5, d: influenceDice }), value });

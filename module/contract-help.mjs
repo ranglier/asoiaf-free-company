@@ -26,7 +26,8 @@ const fmt = n => n.toLocaleString(game.i18n.lang);
 function monthlyNeeds(s) {
   const upkeep = s.monthlySupply;
   const wealth = Math.ceil(upkeep / SUPPLY_PER_WEALTH);
-  const pay = s.contract.pay ?? 0;
+  // Un contrat sans mois restant est terminé : il ne couvre plus rien.
+  const pay = s.contract.months > 0 ? s.contract.pay ?? 0 : 0;
   return {
     upkeep, manpower: Math.floor(s.resources.manpower.value / 2), services: s.services.supply,
     organization: Math.floor(s.organization.effective / 10) * SUPPLY_PER_WEALTH,

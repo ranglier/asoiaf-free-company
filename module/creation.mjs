@@ -193,7 +193,7 @@ export async function runCreation(actor) {
     position: { width: 560 },
     content,
     yes: { label: game.i18n.localize("AFC.Creation.Apply") },
-    no: { label: game.i18n.localize("Cancel") },
+    no: { label: game.i18n.localize("COMMON.Cancel") },
     rejectClose: false
   });
   if (!apply) return;

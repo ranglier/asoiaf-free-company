@@ -263,7 +263,7 @@ function readForm(root) {
   if (type) {
     // Clés toujours présentes (null si vides) : l'enregistrement fusionne, une valeur absente resterait.
     m.charge = {
-      type, name: v("cname"), color: v("ccolor"), count: Math.min(7, Math.max(1, Number(v("ccount")) || 1)),
+      type, name: v("cname"), color: v("ccolor"), count: Math.min(7, Math.max(1, Math.round(Number(v("ccount")) || 1))),
       attitude: type === "animal" ? (v("cattitude") || null) : null,
       line: type === "ordinary" ? (v("cline") || null) : null
     };

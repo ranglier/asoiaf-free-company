@@ -28,7 +28,8 @@ export const IDENTIFY_RANGE = 3;
 const BLOCKERS = ["village", "ruins"];
 const loc = key => game.i18n.localize(key);
 
-export const fogOn = (scene = canvas.scene) => !!scene && !isBook(scene) && !!getBattle(scene).fog;
+// Le brouillard calcule la vue en cases hexagonales : sans effet sur une grille carrée ou sans grille.
+export const fogOn = (scene = canvas.scene) => !!scene && !isBook(scene) && !!getBattle(scene).fog && !!scene.grid?.isHexagonal;
 const fogFlag = token => token.getFlag(SYSTEM_ID, FOG) ?? {};
 const isTroop = token => token.actor?.type === "troop";
 const isEnemy = token => isTroop(token) && token.actor.system.side === "enemy";
@@ -39,6 +40,10 @@ export const unknownToMe = token => !game.user.isGM && isEnemy(token) && !!fogFl
 /** Nom affiché d'une troupe : « Troupe inconnue » tant qu'elle n'est pas identifiée. */
 export const fogName = (token, { forAll = false } = {}) =>
   ((forAll ? isEnemy(token) && fogFlag(token).unknown && fogOn(token.parent) : unknownToMe(token)) ? loc("AFC.Battle.Fog.Unknown") : token.name);
+/** Troupe dont l'identité reste secrète pour les joueurs : cachée, ou vue sans être identifiée. */
+export const secretTroop = token => !!token.hidden || (isEnemy(token) && !!fogFlag(token).unknown && fogOn(token.parent));
+/** Nom à écrire dans un message que tout le monde lit. */
+export const publicName = token => (secretTroop(token) ? loc("AFC.Battle.Fog.Unknown") : token.name);
 
 /* ---------- Cases, terrains et ligne de vue ---------- */
 

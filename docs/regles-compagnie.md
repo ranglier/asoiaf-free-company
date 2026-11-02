@@ -65,5 +65,5 @@ Les réductions de pertes du catalogue n'avaient aucune prise : rien ne chiffrai
 | Cantiniers / Cuisinier de campagne | Événements du mois : pertes d'Autorité −1 ; solde impayée −5 % de Cohésion au lieu de −10 % | Cuisinier : +2 Organisation |
 | Aumôniers / Congrégation | Défaite ou coup dur (lourdes pertes, chef blessé ou capturé) : 3 / 6 de Cohésion perdus en moins | +1 / +2 aux tests d'événements |
 
-- **Garde-fous** : une perte d'événement réduite ne descend jamais sous 1 ; le culte n'ôte jamais plus de la moitié d'une perte de Cohésion ; un seul service compte par catégorie (le meilleur) ; les désertions ne sont pas réduites.
+- **Garde-fous** : une perte d'événement réduite ne descend jamais sous 1 ; le culte n'ôte jamais plus de la moitié d'une perte de Cohésion ; un seul service compte par catégorie (le meilleur), pour les pertes comme pour l'Organisation, le bonus aux tests d'événements et les effets mensuels (v0.29.1, le catalogue refuse aussi un second service d'une catégorie) ; les désertions ne sont pas réduites. Le Déclin (−1 sur une ressource) ne se réduit pas.
 - **Dans Foundry** : le Bilan applique les soins et affiche les pertes sans eux, ainsi que la réduction du culte ; la carte d'événement rappelle les réductions sur Désastre, Calamité et Déclin (le MJ applique l'événement) ; la fin de mois applique la solde impayée à −5 %.

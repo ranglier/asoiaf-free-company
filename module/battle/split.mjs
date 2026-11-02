@@ -49,7 +49,8 @@ export async function splitTroop(data) {
   await token.actor.update({ "system.units": s.units - units, "system.men": s.men - men, "system.cushion": s.cushion - cushion });
   const doc = await actor.getTokenDocument({
     x: at.x - canvas.grid.sizeX / 2, y: at.y - canvas.grid.sizeY / 2, hidden: token.hidden,
-    flags: { [SYSTEM_ID]: { unit: { order: "", target: "", officer, countered: false, path: [] } } }
+    // Le brouillard suit le nouveau bloc (caché, identifié ou non, comme la troupe d'origine).
+    flags: { [SYSTEM_ID]: { unit: { order: "", target: "", officer, countered: false, path: [] }, ...(token.getFlag(SYSTEM_ID, "fog") ? { fog: foundry.utils.deepClone(token.getFlag(SYSTEM_ID, "fog")) } : {}) } }
   });
   const [created] = await scene.createEmbeddedDocuments("Token", [doc.toObject()]);
   return created;

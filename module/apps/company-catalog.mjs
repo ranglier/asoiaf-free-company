@@ -135,16 +135,23 @@ export class CompanyCatalog extends HandlebarsApplicationMixin(ApplicationV2) {
 
   static async #onAddService(event, target) {
     const x = COMPANY_SERVICES.find(s => s.key === target.dataset.key);
-    if (!x) return;
+    if (!x || this.adding) return;
+    // Un service par catégorie (sauf la diplomatie), dans l'espace restant ; un double clic n'ajoute qu'une fois.
+    const s = this.actor.system;
+    if (!UNLIMITED_SERVICE_CATEGORIES.includes(x.category) && this.#hasCategory(x.category)) return ui.notifications.warn(loc("AFC.CompanyCatalog.CategoryTaken"));
+    if (SERVICE_SIZES[x.size].space > s.services.spaceMax - s.services.spaceUsed) return ui.notifications.warn(loc("AFC.CompanyCatalog.NoSpace"));
     const name = loc(`AFC.CompanyCatalog.${x.key}.name`);
-    await this.actor.createEmbeddedDocuments("Item", [{
-      name, type: "service",
-      system: {
-        size: x.size, category: loc(`AFC.CompanyCatalog.Category.${x.category}`),
-        effect: loc(`AFC.CompanyCatalog.${x.key}.effect`), organization: x.organization ?? 0
-      },
-      flags: { [SYSTEM_ID]: { catalog: { key: x.key, category: x.category } } }
-    }]);
+    this.adding = true;
+    try {
+      await this.actor.createEmbeddedDocuments("Item", [{
+        name, type: "service",
+        system: {
+          size: x.size, category: loc(`AFC.CompanyCatalog.Category.${x.category}`),
+          effect: loc(`AFC.CompanyCatalog.${x.key}.effect`), organization: x.organization ?? 0
+        },
+        flags: { [SYSTEM_ID]: { catalog: { key: x.key, category: x.category } } }
+      }]);
+    } finally { this.adding = false; }
     ui.notifications.info(game.i18n.format("AFC.Catalog.Added", { name, actor: this.actor.name }));
     return this.render();
   }

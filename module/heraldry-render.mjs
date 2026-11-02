@@ -240,7 +240,7 @@ const ATTITUDES = {
 function figure(name, count, fill, attitude) {
   const icon = HERALDRY_ICONS[name];
   const pose = ATTITUDES[attitude] ?? "";
-  return (LAYOUTS[Math.min(7, Math.max(1, count))]).map(([x, y, k]) => {
+  return (LAYOUTS[Math.min(7, Math.max(1, Math.round(Number(count) || 1)))]).map(([x, y, k]) => {
     const size = 150 * k;
     if (!icon) return `<g transform="translate(${x} ${y})"><circle r="${size / 2.4}" fill="${fill}"/><text y="${size / 7}" text-anchor="middle" font-size="${size / 2.2}" fill="#0008">?</text></g>`;
     const s = size / 512;

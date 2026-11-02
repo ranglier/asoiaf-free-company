@@ -6,6 +6,7 @@
 import { adjacent, center, distance, regionTerrainKey, shootRange } from "./engagement.mjs";
 import { isBook } from "./rules.mjs";
 import { getBattle, gmHandlers, gmOnScene, requestGM, saveBattle, sceneOf, setUnit, unitOf } from "./state.mjs";
+import { publicName } from "./vision.mjs";
 
 const loc = key => game.i18n.localize(key);
 const fmt = (key, data) => game.i18n.format(key, data);
@@ -300,7 +301,8 @@ export const CONTACT_FORBIDDEN = ["maneuver", "run"];
 
 /** Troupes qui touchent une troupe ennemie active (positions du moment). */
 function contactIds(scene) {
-  const list = troops(scene).filter(canMove);
+  // Un joueur ne compte pas les troupes cachées : le refus trahirait une embuscade.
+  const list = troops(scene).filter(canMove).filter(t => game.user.isGM || !t.hidden);
   return new Set(list.filter(t => list.some(o => o.actor.system.side !== t.actor.system.side && adjacent(t, o))).map(t => t.id));
 }
 
@@ -346,17 +348,19 @@ export async function executeMoves(scene = canvas.scene) {
       moved.add(token.id);
     }
     const target = scene.tokens.get(unit.target);
-    if (target && !adjacent(token, target) && !token.hidden && !target.hidden) notes.push(fmt("AFC.Battle.Moves.NotReached", { a: esc(token.name), d: esc(target.name) }));
+    if (target && !adjacent(token, target) && !token.hidden && !target.hidden) notes.push(fmt("AFC.Battle.Moves.NotReached", { a: esc(publicName(token)), d: esc(publicName(target)) }));
   }
   // Tirs devenus impossibles : la cible est sortie de portée pendant les mouvements.
   for (const token of troops(scene)) {
     const s = token.actor.system, unit = unitOf(battle, token.id), target = unit.target ? scene.tokens.get(unit.target) : null;
     if (unit.order !== "shoot" || !target || token.hidden || target.hidden || ["routed", "destroyed"].includes(s.state)) continue;
     const dist = distance(token, target), range = shootRange(s, battle);
-    if (dist > range) notes.push(fmt("AFC.Battle.Moves.ShotOutOfRange", { a: esc(token.name), d: esc(target.name), n: dist, r: range }));
+    if (dist > range) notes.push(fmt("AFC.Battle.Moves.ShotOutOfRange", { a: esc(publicName(token)), d: esc(publicName(target)), n: dist, r: range }));
   }
-  battle.moved = [...moved];
-  await saveBattle(battle, scene);
+  // Relit la bataille avant d'écrire : un point de plan ou un Commander arrivé pendant les mouvements reste.
+  const fresh = getBattle(scene);
+  Object.assign(fresh, { contact: battle.contact, deferred: battle.deferred, moved: [...moved] });
+  await saveBattle(fresh, scene);
   if (notes.length) await ChatMessage.create({ content: `<div class="afc-card battle"><ul class="month-lines">${notes.map(n => `<li>${n}</li>`).join("")}</ul></div>` });
 }
 
@@ -375,8 +379,9 @@ export async function executeDeferredMoves(scene = canvas.scene) {
   const settled = settleMoves(moves.filter(m => m.path.length), occupiedCells(scene, { all: true }));
   if (settled.length) await scene.updateEmbeddedDocuments("Token", settled.map(r => tokenUpdate(r.token, r.end)));
   for (const r of settled) notes.push(fmt("AFC.Battle.Moves.Disengaged", { name: esc(r.token.name) }));
-  battle.deferred = [];
-  await saveBattle(battle, scene);
+  const fresh = getBattle(scene);
+  fresh.deferred = [];
+  await saveBattle(fresh, scene);
   return notes;
 }
 

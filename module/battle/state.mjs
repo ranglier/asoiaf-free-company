@@ -78,6 +78,13 @@ export async function resetOrders(scene = canvas.scene) {
 }
 
 /** Ordre, cible et officier d'une troupe dans une bataille déjà lue. */
+/**
+ * File d'attente des demandes traitées par le MJ : chacune lit la bataille après l'écriture de la précédente
+ * (un double clic ne lit pas deux fois la même réserve).
+ */
+let gmQueue = Promise.resolve();
+export const serialGM = fn => async data => (gmQueue = gmQueue.then(() => fn(data), () => fn(data)));
+
 export function unitOf(battle, tokenId) {
   return battle.units.find(u => u.id === tokenId) ?? { id: tokenId, ...EMPTY_UNIT };
 }
@@ -124,7 +131,9 @@ async function applyUnit(scene, tokenId, changes, user) {
   const { id, ...data } = unit;
   await writeUnit(token, data);
   if (counter) {
-    ChatMessage.create({ content: `<div class="afc-card battle"><p>${game.i18n.format("AFC.Battle.CounterOrder", {
+    // Une troupe cachée ou non identifiée change d'ordre en secret : la carte ne va qu'au MJ.
+    const secret = token.hidden || (token.actor?.system.side === "enemy" && !!token.getFlag(SYSTEM_ID, "fog")?.unknown && !!battle.fog);
+    ChatMessage.create({ whisper: secret ? ChatMessage.getWhisperRecipients("GM") : [], content: `<div class="afc-card battle"><p>${game.i18n.format("AFC.Battle.CounterOrder", {
       group: foundry.utils.escapeHTML(token.name), order: game.i18n.localize(`AFC.Battle.Order.${unit.order}`)
     })}</p></div>` });
   }

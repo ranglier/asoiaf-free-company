@@ -118,8 +118,8 @@ export async function rollAbilityTest(actor, abilityKey, { quick = false, specia
         const useAuto = f.auto?.checked ?? true;
         return {
           specialty: chosen?.name ?? null,
-          bonus: (chosen?.bonus ?? 0) + (Number(f.bonus.value) || 0),
-          penalty: (Number(f.penalty.value) || 0) + (useAuto ? auto.dice : 0),
+          bonus: (chosen?.bonus ?? 0) + Math.max(0, Number(f.bonus.value) || 0),
+          penalty: Math.max(0, Number(f.penalty.value) || 0) + (useAuto ? auto.dice : 0),
           modifier: (Number(f.modifier.value) || 0) + (useAuto ? auto.modifier : 0),
           notes: useAuto ? auto.notes : [],
           difficulty: f.difficulty.value === "" ? null : Number(f.difficulty.value)

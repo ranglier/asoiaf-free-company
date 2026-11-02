@@ -85,8 +85,8 @@ export async function rollAttack(actor, weapon, { quick = false } = {}) {
             options: Object.keys(ATTACK_OPTIONS).filter(k => f[`opt-${k}`]?.checked),
             cover: Number(f.cover.value) || 0,
             visibility: Number(f.visibility.value) || 0,
-            bonus: Number(f.bonus.value) || 0,
-            penalty: Number(f.penalty.value) || 0,
+            bonus: Math.max(0, Number(f.bonus.value) || 0),
+            penalty: Math.max(0, Number(f.penalty.value) || 0),
             modifier: Number(f.modifier.value) || 0,
             useAuto: f.auto?.checked ?? true,
             defense: f.defense.value === "" ? null : Number(f.defense.value)
@@ -155,8 +155,20 @@ export async function rollAttack(actor, weapon, { quick = false } = {}) {
   });
 }
 
+/** Dégâts d'une carte d'attaque déjà appliqués : une carte de dégâts y renvoie. */
+const damageResolved = message => game.messages.some(m => m.getFlag(SYSTEM_ID, "resolves") === message.id);
+/** Cartes dont la fenêtre de dégâts est ouverte (un double clic n'en ouvre qu'une). */
+const resolving = new Set();
+
 /** Boîte de dialogue de la cible : encaisser, prendre des lésions ou une blessure. */
 export async function resolveDamage(message) {
+  if (damageResolved(message)) return ui.notifications.warn(game.i18n.localize("AFC.Damage.AlreadyResolved"));
+  if (resolving.has(message.id)) return;
+  resolving.add(message.id);
+  try { return await applyDamage(message); } finally { resolving.delete(message.id); }
+}
+
+async function applyDamage(message) {
   const data = message.getFlag(SYSTEM_ID, "attack");
   const actor = data?.targetUuid ? await fromUuid(data.targetUuid) : null;
   if (!actor || !data.damage) return;
@@ -183,7 +195,7 @@ export async function resolveDamage(message) {
     },
     rejectClose: false
   });
-  if (!choice) return;
+  if (!choice || damageResolved(message)) return;
 
   const taken = choice.wound ? 0 : Math.max(0, data.damage.final - choice.injuries * endurance);
   const health = Math.max(0, s.health.value - taken);
@@ -201,7 +213,7 @@ export async function resolveDamage(message) {
   return ChatMessage.create({
     speaker: ChatMessage.getSpeaker({ actor }),
     content: `<div class="afc-card damage">${lines.map(l => `<p>${l}</p>`).join("")}</div>`,
-    whisper
+    whisper, flags: { [SYSTEM_ID]: { resolves: message.id } }
   });
 }
 
@@ -212,5 +224,6 @@ export function onRenderChatMessage(message, html) {
   const uuid = message.getFlag(SYSTEM_ID, "attack")?.targetUuid;
   const actor = uuid ? fromUuidSync(uuid) : null;
   if (!actor?.isOwner) return button.remove();
+  if (damageResolved(message)) button.disabled = true;
   button.addEventListener("click", () => resolveDamage(message));
 }

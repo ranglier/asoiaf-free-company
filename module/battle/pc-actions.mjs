@@ -5,7 +5,7 @@
  * cochent dans la fenêtre Bataille. Un joueur ne peut pas agir deux fois ; le MJ peut passer outre.
  * Le compteur repart à zéro en fin de tour.
  */
-import { getBattle, gmHandlers, requestGM, saveBattle, sceneOf, unitOf } from "./state.mjs";
+import { getBattle, gmHandlers, requestGM, saveBattle, sceneOf, serialGM, unitOf } from "./state.mjs";
 
 const { DialogV2 } = foundry.applications.api;
 const loc = key => game.i18n.localize(key);
@@ -64,12 +64,16 @@ export function recordAction(actorId, entry, scene = canvas.scene) {
   return game.user.isGM ? gmHandlers.pcAction({ ...data, user: game.user.id }) : requestGM("pcAction", data);
 }
 
-gmHandlers.pcAction = async data => {
+gmHandlers.pcAction = serialGM(async data => {
   const scene = sceneOf(data);
   const user = game.users.get(data.user);
   const actor = game.actors.get(data.actor);
-  if (!scene || !actor || !(user?.isGM || actor.testUserPermission(user, "OWNER"))) return;
+  if (!scene || !actor || !user) return;
   const battle = getBattle(scene);
+  // L'officier d'une troupe (un PNJ du MJ, par exemple) agit pour le joueur qui la conduit.
+  const troop = data.entry?.troop ? scene.tokens.get(data.entry.troop) : null;
+  const officerOf = troop && unitOf(battle, troop.id).officer === actor.id && troop.actor?.testUserPermission(user, "OWNER");
+  if (!(user.isGM || actor.testUserPermission(user, "OWNER") || officerOf)) return;
   const old = actionOf(battle, data.actor);
   let entry;
   if (data.entry === null) {
@@ -82,7 +86,7 @@ gmHandlers.pcAction = async data => {
   } else entry = { kind: "battle", action: data.entry.action, troop: data.entry.troop ?? "" };
   battle.actions = withAction(battle, data.actor, entry);
   await saveBattle(battle, scene);
-};
+});
 
 /**
  * Lignes du panneau : officiers des troupes de la scène et personnages des joueurs. Un joueur ne voit

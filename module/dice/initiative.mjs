@@ -43,10 +43,12 @@ export function initiativeLabel(actor) {
 export async function rollActorInitiative(actor) {
   const tokens = actor.getActiveTokens(false, true);
   if (!tokens.length) return ui.notifications.warn(loc("AFC.Roll.InitiativeNoToken"));
-  let combat = game.combat;
+  // Le combat de la scène du personnage, pas un combat d'une autre scène ou sans scène.
+  const scene = tokens[0].parent;
+  let combat = game.combats.find(c => c.active && c.scene?.id === scene.id) ?? game.combats.find(c => c.scene?.id === scene.id);
   if (!combat) {
     if (!game.user.isGM) return ui.notifications.warn(loc("AFC.Roll.InitiativeNoCombat"));
-    combat = await Combat.implementation.create({ scene: canvas.scene?.id, active: true });
+    combat = await Combat.implementation.create({ scene: scene.id, active: true });
   }
   const missing = tokens.filter(t => !combat.combatants.some(c => c.tokenId === t.id));
   if (missing.length) {

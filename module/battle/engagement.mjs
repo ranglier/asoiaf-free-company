@@ -13,7 +13,7 @@ import { executeDeferredMoves, executeMoves } from "./moves.mjs";
 import { mayAct, recordAction, withAction } from "./pc-actions.mjs";
 import { moraleMod, troopPool } from "./troops.mjs";
 import { askHandlers, askUser, canCommand, getBattle, gmHandlers, requestGM, resetOrders, saveBattle, sceneOf, unitOf } from "./state.mjs";
-import { fogName, markActed } from "./vision.mjs";
+import { fogName, markActed, publicName, secretTroop } from "./vision.mjs";
 
 const { DialogV2 } = foundry.applications.api;
 const loc = key => game.i18n.localize(key);
@@ -91,7 +91,8 @@ function roller(token, battle, kind = "melee") {
   const warfare = officer?.system.abilities?.warfare;
   const base = troopPool(s, ability, battle);
   return {
-    name: warfare ? `${skill}, ${officer.name}` : skill, rank: base.rank,
+    // L'officier d'une troupe secrète n'est pas nommé : il la trahirait.
+    name: warfare && !secretTroop(token) ? `${skill}, ${officer.name}` : skill, rank: base.rank,
     bonus: base.bonus + (warfare ? officerDice(battle, token.id, officerId, warfare) : 0), officer: !!warfare
   };
 }
@@ -172,6 +173,10 @@ export function meleeMods(att, def, battle) {
   if (D.has.javelins && dOrder === "hold" && charging) dm.push(mod(loc("AFC.Battle.Mod.volley"), { b: 1 }));
   // Choc : la cavalerie qui charge une troupe qui ne Tient pas a +1B, comme la volée (décision du 2026-11-02).
   if (A.has.shock && charging && dOrder !== "hold") am.push(mod(loc("AFC.Battle.Mod.shock"), { b: 1 }));
+  // Charge mutuelle : la troupe résolue en défenseur charge aussi et garde Choc et volée.
+  const dCharging = dOrder === "charge" && charging;
+  if (dCharging && D.has.shock) dm.push(mod(loc("AFC.Battle.Mod.shock"), { b: 1 }));
+  if (dCharging && D.has.javelins) dm.push(mod(loc("AFC.Battle.Mod.volley"), { b: 1 }));
   // Course : une troupe essoufflée combat mal ce tour-ci.
   if (aOrder === "run") am.push(mod(loc("AFC.Battle.Mod.winded"), { p: 1 }));
   if (dOrder === "run") dm.push(mod(loc("AFC.Battle.Mod.winded"), { p: 1 }));
@@ -184,7 +189,7 @@ export function meleeMods(att, def, battle) {
   if (charging && A.state === "disordered") warnings.push(loc("AFC.Battle.Warn.chargeDisordered"));
   if (charging && (terrainHas(dTerrain, "noCharge") || WEATHER[battle.weather]?.noCharge)) warnings.push(loc("AFC.Battle.Warn.noCharge"));
   if (!adjacent(att, def)) warnings.push(loc("AFC.Battle.Warn.notAdjacent"));
-  return { am, dm, warnings, aOrder, dOrder, heavyShock: charging && A.has.heavyShock && !breaksCharge };
+  return { am, dm, warnings, aOrder, dOrder, heavyShock: charging && A.has.heavyShock && !breaksCharge, dHeavyShock: dCharging && D.has.heavyShock };
 }
 
 /** Modificateurs de tir et difficulté. */
@@ -291,7 +296,6 @@ function stale(before, att, def, scene) {
 
 /** Mêlée entre deux jetons (attaquant : jeton contrôlé ; défenseur : cible). */
 export function resolveMelee(att, def) {
-  markActed(att);
   return guarded(att, def, () => meleeOnce(att, def));
 }
 
@@ -299,6 +303,10 @@ async function meleeOnce(att, def) {
   const scene = att.parent;
   // Les tirs se résolvent avant les mêlées : leurs pertes en attente s'appliquent d'abord.
   await flushShots(scene);
+  // Une volée en attente a pu mettre l'attaquant hors de combat ou détruire le défenseur : plus de mêlée.
+  if (["routed", "destroyed"].includes(att.actor.system.state) || def.actor.system.state === "destroyed") {
+    return ui.notifications.warn(fmt("AFC.Battle.MeleeCancelled", { a: att.name, d: def.name }));
+  }
   const battle = getBattle(scene);
   const m = meleeMods(att, def, battle);
   m.warnings.push(...uncommanded([att, def], battle));
@@ -315,6 +323,7 @@ async function meleeOnce(att, def) {
     rejectClose: false
   });
   if (!opts || stale(battle, att, def, scene)) return;
+  markActed(att);
   const pa = pool(ra, m.am, opts.a), pd = pool(rd, m.dm, opts.d);
   const ta = await rollDice(pa);
   const td = battle.singleDefense ? await defenseRoll(pd, def.id, scene) : await rollDice(pd);
@@ -323,7 +332,7 @@ async function meleeOnce(att, def) {
   else if (td.total > ta.total) { winner = def; loser = att; degrees = degreesOf(td.total - ta.total); }
   let losses = degrees;
   const notes = [];
-  if (winner === att && m.heavyShock) { losses += 1; notes.push(loc("AFC.Battle.Trait.heavyShock.name")); }
+  if ((winner === att && m.heavyShock) || (winner === def && m.dHeavyShock)) { losses += 1; notes.push(loc("AFC.Battle.Trait.heavyShock.name")); }
   if (loser?.actor.system.has.heavyArmor && degrees >= 2) { losses -= 1; notes.push(loc("AFC.Battle.Trait.heavyArmor.name")); }
   // Se replier : un état de moins, au moins un ; une troupe légère peut n'en perdre aucun.
   const loserOrder = loser === att ? m.aOrder : m.dOrder;
@@ -353,7 +362,6 @@ async function meleeOnce(att, def) {
 
 /** Tir (tireur : jeton contrôlé ; cible : jeton ciblé). */
 export function resolveShoot(shooter, target) {
-  markActed(shooter);
   return guarded(shooter, target, () => shootOnce(shooter, target));
 }
 
@@ -376,6 +384,7 @@ async function shootOnce(shooter, target) {
     rejectClose: false
   });
   if (!opts || stale(battle, shooter, target, scene)) return;
+  markActed(shooter);
   // Tirs simultanés : pendant la phase de tir, les pertes attendent le dernier tir du tour.
   const volley = opts.auto && battle.revealed && unitOf(battle, shooter.id).order === "shoot";
   const p = pool(r, m.mods, opts);
@@ -388,9 +397,9 @@ async function shootOnce(shooter, target) {
   const apply = losses ? { token: target.id, losses, scene: scene.id } : null;
   const content = await renderCard("battle-test", {
     title: loc("AFC.Battle.Card.Shoot"),
-    subtitle: fmt("AFC.Battle.Card.ShootAt", { a: fogName(shooter, { forAll: true }), d: fogName(target, { forAll: true }) }),
+    subtitle: fmt("AFC.Battle.Card.ShootAt", { a: publicName(shooter), d: publicName(target) }),
     total: test.total, dice: test.dice, success: degrees > 0, degrees,
-    verdict: degrees ? `${loc("AFC.Battle.Card.Hit")} : ${lossLabel(fogName(target, { forAll: true }), losses)}` : loc("AFC.Battle.Card.Miss"),
+    verdict: degrees ? `${loc("AFC.Battle.Card.Hit")} : ${lossLabel(publicName(target), losses)}` : loc("AFC.Battle.Card.Miss"),
     detail: fmt("AFC.Battle.Card.Against", { n: m.difficulty, detail: m.diff.map(d => `${d.label} ${d.value}`).join(" + ") }),
     pool: poolLabel(p, test), tags: [r.name, ...modTags(m.mods)],
     ...cardApply(apply, opts.auto, volley)
@@ -488,7 +497,7 @@ async function lossesOnce(tokenId, losses, message, sceneId) {
   if (!actor) return ui.notifications.warn(loc("AFC.Battle.TroopGone"));
   // Carte déjà remplie (bouton cliqué deux fois, ou par deux MJ) : rien à refaire.
   const card = message ? game.messages.get(message.id) ?? message : null;
-  if (card && !card.content.includes('data-afc-battle="apply"') && !PENDING_KEYS.some(k => card.content.includes(loc(k)))) return;
+  if (card && !card.content.includes('data-afc-battle="apply"') && !card.content.includes("data-afc-pending") && !PENDING_KEYS.some(k => card.content.includes(loc(k)))) return;
   const s = actor.system;
   let spend = 0;
   if (s.canCushion) {
@@ -512,7 +521,7 @@ async function lossesOnce(tokenId, losses, message, sceneId) {
   const state = STATE_ORDER[index];
   if (state === "routed") notes.push(loc("AFC.Battle.Flee"));
   await actor.update({ "system.state": state, "system.cushion": s.cushion - spend, "system.disorders": disorders });
-  const outcome = `<strong class="troop">${esc(token.name)}</strong>
+  const outcome = `<strong class="troop">${esc(publicName(token))}</strong>
     ${spend ? `<span class="tag">${fmt("AFC.Battle.Card.Cushioned", { n: spend })}</span>` : ""}
     <span class="state-chip ${state}">${loc(TROOP_STATES[state].label)}</span>
     ${notes.length ? `<small>${notes.map(esc).join(" · ")}</small>` : ""}`;
@@ -743,8 +752,18 @@ async function setReload(id, scene) {
 export const orderLabel = key => (key ? loc(`AFC.Battle.Order.${key}`) : "—");
 
 /** Révélation des ordres : carte de chat. */
+/** Révélation en cours (un double clic ne la joue qu'une fois). */
+let revealing = false;
+
 export async function revealOrders() {
+  if (revealing) return;
+  revealing = true;
+  try { return await revealOnce(); } finally { revealing = false; }
+}
+
+async function revealOnce() {
   const battle = getBattle();
+  if (battle.revealed) return;
   battle.revealed = true;
   battle.moved = [];
   // Embuscades du tour : relevées avant les mouvements, qui peuvent révéler les troupes.
@@ -756,7 +775,7 @@ export async function revealOrders() {
     const u = unitOf(battle, t.id);
     const target = u.target ? canvas.scene.tokens.get(u.target) : null;
     const icon = ORDER_ICONS[u.order] ?? "fa-minus";
-    return `<li><i class="fa-solid ${icon}"></i><b>${esc(fogName(t, { forAll: true }))}</b> <span class="order">${esc(orderLabel(u.order))}${target && !target.hidden ? ` → ${esc(fogName(target, { forAll: true }))}` : ""}</span></li>`;
+    return `<li><i class="fa-solid ${icon}"></i><b>${esc(fogName(t, { forAll: true }))}</b> <span class="order">${esc(orderLabel(u.order))}${target && !target.hidden ? ` → ${esc(publicName(target))}` : ""}</span></li>`;
   };
   const troops = side => canvas.scene.tokens.filter(t => t.actor?.type === "troop" && t.actor.system.side === side && !t.hidden && alive(t));
   const group = side => {
@@ -815,6 +834,8 @@ async function endTurnNow() {
     }
     if (s.state === "routed") lines.push(fmt("AFC.Battle.Fleeing", { name: esc(fogName(token, { forAll: true })) }));
   }
+  // Relue après les mises à jour : un point de plan dépensé entre-temps reste dépensé.
+  Object.assign(battle, getBattle());
   battle.round += 1;
   battle.revealed = false;
   battle.engaged = [];
@@ -853,7 +874,7 @@ function troopFacts(s, stat = {}) {
 /** Ce que le bilan retient d'une troupe. */
 const reportEntry = token => {
   const s = token.actor.system;
-  return { id: token.id, name: token.name, hidden: token.hidden, side: s.side, state: s.state, men: s.men, lostMen: s.lostMen, loss: s.loss, lossBase: s.lossBase, care: s.care, rallies: s.rallies, disorders: s.disorders };
+  return { id: token.id, name: token.name, hidden: token.hidden, fog: !!token.getFlag(SYSTEM_ID, "fog"), side: s.side, state: s.state, men: s.men, lostMen: s.lostMen, loss: s.loss, lossBase: s.lossBase, care: s.care, rallies: s.rallies, disorders: s.disorders };
 };
 
 /** Troupe touchée retirée de la scène (une troupe détruite, par exemple) : ses pertes restent au bilan (MJ). */
@@ -868,8 +889,13 @@ export function keepRemovedTroop(token) {
 
 /** Bilan compact : pertes par camp, une ligne par troupe touchée (ses faits d'armes au survol). Réservé au MJ jusqu'à publication. */
 export async function battleReport() {
+  // Des tirs du dernier tour attendent encore leurs pertes : elles comptent au Bilan.
+  await flushShots(canvas.scene);
   const battle = getBattle();
-  const troops = [...canvas.scene.tokens.filter(t => t.actor?.type === "troop").map(reportEntry), ...(battle.removed ?? [])].filter(t => !t.hidden);
+  // Soins recalculés avec les services actuels de la Compagnie (achetés ou retirés pendant la bataille).
+  const onScene = canvas.scene.tokens.filter(t => t.actor?.type === "troop");
+  for (const t of onScene) t.actor.prepareData();
+  const troops = [...onScene.map(reportEntry), ...(battle.removed ?? [])].filter(t => !t.hidden || t.fog || t.loss > 0);
   const sides = ["company", "enemy"].map(key => {
     const list = troops.filter(t => t.side === key);
     const men = list.reduce((n, t) => n + t.men, 0);
@@ -883,7 +909,7 @@ export async function battleReport() {
     })).sort((a, b) => b.loss - a.loss || b.lostMen - a.lostMen);
     const intact = list.length - touched.length;
     // Rappel des services de culte : moins de Cohésion perdue sur une défaite ou un coup dur.
-    const company = key === "company" ? game.actors.get(canvas.scene.tokens.find(t => t.actor?.system.side === "company")?.actor.system.source.actor) : null;
+    const company = key === "company" ? onScene.filter(t => t.actor.system.side === "company").map(t => game.actors.get(t.actor.system.source.actor)).find(a => a?.type === "company") : null;
     const cohesionCare = company ? cohesionLossReduction(company) : 0;
     return {
       key, label: loc(`AFC.Battle.Side.${key}`), men, lost, pct, rows,
@@ -894,7 +920,7 @@ export async function battleReport() {
   return ChatMessage.create({
     whisper: ChatMessage.getWhisperRecipients("GM"),
     content: await renderCard("battle-report", {
-      rounds: Math.max(1, battle.round - (battle.revealed ? 0 : 1)), sides
+      rounds: Math.max(1, battle.round - (battle.revealed ? 0 : 1)), sides, roundsKey: battle.round - (battle.revealed ? 0 : 1) > 1 ? "AFC.Battle.ReportCard.Rounds" : "AFC.Battle.ReportCard.Rounds1"
     })
   });
 }

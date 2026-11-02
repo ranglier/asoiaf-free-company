@@ -1,4 +1,5 @@
 import { COHESION_TIERS, COMPANY_ORIGINS, COMPANY_RESOURCES, SERVICE_SIZES } from "../config.mjs";
+import { bestServiceItems } from "../company-services.mjs";
 
 /** Personnes représentées par un point d'Effectif de réserve (non-combattants, recrues, suiveurs). */
 const PEOPLE_PER_RESERVE_POINT = 40;
@@ -58,7 +59,8 @@ export default class CompanyData extends foundry.abstract.TypeDataModel {
     const leader = this.leader ? game.actors?.get(this.leader) : null;
     const leaderCunning = leader?.system.abilities?.cunning?.rank ?? 0;
     // Organisation de base (saisie) : donne l'espace des services. Organisation effective : base + bonus des services.
-    const orgBonus = services.reduce((s, i) => s + (i.system.organization ?? 0), 0);
+    // Un seul service compte par catégorie (le meilleur).
+    const orgBonus = bestServiceItems(this.parent, (k, i) => i.system.organization ?? 0).reduce((s, i) => s + (i.system.organization ?? 0), 0);
     this.organization = { base: r.organization.value, bonus: orgBonus, effective: r.organization.value + orgBonus };
 
     this.services = {

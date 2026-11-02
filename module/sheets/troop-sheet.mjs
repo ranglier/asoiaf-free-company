@@ -3,7 +3,9 @@
  */
 import { SYSTEM_ID, UNIT_TRAININGS } from "../config.mjs";
 import { rollAbilityTest } from "../dice/test-roll.mjs";
-import { ACTIVE_TRAITS, mergeTraits, STATE_ORDER, TROOP_STATES, TYPE_TRAITS } from "../battle/battle-config.mjs";
+import { ACTIVE_TRAITS, mergeTraits, STATE_ORDER, TRAINING_BATTLE, TROOP_STATES, TYPE_TRAITS } from "../battle/battle-config.mjs";
+import { COMPANY_UNIT_TYPES, HOUSE_UNIT_TYPES } from "../catalog-data.mjs";
+import { combineTypes } from "../unit-mix.mjs";
 import { BOOK_ABILITIES, BOOK_EQUIPMENT, BOOK_FORMATIONS, BOOK_STATUS } from "../battle/book-config.mjs";
 import { prepareBookTroop } from "../battle/book.mjs";
 import { isBook } from "../battle/rules.mjs";
@@ -123,6 +125,17 @@ export class TroopSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     for (const k of ACTIVE_TRAITS) delete data[`trait.${k}`];
     delete data.trait;
     foundry.utils.setProperty(data, "system.traits", traits);
+    // Type ou entraînement changés : traits, Discipline et encaissement reprennent les valeurs du type, comme à la création.
+    const get = (path, cur) => foundry.utils.getProperty(data, path) ?? cur;
+    const type1 = get("system.unitType", s.unitType), type2 = get("system.unitType2", s.unitType2), training = get("system.training", s.training);
+    const typesChanged = type1 !== s.unitType || type2 !== s.unitType2;
+    if (typesChanged || training !== s.training) {
+      const typeOf = k => COMPANY_UNIT_TYPES[k] ?? HOUSE_UNIT_TYPES[k];
+      const mix = typeOf(type1) ? combineTypes(typeOf(type1), type2 !== type1 ? typeOf(type2) : null) : {};
+      if (typesChanged) foundry.utils.setProperty(data, "system.traits", mergeTraits([type1, type2]));
+      foundry.utils.setProperty(data, "system.discipline", Math.max(0, (UNIT_TRAININGS[training]?.discipline ?? 6) + (mix.discipline ?? 0)));
+      if (training !== s.training) foundry.utils.setProperty(data, "system.cushion", (TRAINING_BATTLE[training]?.cushion ?? 0) + (get("system.upgrades.armor", s.upgrades.armor) ? 1 : 0));
+    }
     return data;
   }
 

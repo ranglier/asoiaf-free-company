@@ -14,7 +14,7 @@ import {
   COHESION_TIERS, COMPANY_ACTIONS, COMPANY_MONTH_EVENTS, EVENT_ORGANIZATION_MODS,
   SERVICE_EVENT_BONUS, SERVICE_MONTHLY, SYSTEM_ID
 } from "./config.mjs";
-import { eventLossReductions, unpaidHalved } from "./company-services.mjs";
+import { bestServiceItems, eventLossReductions, unpaidHalved } from "./company-services.mjs";
 import { specialtyBonus } from "./data/actor-character.mjs";
 import { rollDice } from "./dice/test-roll.mjs";
 
@@ -22,8 +22,8 @@ const { DialogV2 } = foundry.applications.api;
 const renderTemplate = (...args) => foundry.applications.handlebars.renderTemplate(...args);
 const loc = key => game.i18n.localize(key);
 
-/** Événements du mois qui font perdre des ressources : les services de soins en réduisent la perte. */
-const LOSS_EVENTS = ["disaster", "calamity", "decline"];
+/** Événements du mois qui font perdre 1d6 sur une ressource : les services en réduisent la perte (le Déclin, −1, ne se réduit pas). */
+const LOSS_EVENTS = ["disaster", "calamity"];
 
 /** Rappel des réductions de pertes de la Compagnie (vide si aucune). */
 function lossCare(company) {
@@ -44,9 +44,9 @@ function defaultSteward(company) {
   return member?.actor || s.leader || "";
 }
 
-/** Bonus de services au test d'événement. */
+/** Bonus de services au test d'événement (le meilleur service de chaque catégorie). */
 function serviceEventBonus(company) {
-  return company.items.filter(i => i.type === "service")
+  return bestServiceItems(company, k => SERVICE_EVENT_BONUS[k] ?? 0)
     .reduce((sum, i) => sum + (SERVICE_EVENT_BONUS[catalogKey(i)] ?? 0), 0);
 }
 
@@ -103,8 +103,17 @@ async function chooseEvent(company, stewardId, cohesion) {
   }
 }
 
+/** Compagnies dont la fin de mois est ouverte (un double clic n'en ouvre qu'une). */
+const running = new Set();
+
 /** Lance la fin de mois d'une Compagnie. */
 export async function runMonthEnd(company) {
+  if (running.has(company.id)) return ui.notifications.warn(loc("AFC.Month.AlreadyOpen"));
+  running.add(company.id);
+  try { return await monthEnd(company); } finally { running.delete(company.id); }
+}
+
+async function monthEnd(company) {
   const s = company.system;
   const contractActive = s.contract.months > 0 && s.contract.pay > 0;
   const stewardOptions = Object.fromEntries(game.actors.filter(a => ["character", "npc"].includes(a.type)).map(a => [a.id, a.name]));
@@ -125,7 +134,7 @@ export async function runMonthEnd(company) {
       callback: (event, button) => {
         const f = button.form.elements;
         return {
-          pay: Number(f.pay.value) || 0,
+          pay: Math.max(0, Number(f.pay.value) || 0),
           loot: Math.max(0, Number(f.loot.value) || 0),
           lootShared: Math.max(0, Number(f.lootShared.value) || 0),
           serviceEffects: f.serviceEffects?.checked ?? false,
@@ -185,9 +194,10 @@ export async function runMonthEnd(company) {
   } else {
     const cohesionLoss = Math.ceil(s.cohesionState.max / (unpaidHalved(company) ? 20 : 10));
     unpaidMonths += 1;
+    const had = supply;
     supply = 0;
     cohesion -= cohesionLoss;
-    add("unpaid", { n: upkeep, loss: cohesionLoss, months: unpaidMonths });
+    add("unpaid", { n: upkeep, had, loss: cohesionLoss, months: unpaidMonths });
     if (unpaidMonths >= 2) {
       const deserters = (await new Roll("1d6").evaluate()).total;
       r.manpower = Math.max(0, r.manpower - deserters);
@@ -197,7 +207,8 @@ export async function runMonthEnd(company) {
 
   // Effets mensuels des services.
   if (opts.serviceEffects) {
-    for (const item of company.items.filter(i => i.type === "service")) {
+    const monthly = k => Object.values(SERVICE_MONTHLY[k] ?? {}).reduce((a, b) => a + b, 0);
+    for (const item of bestServiceItems(company, monthly)) {
       const effect = SERVICE_MONTHLY[catalogKey(item)];
       if (!effect) continue;
       for (const [key, n] of Object.entries(effect)) r[key] += n;

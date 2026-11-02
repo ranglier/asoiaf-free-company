@@ -8,7 +8,7 @@
  * Une Compagnie n'a qu'un service par catégorie : si une fiche en porte deux, seul le meilleur compte.
  */
 import { SYSTEM_ID } from "./config.mjs";
-import { COMPANY_SERVICES } from "./catalog-data.mjs";
+import { COMPANY_SERVICES, UNLIMITED_SERVICE_CATEGORIES } from "./catalog-data.mjs";
 
 /** Part des pertes de bataille rendue par service : toutes les troupes, ou les montées seulement. */
 export const BATTLE_CARE = { fieldHospital: { all: 0.25 }, horseMasters: { mounted: 0.25 } };
@@ -28,6 +28,22 @@ const CATEGORY = Object.fromEntries(COMPANY_SERVICES.map(s => [s.key, s.category
 /** Clés de catalogue des services d'une Compagnie (les services créés à la main n'en ont pas). */
 export function serviceKeys(company) {
   return (company?.items ?? []).filter(i => i.type === "service").map(i => i.getFlag(SYSTEM_ID, "catalog")?.key).filter(Boolean);
+}
+
+/**
+ * Services qui comptent : le meilleur de chaque catégorie selon valueOf (clé -> nombre), tous ceux d'une catégorie
+ * sans limite (diplomatie) et ceux créés à la main. Sert aux effets qui ne passent pas par une table de ce fichier.
+ */
+export function bestServiceItems(company, valueOf) {
+  const best = new Map(), out = [];
+  for (const item of (company?.items ?? []).filter(i => i.type === "service")) {
+    const key = item.getFlag(SYSTEM_ID, "catalog")?.key;
+    const cat = CATEGORY[key];
+    if (!key || !cat || UNLIMITED_SERVICE_CATEGORIES.includes(cat)) { out.push(item); continue; }
+    const kept = best.get(cat);
+    if (!kept || valueOf(key, item) > valueOf(kept.getFlag(SYSTEM_ID, "catalog").key, kept)) best.set(cat, item);
+  }
+  return [...out, ...best.values()];
 }
 
 /** Somme sur les catégories du meilleur service de chacune (valueOf : clé -> nombre). */
