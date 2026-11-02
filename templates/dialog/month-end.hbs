@@ -24,12 +24,12 @@
   <label class="checkbox"><input type="checkbox" name="serviceEffects" checked> {{localize "AFC.Month.ServiceEffects"}}</label>
   {{/if}}
 
-  <h3>{{localize "AFC.Month.StepAction"}}</h3>
-  <select name="action">{{selectOptions actions selected="none" localize=true}}</select>
-
   <h3>{{localize "AFC.Month.StepEvent"}}</h3>
   <label class="checkbox"><input type="checkbox" name="rollEvent"> {{localize "AFC.Month.RollEvent"}}</label>
   <label>{{localize "AFC.Month.Steward"}}
     <select name="steward"><option value="">—</option>{{selectOptions stewardOptions selected=steward}}</select>
   </label>
+
+  <h3>{{localize "AFC.Month.StepAction"}}</h3>
+  <select name="action">{{selectOptions actions selected="none" localize=true}}</select>
 </div>

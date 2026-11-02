@@ -203,7 +203,9 @@ export async function runCreation(actor) {
     "system.founding": summary.founding ?? actor.system.founding,
     "system.resources": Object.fromEntries(tables.resources.map(k => [k, { value: current[k] }])),
     "system.events": summary.events.map(e => ({ name: e.name, note: e.text })),
-    "system.created": true
+    "system.created": true,
+    // Compagnie : la Cohésion part de son maximum (3 × Autorité).
+    ...(actor.type === "company" ? { "system.cohesion": current.authority * 3 } : {})
   });
   return ChatMessage.create({
     speaker: ChatMessage.getSpeaker({ actor }),

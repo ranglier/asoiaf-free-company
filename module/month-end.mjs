@@ -5,9 +5,10 @@
  * 2. Entretien : le Ravitaillement paie vivres et solde. S'il ne suffit pas, solde impayée :
  *    Cohésion −10 % du maximum ; au deuxième mois impayé d'affilée, désertions (−1d6 Effectif).
  *    Effets mensuels des services (Prévôt, Forgeron...).
- * 3. Action de compagnie (facultative) : seul le repos a un effet chiffré (Cohésion +5).
- * 4. Test d'événement (facultatif) : Statut (Intendance) de l'intendant + modificateurs,
- *    lu sur une échelle régulière ; le MJ peut relancer avant de valider.
+ * 3. Test d'événement (facultatif) : Statut (Intendance) de l'intendant + modificateurs,
+ *    lu sur une échelle régulière ; le MJ peut relancer avant de valider. La Cohésion
+ *    compte telle que les revenus et l'entretien du mois l'ont laissée.
+ * 4. Action de compagnie (facultative) : seul le repos a un effet chiffré (Cohésion +5).
  */
 import {
   COHESION_TIERS, COMPANY_ACTIONS, COMPANY_MONTH_EVENTS, EVENT_ORGANIZATION_MODS,
@@ -39,22 +40,28 @@ function serviceEventBonus(company) {
     .reduce((sum, i) => sum + (SERVICE_EVENT_BONUS[catalogKey(i)] ?? 0), 0);
 }
 
-/** Modificateurs du test d'événement, détaillés pour l'affichage. */
-function eventModifiers(company) {
+/** Palier de Cohésion d'une valeur (le maximum est 3 × Autorité). */
+function cohesionTier(cohesion, max) {
+  const pct = max ? Math.round(100 * Math.max(0, Math.min(max, cohesion)) / max) : 0;
+  return { pct, tier: COHESION_TIERS.find(t => pct >= t.min) ?? COHESION_TIERS.at(-1) };
+}
+
+/** Modificateurs du test d'événement, détaillés pour l'affichage (Cohésion du moment, sinon celle de la fiche). */
+function eventModifiers(company, cohesion = company.system.cohesion) {
   const s = company.system;
   const org = EVENT_ORGANIZATION_MODS.find(([min]) => s.organization.effective >= min)?.[1] ?? 0;
   return [
     { label: loc("AFC.Month.ModOrganization"), value: org },
-    { label: loc("AFC.Month.ModCohesion"), value: s.cohesionState.eventMod },
+    { label: loc("AFC.Month.ModCohesion"), value: cohesionTier(cohesion, s.cohesionState.max).tier.eventMod },
     { label: loc("AFC.Month.ModServices"), value: serviceEventBonus(company) }
   ];
 }
 
 /** Test d'Intendance : renvoie le jet et la catégorie d'événement. */
-async function rollEvent(company, stewardId) {
+async function rollEvent(company, stewardId, cohesion) {
   const steward = game.actors.get(stewardId);
   const status = steward?.system.abilities?.status;
-  const mods = eventModifiers(company);
+  const mods = eventModifiers(company, cohesion);
   const modifier = mods.reduce((s, m) => s + m.value, 0);
   const rank = status?.rank ?? 2;
   const bonus = status ? specialtyBonus(status, STEWARDSHIP) : 0;
@@ -67,9 +74,9 @@ async function rollEvent(company, stewardId) {
 }
 
 /** Propose le résultat au MJ : garder ou relancer, autant de fois que voulu. */
-async function chooseEvent(company, stewardId) {
+async function chooseEvent(company, stewardId, cohesion) {
   for (;;) {
-    const ev = await rollEvent(company, stewardId);
+    const ev = await rollEvent(company, stewardId, cohesion);
     const content = await renderTemplate(`systems/${SYSTEM_ID}/templates/dialog/month-event.hbs`, ev);
     const keep = await DialogV2.wait({
       window: { title: loc("AFC.Month.EventTitle") },
@@ -187,9 +194,14 @@ export async function runMonthEnd(company) {
     }
   }
 
-  // 3. Action.
-  if (opts.action === "rest" && !unpaidMonths) { cohesion += 5; add("rest"); }
-  else if (opts.action !== "none") add("action", { action: loc(`AFC.Month.Action.${opts.action}`) });
+  // 3. Événement (facultatif, avec relance), avec la Cohésion laissée par les revenus et l'entretien.
+  const event = opts.rollEvent ? await chooseEvent(company, opts.steward, cohesion) : null;
+
+  // 4. Action.
+  if (opts.action === "rest") {
+    if (unpaidMonths) add("restUnpaid");
+    else { cohesion += 5; add("rest"); }
+  } else if (opts.action !== "none") add("action", { action: loc(`AFC.Month.Action.${opts.action}`) });
 
   // Contrat : un mois de moins.
   const contract = { ...s.contract };
@@ -201,12 +213,8 @@ export async function runMonthEnd(company) {
   // Cohésion bornée par son maximum (3 × Autorité, après les effets du mois).
   const cohesionMax = r.authority * 3;
   cohesion = Math.max(0, Math.min(cohesionMax, cohesion));
-  const pct = cohesionMax ? Math.round(100 * cohesion / cohesionMax) : 0;
-  const tier = COHESION_TIERS.find(t => pct >= t.min) ?? COHESION_TIERS.at(-1);
+  const { pct, tier } = cohesionTier(cohesion, cohesionMax);
   if (tier.min === 0) add("crisis");
-
-  // 4. Événement (facultatif, avec relance).
-  const event = opts.rollEvent ? await chooseEvent(company, opts.steward) : null;
 
   await company.update({
     "system.resources": Object.fromEntries(Object.entries(r).map(([k, v]) => [k, { value: v }])),
