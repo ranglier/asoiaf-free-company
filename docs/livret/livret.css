@@ -1,4 +1,4 @@
-/* ASOIAF Free Company : Règles. Mise en page du livret, style C retenu par Jules (2026-11-02) : noir et blanc,
+/* ASOIAF Free Company : Règles. Mise en page du livret, style C retenu le 2026-11-02 : noir et blanc,
    deux colonnes, tableaux marqués, schémas en couleur, cartouche noir « Arbitré par le MJ ». */
 :root {
   --papier: #ffffff; --encre: #111111; --encre-forte: #000000; --encre-douce: #444444; --titre: #000000; --accent: #333333;

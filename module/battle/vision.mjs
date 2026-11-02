@@ -1,16 +1,16 @@
 /**
  * Brouillard de guerre par case (règles maison, option de bataille « fog », à l'essai) : ce que voit
- * la Compagnie, calculé comme dans le banc d'essai validé par Jules le 2026-11-02.
+ * la Compagnie, calculé comme dans le banc d'essai validé le 2026-11-02.
  * - Bois : de l'extérieur, on ne voit que la lisière. Depuis la lisière, on voit à 2 cases dans le bois
  *   et normalement dehors ; plus au fond, à 2 cases dans le bois et 1 case dehors. Éclaireurs : 1 de plus.
  * - Colline : du sommet, on voit tout, sauf le pied d'une autre colline caché par celle-ci. Vue
  *   symétrique : entre une colline et la plaine, on calcule depuis la colline.
  * - Village et ruines bloquent la vue ; brouillard (météo) : 2 cases.
- * - Repérer n'est pas identifier : au-delà de 3 cases (4 pour des éclaireurs ; décision de Jules du
+ * - Repérer n'est pas identifier : au-delà de 3 cases (4 pour des éclaireurs ; décision du
  *   2026-11-02, 4 et 5 avant), une troupe vue reste inconnue ; le MJ l'identifie à la main (Lire le champ).
  * - Embuscade : une troupe en lisière qui n'a pas encore agi n'est repérée qu'à 2 cases, des éclaireurs
  *   seulement au contact. Une troupe au contact est toujours vue.
- * - Nuit (décision de Jules du 2026-11-02, après banc d'essai) : en plus de la ligne de vue, on ne voit
+ * - Nuit (décision du 2026-11-02, après banc d'essai) : en plus de la ligne de vue, on ne voit
  *   que les cases voisines (2 cases pour des éclaireurs), une case éclairée (région « éclairée de nuit »)
  *   à toute distance, et une troupe qui a combattu ou tiré ce tour jusqu'à 3 cases.
  * Le MJ actif cache et montre les jetons ennemis (Foundry les masque alors aux joueurs) ; chaque client

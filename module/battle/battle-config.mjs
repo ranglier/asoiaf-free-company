@@ -113,8 +113,8 @@ export const TERRAINS = {
 };
 
 /**
- * Météo de la bataille. Brouillard : vue à 2 cases ; la portée n'est plus divisée par deux (décision de
- * Jules, 2026-11-02) : au-delà de la vue, on tire à l'aveugle.
+ * Météo de la bataille. Brouillard : vue à 2 cases ; la portée n'est plus divisée par deux (décision du
+ * 2026-11-02) : au-delà de la vue, on tire à l'aveugle.
  */
 export const WEATHER = { clear: {}, rain: { shoot: 1, noCharge: true }, fog: { sight: 2 } };
 

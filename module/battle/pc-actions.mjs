@@ -15,7 +15,7 @@ const L = "AFC.Battle.PcActions";
 
 /** Actions cochées à la main (Commander et Rallier passent par les boutons des troupes). */
 export const MANUAL_ACTIONS = ["readField", "carryOrder", "frontLine", "shootWith", "feat", "free"];
-/** Durée d'un tour de bataille, en rounds individuels (décision de Jules, 2026-11-02, à l'essai). */
+/** Durée d'un tour de bataille, en rounds individuels (décision du 2026-11-02, à l'essai). */
 export const SCENE_ROUNDS = 3;
 
 /**

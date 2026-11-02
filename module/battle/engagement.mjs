@@ -98,7 +98,7 @@ function roller(token, battle, kind = "melee") {
 /* ---------- Calcul des modificateurs ---------- */
 
 /**
- * Embuscade (décision de Jules du 2026-11-02) : une troupe cachée au moment de la révélation (brouillard de
+ * Embuscade (décision du 2026-11-02) : une troupe cachée au moment de la révélation (brouillard de
  * guerre ou MJ), qui n'avait encore jamais agi et qui Charge, Attaque ou Tire, gagne +1B à cette action.
  */
 const ambushing = (battle, token) => (battle.ambush ?? []).includes(token.id);
@@ -141,7 +141,7 @@ export function meleeMods(att, def, battle) {
   // Embuscade : troupe cachée à la révélation, qui frappe pour la première fois.
   if (ambushing(battle, att)) am.push(mod(loc("AFC.Battle.Mod.ambush"), { b: 1 }));
   // Flanc : d'autres troupes alliées au contact de l'adversaire donnent +1B, quel que soit leur nombre
-  // (décision de Jules du 2026-11-02, ancienne option « Flanc limité »).
+  // (décision du 2026-11-02, ancienne option « Flanc limité »).
   const aFlank = flankers(def, A.side, [att.id]), dFlank = flankers(att, D.side, [def.id]);
   if (aFlank) am.push(mod(fmt("AFC.Battle.Mod.flank", { n: aFlank }), { b: 1 }));
   if (dFlank) dm.push(mod(fmt("AFC.Battle.Mod.flank", { n: dFlank }), { b: 1 }));
@@ -169,7 +169,7 @@ export function meleeMods(att, def, battle) {
   // Volée des armes de jet.
   if (A.has.javelins && charging && !breaksCharge) am.push(mod(loc("AFC.Battle.Mod.volley"), { b: 1 }));
   if (D.has.javelins && dOrder === "hold" && charging) dm.push(mod(loc("AFC.Battle.Mod.volley"), { b: 1 }));
-  // Choc : la cavalerie qui charge une troupe qui ne Tient pas a +1B, comme la volée (décision de Jules, 2026-11-02).
+  // Choc : la cavalerie qui charge une troupe qui ne Tient pas a +1B, comme la volée (décision du 2026-11-02).
   if (A.has.shock && charging && dOrder !== "hold") am.push(mod(loc("AFC.Battle.Mod.shock"), { b: 1 }));
   // Course : une troupe essoufflée combat mal ce tour-ci.
   if (aOrder === "run") am.push(mod(loc("AFC.Battle.Mod.winded"), { p: 1 }));

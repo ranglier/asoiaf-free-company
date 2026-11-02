@@ -1,5 +1,5 @@
 /**
- * Points de plan (règles maison, décision de Jules du 2026-11-02) : une seule réserve pour la Compagnie,
+ * Points de plan (règles maison, décision du 2026-11-02) : une seule réserve pour la Compagnie,
  * gagnée avant la bataille (test de Stratégie, 1 point par degré, sans plafond) et dépensée avant ou
  * pendant la bataille. Le MJ ajuste la réserve ; le MJ et les joueurs la dépensent, et chaque dépense
  * laisse une ligne dans le chat. Nouvelle bataille la remet à zéro. L'ennemi n'a pas de points.

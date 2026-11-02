@@ -39,12 +39,12 @@ Dans Foundry, le MJ peut modifier à la main sur les fiches l'état, l'encaissem
 - 2026-11-02, tirs simultanés : pertes des tirs en attente jusqu'au dernier tir du tour (ou la première mêlée, ou la fin de tour). Codé en v0.27.12.
 - 2026-11-02, Se replier : un état de moins en mêlée, au moins un ; Léger sans minimum. Codé en v0.27.12.
 - 2026-11-02, trait Bleus : retiré (règle et Foundry, v0.27.12).
-- 2026-11-02, matrice d'équilibre de Jules : on est assez proche, rien à changer pour l'instant.
+- 2026-11-02, matrice d'équilibre : on est assez proche, rien à changer pour l'instant.
 - 2026-11-02, une action par PJ : compteur dans la fenêtre Bataille (une action de bataille ou 3 rounds de scène individuelle par tour), codé en v0.27.13 ; durée d'un tour de bataille : 3 rounds individuels, à l'essai.
 - 2026-11-02, module Carousel Combat Tracker : la barre de bataille passe sous le carrousel ; initiative du combat individuel branchée (Agilité, Vivacité), v0.27.13.
 - 2026-11-02, flanc de Manœuvrer : retiré de la règle (« le flanc est déjà trop fort »).
 - 2026-11-02, achat de service : la Richesse reste à débiter à la main.
-- 2026-11-02, Course sous les tirs : −1D au tireur contre une troupe qui Court, codé en v0.27.14 puis retiré en v0.27.15 (trop fort, décision de Jules).
+- 2026-11-02, Course sous les tirs : −1D au tireur contre une troupe qui Court, codé en v0.27.14 puis retiré en v0.27.15 (trop fort).
 - 2026-11-02, points d'initiative et de plan : une seule réserve, les points de plan, sans plafond ; points d'initiative retirés ; contre-ordre = 1 point de plan ou Porter un ordre. Réserve dans la fenêtre Bataille (v0.27.15), dépenses annoncées dans le chat.
-- 2026-11-02 (soir), décisions de Jules après les batteries F, G, H et C, codées en v0.28 à v0.28.7 : brouillard de guerre par case (option), identification à 3 cases, nuit, tir à l'aveugle (à la main), plus de portée divisée par deux en brouillard, flanc limité à +1B (plus une option), +1B d'embuscade, case d'un allié qui part, charge qui se rabat, échanges de cases, contact (ni Manœuvrer ni Course ; Se replier en fin de tour ; relève). Gardés tels quels : Commander, village, infanterie lourde.
+- 2026-11-02 (soir), décisions après les batteries F, G, H et C, codées en v0.28 à v0.28.7 : brouillard de guerre par case (option), identification à 3 cases, nuit, tir à l'aveugle (à la main), plus de portée divisée par deux en brouillard, flanc limité à +1B (plus une option), +1B d'embuscade, case d'un allié qui part, charge qui se rabat, échanges de cases, contact (ni Manœuvrer ni Course ; Se replier en fin de tour ; relève). Gardés tels quels : Commander, village, infanterie lourde.
 - Plus aucun écart ouvert en bataille. Reste côté Compagnie : discours du chef, victoire et défaite (Cohésion à la main), achat de service à la main.

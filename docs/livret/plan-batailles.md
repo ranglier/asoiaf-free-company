@@ -43,7 +43,7 @@ Principes de rédaction :
 | L'attaque de nuit près de Yunkaï (299) : les Corbeaux Tempête changent de camp, l'armée yunkaïie est surprise ; les Puînés sont dans le camp d'en face | Essos | Nuit, feux de camp, mercenaires | 4 (nuit), 8 (PJ : Lire le champ) |
 | La conquête de Dorne par Daeron Ier (157 à 161) : par les Osseux, aussi appelés Voie de Pierre, à l'est des marches de Dorne, et des sentiers de montagne pour contourner les tours de guet ; puis la guérilla dornienne | Conquête de Dorne | Reconnaissance, plan de bataille, retraite et harcèlement | 5 (avant la bataille), 6 (repli) |
 
-Noms français confirmés par Jules le 2026-11-02 (faits vérifiés sur A Wiki of Ice and Fire). Les Dents de Freux tiraient du haut de Crête-en-Pleurs.
+Noms français confirmés le 2026-11-02 (faits vérifiés sur A Wiki of Ice and Fire). Les Dents de Freux tiraient du haut de Crête-en-Pleurs.
 
 ## Chapitre 1 : Batailles
 

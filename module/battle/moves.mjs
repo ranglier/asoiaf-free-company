@@ -79,7 +79,7 @@ function reach(token, range, occupied, { roadOnly = false } = {}) {
 
 /**
  * Cases d'arrivée possibles pour cet ordre (Route : une case de plus à qui Manœuvre le long de la route).
- * La case d'un allié peut être visée (décision de Jules, 2026-11-02) : s'il la quitte ce tour, on y entre ;
+ * La case d'un allié peut être visée (décision du 2026-11-02) : s'il la quitte ce tour, on y entre ;
  * sinon on s'arrête avant.
  */
 export function destinations(token, order, occupied) {
@@ -266,7 +266,7 @@ function settleMoves(moves, occupied) {
       progress = true;
     }
   }
-  // Échanges de cases entre alliés (décision de Jules du 2026-11-02) : deux troupes, ou plus en cercle,
+  // Échanges de cases entre alliés (décision du 2026-11-02) : deux troupes, ou plus en cercle,
   // qui visent chacune la case de la suivante bougent ensemble, si aucun ennemi ne barre leur chemin.
   const at = new Map(pending.map(m => [keyOf(cellOf(m.token)), m]));
   for (const move of [...pending]) {
@@ -293,7 +293,7 @@ function settleMoves(moves, occupied) {
 
 const canMove = token => !["routed", "destroyed"].includes(token.actor.system.state);
 
-/* ---------- Contact (décision de Jules du 2026-11-02) ---------- */
+/* ---------- Contact (décision du 2026-11-02) ---------- */
 
 /** Ordres qu'une troupe au contact d'un ennemi ne peut pas recevoir : elle ne rompt le contact qu'en Se repliant. */
 export const CONTACT_FORBIDDEN = ["maneuver", "run"];

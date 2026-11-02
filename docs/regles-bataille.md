@@ -1,8 +1,8 @@
 # Règles de bataille (v0.4, à jour du système v0.28.7)
 
-Règles maison de combat de masse pour « L'Éveil du Titan ». Issues du brainstorming et du premier test sur papier du 2026-10-29 (scénario « Le gué des Terres disputées »), revues avec Jules (v0.2 : terrains, météo, ligne de vue, ordre Attaquer, pertes cumulées, limite des ralliements, reconnaissance par une unité), puis codées dans Foundry et ajustées aux tests (v0.3 : relecture du 2026-11-02, système v0.27.10 ; v0.4 : ligne de vue, brouillard de guerre, nuit, identification, embuscade, tir à l'aveugle, flanc limité, contact et relève, 2026-11-02, systèmes v0.28 à v0.28.7, après les batteries F, G, H et C dans `tests/resultats/`).
+Règles maison de combat de masse. Issues du brainstorming et du premier test sur papier du 2026-10-29 (scénario « Le gué des Terres disputées »), revues (v0.2 : terrains, météo, ligne de vue, ordre Attaquer, pertes cumulées, limite des ralliements, reconnaissance par une unité), puis codées dans Foundry et ajustées aux tests (v0.3 : relecture du 2026-11-02, système v0.27.10 ; v0.4 : ligne de vue, brouillard de guerre, nuit, identification, embuscade, tir à l'aveugle, flanc limité, contact et relève, 2026-11-02, systèmes v0.28 à v0.28.7, après les batteries F, G, H et C dans `tests/resultats/`).
 
-**Légende** : *(à la main)* = règle valable, mais Foundry ne l'applique pas : le MJ la joue. *(avertissement)* = Foundry prévient sans bloquer. *(non codé, à trancher)* = la règle écrite et le code divergent : à décider avec Jules.
+**Légende** : *(à la main)* = règle valable, mais Foundry ne l'applique pas : le MJ la joue. *(avertissement)* = Foundry prévient sans bloquer. *(non codé, à trancher)* = la règle écrite et le code divergent : à décider.
 
 ## Principes
 
@@ -33,12 +33,12 @@ Règles maison de combat de masse pour « L'Éveil du Titan ». Issues du brains
 | Obstacles (haies, pieux, fossé) | Une charge qui traverse a −1D ; couvert léger contre les tirs (+1). |
 | Ruines, fortifications | Couvert (+3) ; le trait Défenseurs s'y applique. |
 
-- **Météo** (pour toute la bataille) : pluie (−1D au tir, pas de Charge dans la boue *(avertissement)*) ; brouillard (vue limitée à 2 cases *(à la main, ou automatique avec l'option Brouillard de guerre par case)*, Lire le champ plus difficile ; la portée n'est plus divisée par deux depuis la v0.28.4, décision de Jules du 2026-11-02 : au-delà de la vue, on tire à l'aveugle).
+- **Météo** (pour toute la bataille) : pluie (−1D au tir, pas de Charge dans la boue *(avertissement)*) ; brouillard (vue limitée à 2 cases *(à la main, ou automatique avec l'option Brouillard de guerre par case)*, Lire le champ plus difficile ; la portée n'est plus divisée par deux depuis la v0.28.4, décision du 2026-11-02 : au-delà de la vue, on tire à l'aveugle).
 - Dans Foundry, un terrain se reconnaît au type choisi dans le panneau des terrains, sinon au nom de la région (« Bois », « Gué »…).
 
 ### Ligne de vue
 
-Règles revues avec Jules le 2026-11-02 sur un banc d'essai interactif, puis codées telles quelles.
+Règles revues le 2026-11-02 sur un banc d'essai interactif, puis codées telles quelles.
 
 - On voit une case si la ligne droite entre les centres des deux cases ne traverse aucune case qui bloque la vue. Les unités ne bloquent pas la vue. Une unité au contact est toujours vue.
 - **Vue symétrique** : si A voit B, B voit A. Exception : le bois (ci-dessous), où l'on voit dehors plus loin qu'on n'est vu.
@@ -48,16 +48,16 @@ Règles revues avec Jules le 2026-11-02 sur un banc d'essai interactif, puis cod
   - depuis une case de lisière, on voit à 2 cases dans le bois, et normalement dehors ;
   - plus au fond, on voit à 2 cases dans le bois et 1 case dehors (soit jusqu'à 3 cases).
 - **Village, ferme, ruines** : bloquent la vue au-delà.
-- **De jour, pas de limite de distance** : seul le terrain coupe la vue (décision de Jules, 2026-11-02 : une carte couverte fait l'incertitude ; une plaine nue n'en a pas, et c'est voulu).
+- **De jour, pas de limite de distance** : seul le terrain coupe la vue (décision du 2026-11-02 : une carte couverte fait l'incertitude ; une plaine nue n'en a pas, et c'est voulu).
 - **Brouillard** : vue limitée à 2 cases.
-- **Nuit** (décision de Jules, 2026-11-02, après banc d'essai) : en plus de la ligne de vue, une troupe ne voit que les cases qui la touchent (éclaireurs : 2 cases). Elle voit à toute distance une **case éclairée** (feux de camp, village, torches), et jusqu'à 3 cases une troupe qui a **combattu ou tiré** ce tour (bruit, éclats). Une troupe sur une case éclairée se fait donc repérer de loin. L'identification et l'embuscade ne changent pas. Dans Foundry : case « Nuit » de la fenêtre Bataille (MJ), case « Éclairé de nuit » d'une région dans le panneau des terrains (pour un simple feu : un Repère sans effet).
+- **Nuit** (décision du 2026-11-02, après banc d'essai) : en plus de la ligne de vue, une troupe ne voit que les cases qui la touchent (éclaireurs : 2 cases). Elle voit à toute distance une **case éclairée** (feux de camp, village, torches), et jusqu'à 3 cases une troupe qui a **combattu ou tiré** ce tour (bruit, éclats). Une troupe sur une case éclairée se fait donc repérer de loin. L'identification et l'embuscade ne changent pas. Dans Foundry : case « Nuit » de la fenêtre Bataille (MJ), case « Éclairé de nuit » d'une région dans le panneau des terrains (pour un simple feu : un Repère sans effet).
 - Ne bloquent pas : marais, haies, rivière, gué, pont, route.
-- **Repérer n'est pas identifier** (une seule distance, 3 cases, décision de Jules du 2026-11-02 ; 4 cases avant) :
+- **Repérer n'est pas identifier** (une seule distance, 3 cases, décision du 2026-11-02 ; 4 cases avant) :
   - jusqu'à 3 cases, une unité vue est identifiée à l'œil : genre d'unité, état apparent, traits visibles. Jamais l'entraînement ;
   - au-delà, elle reste une « troupe inconnue » : sa position seulement, ni type, ni état, ni nom ;
   - Lire le champ (1 degré) l'identifie, même lointaine (section 7).
 - **Éclaireurs** : voient 1 case plus loin dans un bois (2 depuis l'extérieur, 3 depuis l'intérieur) et identifient à 4 cases.
-- **Conséquences** : il faut voir sa cible pour Lire le champ (sauf reconnaissance d'avant bataille), et pour Tirer normalement. **Tir à l'aveugle** (décision de Jules, 2026-11-02) : on peut tirer sur une case qu'on ne voit pas, à portée, avec −1D ; si la case est vide, le tir est perdu ; s'il y a une troupe, le MJ résout le tir lui-même *(à la main)*. Une unité qui se déplace sans sortir des zones invisibles (par exemple au fond d'un bois) reste cachée. On peut Charger ou Attaquer une case qu'on ne voit pas, avec −1D ; si elle est vide, l'ordre est perdu *(à la main : Foundry ne laisse viser qu'une troupe vue)*.
+- **Conséquences** : il faut voir sa cible pour Lire le champ (sauf reconnaissance d'avant bataille), et pour Tirer normalement. **Tir à l'aveugle** (décision du 2026-11-02) : on peut tirer sur une case qu'on ne voit pas, à portée, avec −1D ; si la case est vide, le tir est perdu ; s'il y a une troupe, le MJ résout le tir lui-même *(à la main)*. Une unité qui se déplace sans sortir des zones invisibles (par exemple au fond d'un bois) reste cachée. On peut Charger ou Attaquer une case qu'on ne voit pas, avec −1D ; si elle est vide, l'ordre est perdu *(à la main : Foundry ne laisse viser qu'une troupe vue)*.
 
 ### Embuscade
 
@@ -125,11 +125,11 @@ Déduits du type d'unité (deux types au plus, section 3 bis). Améliorations d'
 |---|---|
 | Armure lourde | Perd 1 état de moins quand elle perd une mêlée de 2 degrés ou plus. Tirs contre elle : difficulté +3. Déplacement −1 (minimum 1). |
 | Boucliers | Tirs contre elle : difficulté +3. Avec Tenir : mur de boucliers, insensible au Choc. |
-| Choc | +1B quand elle Charge une troupe qui ne Tient pas (décision de Jules, 2026-11-02, v0.28.8 : sans cela, Choc n'avait plus d'effet avec Tenir brise l'élan). Option Tenir brise l'élan décochée : annule aussi le bonus de Tenir de l'adversaire (sauf Piques ou mur de boucliers). |
-| Choc lourd | Si elle gagne une Charge contre une troupe qui ne Tient pas, l'adversaire perd 1 état de plus. Pas de +1B (décision de Jules, 2026-11-02). Option décochée : annule aussi le bonus de Tenir, comme Choc, et l'état de plus joue aussi contre une troupe qui Tient. |
+| Choc | +1B quand elle Charge une troupe qui ne Tient pas (décision du 2026-11-02, v0.28.8 : sans cela, Choc n'avait plus d'effet avec Tenir brise l'élan). Option Tenir brise l'élan décochée : annule aussi le bonus de Tenir de l'adversaire (sauf Piques ou mur de boucliers). |
+| Choc lourd | Si elle gagne une Charge contre une troupe qui ne Tient pas, l'adversaire perd 1 état de plus. Pas de +1B (décision du 2026-11-02). Option décochée : annule aussi le bonus de Tenir, comme Choc, et l'état de plus joue aussi contre une troupe qui Tient. |
 | Piques | +1D contre la cavalerie. Une cavalerie qui les charge alors qu'elles Tiennent a −1D. |
 | Monté | Déplacement 3 (2 en Armure lourde). −1D dans les bois et à la traversée d'un gué. |
-| Léger | Déplacement +1 avec Manœuvrer et Course. En se repliant, peut ne perdre aucun état (voir Se replier). Le malus des bois ne touche que la cavalerie, légère comprise (décision de Jules, 2026-11-02). |
+| Léger | Déplacement +1 avec Manœuvrer et Course. En se repliant, peut ne perdre aucun état (voir Se replier). Le malus des bois ne touche que la cavalerie, légère comprise (décision du 2026-11-02). |
 | Tir (portée X) | Peut recevoir l'ordre Tirer. Arcs : portée 4. Arbalètes : portée 3. |
 | Perforant | Ignore le +3 donné par Armure lourde et Boucliers. |
 | Rechargement | Après avoir tiré, ne peut pas Tirer au tour suivant (imposé par le système). |
@@ -162,13 +162,13 @@ Correspondance avec le catalogue (première version) :
 
 Types du catalogue de la Maison : Cavalerie (Monté, Armure lourde, Choc lourd) ; Infanterie (Boucliers) ; Croisés (Indéfectible) ; Guérilleros (Léger, Armes de jet) ; Criminels (Léger) ; Paysans conscrits, Ingénieurs, Mercenaires, Navires de guerre (aucun). Armure lourde exclut Léger ; une arme de tir remplace Armes de jet.
 
-Trait **Bleus** (« à la première perte d'état, test de ralliement ou déroute ») retiré le 2026-11-02 (décision de Jules) : l'entraînement Bleus suffit à les rendre fragiles (aucun encaissement, un seul ralliement, Discipline haute, dés de bonus plafonnés à 2).
+Trait **Bleus** (« à la première perte d'état, test de ralliement ou déroute ») retiré le 2026-11-02 : l'entraînement Bleus suffit à les rendre fragiles (aucun encaissement, un seul ralliement, Discipline haute, dés de bonus plafonnés à 2).
 
-## 3 bis. Customisation des troupes (validée par Jules le 2026-10-31, codée en v0.24.0)
+## 3 bis. Customisation des troupes (validée le 2026-10-31, codée en v0.24.0)
 
 **Deux types au maximum** (Infanterie légère + Arbalétriers). Puissance : somme des deux. Effectif : selon l'entraînement. Discipline : le moins bon modificateur. Compétences clés : 3 au choix parmi celles des deux types. Traits cumulés, sauf : Armure lourde et Léger s'excluent ; une arme de tir remplace Armes de jet. Hommes : ceux du type le moins nombreux. Symbole : type principal.
 
-**Compagnie des Cendres :**
+**Exemple de compagnie (troupes de test) :**
 
 | Unité | Puissance | Discipline | Corps à corps | Tir | Déplacement | Traits |
 |---|---|---|---|---|---|---|
@@ -179,15 +179,15 @@ Trait **Bleus** (« à la première perte d'état, test de ralliement ou dérout
 
 **Améliorations d'équipement** (livre, chapitre 10 : 1 point de Richesse dépensé définitivement par amélioration, chacune une seule fois par unité). En règles maison : Armure, +1 encaissement par bataille ; Armes de mêlée, +1B en mêlée ; Armes de tir, +1B au tir.
 
-**Décision de Jules (2026-11-01) :** un jeton par bataillon, découpage libre sans limite liée aux officiers (un bloc peut rester sans officier), surnombre activé. Question d'origine : un bataillon de 5 unités se déploie aujourd'hui en un seul jeton de 500 hommes, qui lance les mêmes dés qu'une unité de 100. Pistes : un jeton par unité ; un jeton par bataillon, plus fort selon sa taille ; ou bataillon découpé librement en jetons, avec un bonus de taille plafonné.
+**Décision du 2026-11-01 :** un jeton par bataillon, découpage libre sans limite liée aux officiers (un bloc peut rester sans officier), surnombre activé. Question d'origine : un bataillon de 5 unités se déploie aujourd'hui en un seul jeton de 500 hommes, qui lance les mêmes dés qu'une unité de 100. Pistes : un jeton par unité ; un jeton par bataillon, plus fort selon sa taille ; ou bataillon découpé librement en jetons, avec un bonus de taille plafonné.
 
 ## 4. Avant la bataille
 
 Les tests se font sur les fiches et la narration reste *à la main*. Foundry tient la réserve de points de plan (fenêtre Bataille, v0.27.15).
 
 1. **Reconnaissance** (éclaireur PJ : Vigilance, Discrétion ou Survie ; service Guide ; ou **unité spécialisée** : éclaireurs ou cavalerie légère, avec son rang de test, +1B pour le trait Éclaireurs). Chaque degré révèle une unité ennemie avant le déploiement, ou un secret du terrain (second gué, marais, sentier). Échec : rien ; échec grave : fausse information donnée par le MJ, et une unité de reconnaissance a été accrochée : elle commence la bataille Éprouvée.
-2. **Plan de bataille** : le chef fait un test d'Art militaire (Stratégie). Difficulté 12 ; −3 si la reconnaissance a réussi ; +3 si l'ennemi est inconnu. Chaque degré donne **1 point de plan**, sans plafond (décision de Jules, 2026-11-02). Si les joueurs décrivent un plan cohérent, le MJ peut accorder 1 point de plus.
-3. **Points de plan** : une seule réserve pour la Compagnie (les points d'initiative sont retirés, décision de Jules du 2026-11-02). Un point par effet, perdus en fin de bataille. L'ennemi n'en a pas : un adversaire coriace reçoit des contre-ordres du MJ. Dans Foundry : le MJ ajoute ou retire des points, le MJ et les joueurs les dépensent dans la fenêtre Bataille, et chaque dépense est annoncée dans le chat ; « Nouvelle bataille » remet la réserve à zéro.
+2. **Plan de bataille** : le chef fait un test d'Art militaire (Stratégie). Difficulté 12 ; −3 si la reconnaissance a réussi ; +3 si l'ennemi est inconnu. Chaque degré donne **1 point de plan**, sans plafond (décision du 2026-11-02). Si les joueurs décrivent un plan cohérent, le MJ peut accorder 1 point de plus.
+3. **Points de plan** : une seule réserve pour la Compagnie (les points d'initiative sont retirés, décision du 2026-11-02). Un point par effet, perdus en fin de bataille. L'ennemi n'en a pas : un adversaire coriace reçoit des contre-ordres du MJ. Dans Foundry : le MJ ajoute ou retire des points, le MJ et les joueurs les dépensent dans la fenêtre Bataille, et chaque dépense est annoncée dans le chat ; « Nouvelle bataille » remet la réserve à zéro.
    - avant le déploiement : **Préparer le terrain** (pieux ou fossé sur une case), **Embuscade** (une unité déployée cachée, invisible jusqu'à sa première action, +1B à cette action ; section 1, Embuscade), **Choisir le champ** (déployer après l'ennemi) ;
    - pendant la bataille : **Comme prévu** (+1B au test d'un groupe), **Signal convenu** (un contre-ordre), **Réserve** (une unité mise en réserve au déploiement entre en jeu).
    - **Réserve, conditions** : l'unité a été déclarée en réserve au déploiement ; elle entre au plus tôt au tour 2 ; par son propre bord de carte ou par un passage que la reconnaissance a révélé. Le MJ refuse si ce n'est pas crédible.
@@ -200,17 +200,17 @@ Une bataille dure en général 3 à 5 tours (ou jusqu'à l'objectif du scénario
 1. **Ordres secrets** : un ordre **par troupe** (révisé le 2026-10-29 : les groupes à ordre commun étaient peu lisibles sur la carte), avec sa cible pour Charger, Attaquer et Tirer. Chaque troupe peut avoir un **officier** (PJ ou PNJ) : la troupe lance toujours sa propre compétence, l'officier ne lui donne des dés de bonus que s'il choisit l'action **Commander** après la révélation : **+1B dès 1 degré, +2B dès 3 degrés** (révisé le 2026-11-01, section 6). Option décochée : bonus fixe de 1 dé par tranche de 2 rangs d'Art militaire, Tactiques comptant comme des rangs, au moins 1. Un officier mène au plus **1 + ses dés de bonus en Commandement** troupes *(avertissement)*. **Mouvements** : Manœuvrer et Se replier se déclarent avec leur case d'arrivée ; Charger et Attaquer rejoignent leur cible (case d'arrivée au choix). Tout est secret et les jetons ne bougent qu'à la révélation.
 2. **Révélation** simultanée, puis **contre-ordres** éventuels (voir plus bas).
 3. **Actions des PJ** (section 7) : chaque PJ ou officier a, par tour, **soit une action de bataille, soit une scène individuelle de 3 rounds** (voir « Durée d'un tour »). Un PJ peut se déplacer d'une case pour rejoindre une unité sans y consacrer son action. Deux PJ peuvent agir sur la même unité.
-4. **Mouvements** (joués à la révélation dans Foundry : manœuvres et replis, sauf les replis au contact qui attendent la fin du tour, puis charges et attaques vers la position réelle de leur cible ; une case prise ou un ennemi arrête l'unité ; deux unités visent la même case : la plus rapide l'obtient, à égalité personne, et l'autre s'arrête avant). Décisions de Jules du 2026-11-02 (v0.28.3) :
+4. **Mouvements** (joués à la révélation dans Foundry : manœuvres et replis, sauf les replis au contact qui attendent la fin du tour, puis charges et attaques vers la position réelle de leur cible ; une case prise ou un ennemi arrête l'unité ; deux unités visent la même case : la plus rapide l'obtient, à égalité personne, et l'autre s'arrête avant). Décisions du 2026-11-02 (v0.28.3) :
    - on peut viser la case d'un allié : s'il la quitte ce tour, on y entre ; sinon, on s'arrête avant (une ligne peut avancer d'un bloc) ;
    - une charge ou une attaque dont la case d'arrivée choisie est prise (par un allié arrivé avant) prend la case libre la plus proche au contact de sa cible.
-   - **Contact** (décisions de Jules du 2026-11-02, v0.28.7) :
+   - **Contact** (décisions du 2026-11-02, v0.28.7) :
      - une troupe est **au contact** si elle touche une troupe ennemie active au début du tour (au moment des ordres) ;
      - au contact, elle peut Tenir, Attaquer, Charger, Tirer ou Se replier, mais ni Manœuvrer ni Courir : elle ne rompt le contact qu'en **Se repliant** (Foundry refuse ces ordres à un joueur ; le MJ est prévenu et peut passer outre) ;
      - **Se replier au contact** : la troupe reste sur sa case pendant les tirs et les mêlées du tour ; ceux qui l'attaquent la combattent là, avec l'avantage du repli ; elle recule d'une case à la fin du tour, si elle n'est pas en déroute. Un ennemi qui Tient ne la frappe pas ;
      - **Relève** : une troupe alliée qui n'est pas au contact peut viser en Manœuvrant la case de la troupe qui se replie ; elle y entre à la fin du tour, après les mêlées (les deux échangent leurs places si celle qui se replie recule dans sa case). Si la troupe qui se replie est détruite, la relève entre dans la case libérée ; si elle est en déroute, la relève n'a pas lieu ;
      - **Échange de cases** hors du contact : deux troupes alliées (ou plus, en cercle) qui visent chacune la case de l'autre bougent ensemble, à la révélation (v0.28.6) ;
      - Attaquer garde son mouvement (sert à aborder une ligne qui Tient sans lui offrir l'ordre gagnant).
-     - **Au contact, on ne charge ou n'attaque que l'ennemi qu'on touche** (décision de Jules, 2026-11-02 ; Foundry ne le bloque pas). **Exception, arbitrée par le MJ** *(à la main)* : l'officier de la troupe peut tenter de la faire rompre le contact pour charger un autre ennemi. C'est son action de bataille du tour (pas de Commander en plus) : test d'Art militaire (Tactiques) contre la difficulté de Commander (Discipline + 3 + effectif + moral). Réussite : la troupe rompt le contact et charge. Échec : elle reste au contact et Tient (décision de Jules : pas d'attaque gratuite sur un échec). Le MJ peut refuser si la fiction ne s'y prête pas (troupe encerclée, ennemi trop loin, terrain).
+     - **Au contact, on ne charge ou n'attaque que l'ennemi qu'on touche** (décision du 2026-11-02 ; Foundry ne le bloque pas). **Exception, arbitrée par le MJ** *(à la main)* : l'officier de la troupe peut tenter de la faire rompre le contact pour charger un autre ennemi. C'est son action de bataille du tour (pas de Commander en plus) : test d'Art militaire (Tactiques) contre la difficulté de Commander (Discipline + 3 + effectif + moral). Réussite : la troupe rompt le contact et charge. Échec : elle reste au contact et Tient (pas d'attaque gratuite sur un échec). Le MJ peut refuser si la fiction ne s'y prête pas (troupe encerclée, ennemi trop loin, terrain).
 5. **Tirs** (simultanés) : chacun tire avec son état d'avant la volée. Dans Foundry (v0.27.12), les tirs se résolvent un par un mais leurs pertes attendent le dernier tir du tour, puis s'appliquent ensemble (encaissement compris). Elles s'appliquent aussi avant la première mêlée ou à la fin du tour si le MJ a sauté un tir. Décocher « Appliquer les pertes tout de suite » donne un bouton à cliquer, sans attente.
 6. **Mêlées**.
 7. **Fin de tour** : les troupes qui se repliaient au contact reculent et les relèves prennent leur place (Foundry le fait seul, carte « rompt le contact ») ; une unité qui a Tenu sans être engagée ni touchée **se réorganise** (remonte d'un état, sauf En déroute) ; les unités en déroute fuient *(à la main)*.
@@ -227,7 +227,7 @@ Une bataille dure en général 3 à 5 tours (ou jusqu'à l'objectif du scénario
 
 ### Durée d'un tour
 
-Un tour de bataille dure **3 rounds individuels** (réponse de Jules aux joueurs, à l'essai, 2026-11-02). Un PJ qui fait quelque chose de précis pendant la bataille, en dehors de ses ordres (duel, escalade, prise d'étendard), joue jusqu'à 3 rounds de combat individuel pendant que la bataille avance d'un tour ; il renonce alors à son action de bataille. Repère d'échelle : à pied, 3 rounds de déplacement (4 m par round dans le livre français) font environ 12 m, soit à peu près une case de 10 m, comme l'infanterie en un tour. L'initiative du combat individuel est un test d'Agilité, avec les dés de bonus de Vivacité (codée en v0.27.13 pour le Combat Tracker et le carrousel ; bouton Initiative sur les fiches de PJ et de PNJ en v0.27.14).
+Un tour de bataille dure **3 rounds individuels** (à l'essai, 2026-11-02). Un PJ qui fait quelque chose de précis pendant la bataille, en dehors de ses ordres (duel, escalade, prise d'étendard), joue jusqu'à 3 rounds de combat individuel pendant que la bataille avance d'un tour ; il renonce alors à son action de bataille. Repère d'échelle : à pied, 3 rounds de déplacement (4 m par round dans le livre français) font environ 12 m, soit à peu près une case de 10 m, comme l'infanterie en un tour. L'initiative du combat individuel est un test d'Agilité, avec les dés de bonus de Vivacité (codée en v0.27.13 pour le Combat Tracker et le carrousel ; bouton Initiative sur les fiches de PJ et de PNJ en v0.27.14).
 
 ## 6. Ordres, tir et mêlée
 
@@ -237,9 +237,9 @@ Un tour de bataille dure **3 rounds individuels** (réponse de Jules aux joueurs
 | Attaquer | Se déplace au contact et combat méthodiquement, sans élan. Pas d'ordre gagnant ; ni bonus d'élan ni malus de charge. Sert aussi à poursuivre un combat déjà engagé. |
 | Tenir | Reste sur place et défend ; se réorganise s'il n'est pas engagé. |
 | Tirer | Unités avec Tir ou Armes de jet : tire sur une cible à portée. |
-| Manœuvrer | Se déplace sans attaquer. Cavalerie et Léger : +1 case. Le long d'une route : +1 case. (Le +1B de flanc au tour suivant est retiré : le flanc est déjà assez fort, décision de Jules, 2026-11-02.) |
+| Manœuvrer | Se déplace sans attaquer. Cavalerie et Léger : +1 case. Le long d'une route : +1 case. (Le +1B de flanc au tour suivant est retiré : le flanc est déjà assez fort, décision du 2026-11-02.) |
 | Course | Va sur une case, une de plus que Manœuvrer, sans combattre. Essoufflée : −1D si on l'attaque en mêlée ce tour. |
-| Se replier | Recule d'une case (au contact d'un ennemi : en fin de tour, après les tirs et les mêlées ; c'est le seul ordre qui rompt le contact, section 5). Si elle perd une mêlée : un état de moins, au moins un ; Léger : un état de moins, sans minimum (elle échappe aux défaites d'un degré). Après l'Armure lourde. Décision de Jules, 2026-11-02, codé en v0.27.12. Les tirs ne sont pas concernés. |
+| Se replier | Recule d'une case (au contact d'un ennemi : en fin de tour, après les tirs et les mêlées ; c'est le seul ordre qui rompt le contact, section 5). Si elle perd une mêlée : un état de moins, au moins un ; Léger : un état de moins, sans minimum (elle échappe aux défaites d'un degré). Après l'Armure lourde. Décision du 2026-11-02, codé en v0.27.12. Les tirs ne sont pas concernés. |
 
 **Ordres gagnants** (révisé le 2026-11-01, v0.27.5, à l'essai : Tirer n'a plus de bonus contre Tenir) : Charger bat Tirer, Tenir bat Charger. L'ordre gagnant donne +1B. Attaquer est neutre (ni bonus ni malus) ; une unité qui Charge ou Attaque est « en mouvement » face aux tirs.
 
@@ -251,7 +251,7 @@ Un tour de bataille dure **3 rounds individuels** (réponse de Jules aux joueurs
 - Rechargement : pas de tir au tour qui suit un tir.
 
 **Mêlée** : test d'opposition entre les deux camps, chacun avec la compétence de son unité, plus les dés de bonus de son officier s'il a commandé.
-- Bonus : ordre gagnant (+1B), **flanc : +1B si au moins une autre unité alliée est au contact de l'adversaire, quel que soit leur nombre** (décision de Jules du 2026-11-02, v0.28.5 ; avant, +1B par unité), embuscade (+1B), terrain, traits, PJ en première ligne (+1B par degré), points de plan.
+- Bonus : ordre gagnant (+1B), **flanc : +1B si au moins une autre unité alliée est au contact de l'adversaire, quel que soit leur nombre** (décision du 2026-11-02, v0.28.5 ; avant, +1B par unité), embuscade (+1B), terrain, traits, PJ en première ligne (+1B par degré), points de plan.
 - Malus : état (Désorganisée −1D), terrain (gué), traits.
 - Plafond : les dés de bonus ne peuvent pas dépasser le nombre de dés de test.
 - Une unité en déroute ne combat plus et sort des mêlées prévues ; on peut encore lui tirer dessus.
@@ -259,24 +259,24 @@ Un tour de bataille dure **3 rounds individuels** (réponse de Jules aux joueurs
 - Deux troupes qui se visent l'une l'autre (Charger ou Attaquer) : une seule mêlée règle les deux engagements.
 - Amélioration Armes de mêlée : +1B. Course : −1D à la troupe essoufflée.
 
-**Options validées par Jules le 2026-11-01** (v0.27.0, actives par défaut, à décocher dans les paramètres de la bataille) :
-- **Test d'officier** : c'est l'action Commander (section 7), choisie après la révélation. Art militaire (Tactiques en dés de bonus) contre la Discipline de la troupe + 3, +1 par tranche de 100 hommes au-delà des 100 premiers, et le moral de la Compagnie. +1B dès 1 degré, +2B dès 3 degrés. Sans ce test, aucun bonus : l'officier peut préférer une autre action. Il doit le faire avant le jet de sa troupe. Remplace le bonus fixe. Une fenêtre permet de choisir une autre compétence ou spécialité (le MJ juge si elle convient), d'ajouter des dés de bonus, de malus, un modificateur et de changer la difficulté (v0.27.2, demande de Jules).
+**Options validées le 2026-11-01** (v0.27.0, actives par défaut, à décocher dans les paramètres de la bataille) :
+- **Test d'officier** : c'est l'action Commander (section 7), choisie après la révélation. Art militaire (Tactiques en dés de bonus) contre la Discipline de la troupe + 3, +1 par tranche de 100 hommes au-delà des 100 premiers, et le moral de la Compagnie. +1B dès 1 degré, +2B dès 3 degrés. Sans ce test, aucun bonus : l'officier peut préférer une autre action. Il doit le faire avant le jet de sa troupe. Remplace le bonus fixe. Une fenêtre permet de choisir une autre compétence ou spécialité (le MJ juge si elle convient), d'ajouter des dés de bonus, de malus, un modificateur et de changer la difficulté (v0.27.2).
 - **Entraînement en dés de bonus** : au-delà de 3D, le rang devient des dés de bonus (vétéran 3D+1B, élite 3D+2B) ; un Bleu a 2D+1B sur ses compétences clés. Le plafond de bonus reste égal au nombre de dés de test. Les tests à la demande de la fiche de troupe lancent les mêmes dés (v0.27.3).
 - **Jet unique de la cible** : une troupe attaquée par plusieurs lance une fois par tour ; les mêmes dés servent contre chaque attaquant, avec les modificateurs propres à chacun.
 
-**Surnombre** (décision de Jules le 2026-11-01, v0.27.5) : +1B à 1,5 contre 1 et +2B à 3 contre 1, en **hommes** et non plus en Puissance. Une unité montée compte pour **200 hommes**. Le prix de la cavalerie lourde passe de 3 à 5 de Puissance, soit 10 pour les chevaliers errants à cheval.
+**Surnombre** (décision du 2026-11-01, v0.27.5) : +1B à 1,5 contre 1 et +2B à 3 contre 1, en **hommes** et non plus en Puissance. Une unité montée compte pour **200 hommes**. Le prix de la cavalerie lourde passe de 3 à 5 de Puissance, soit 10 pour les chevaliers errants à cheval.
 
-**Tenir brise l'élan** (décision de Jules le 2026-11-02, v0.27.9, option active par défaut) : une charge contre une troupe qui Tient perd Choc, Choc lourd et volée. Seuls les boucliers et les piques en tirent +1B ; les autres troupes sont à armes égales. Décochée : toute troupe qui Tient a +1B contre une charge, sauf Choc de cavalerie.
+**Tenir brise l'élan** (décision du 2026-11-02, v0.27.9, option active par défaut) : une charge contre une troupe qui Tient perd Choc, Choc lourd et volée. Seuls les boucliers et les piques en tirent +1B ; les autres troupes sont à armes égales. Décochée : toute troupe qui Tient a +1B contre une charge, sauf Choc de cavalerie.
 
-**Découpage** (v0.27.7) : l'encaissement se partage au prorata des unités, arrondi au profit du bloc d'origine. **Flanc** : limité à +1B, ce n'est plus une option (décision de Jules, 2026-11-02, v0.28.5).
+**Découpage** (v0.27.7) : l'encaissement se partage au prorata des unités, arrondi au profit du bloc d'origine. **Flanc** : limité à +1B, ce n'est plus une option (décision du 2026-11-02, v0.28.5).
 
-**Village et infanterie lourde** (décisions de Jules, 2026-11-02, après les batteries) : une troupe qui Tient dans un village est très dure à déloger, et c'est voulu : un bâtiment est une position solide. Les joueurs ont d'autres moyens que les règles écrites (incendier le village, action libre, exploit). L'infanterie lourde est lente : c'est un vrai choix entre une troupe lourde et une troupe mobile ; rien à changer.
+**Village et infanterie lourde** (décisions du 2026-11-02, après les batteries) : une troupe qui Tient dans un village est très dure à déloger, et c'est voulu : un bâtiment est une position solide. Les joueurs ont d'autres moyens que les règles écrites (incendier le village, action libre, exploit). L'infanterie lourde est lente : c'est un vrai choix entre une troupe lourde et une troupe mobile ; rien à changer.
 
-**Course** (ordre à l'essai, décision de Jules le 2026-11-01, v0.27.8) : la troupe se déplace d'une case de plus que Manœuvrer, sans combattre. Elle est en mouvement face aux tirs et, essoufflée, a −1D si on l'attaque en mêlée ce tour. Pas de malus au tir : un −1D au tireur, essayé en v0.27.14, a été retiré en v0.27.15 (trop fort : contre une troupe en armure ou avec boucliers, des archers entraînés passaient de 38 % à 7 % de touches). Pas de test d'Athlétisme : un jet de plus par troupe et par tour coûterait trop. Remplace l'option Manœuvre rapide (v0.27.6).
+**Course** (ordre à l'essai, décision du 2026-11-01, v0.27.8) : la troupe se déplace d'une case de plus que Manœuvrer, sans combattre. Elle est en mouvement face aux tirs et, essoufflée, a −1D si on l'attaque en mêlée ce tour. Pas de malus au tir : un −1D au tireur, essayé en v0.27.14, a été retiré en v0.27.15 (trop fort : contre une troupe en armure ou avec boucliers, des archers entraînés passaient de 38 % à 7 % de touches). Pas de test d'Athlétisme : un jet de plus par troupe et par tour coûterait trop. Remplace l'option Manœuvre rapide (v0.27.6).
 
-**Moral de la Compagnie** (Cohésion, demande de Jules le 2026-11-01, v0.27.1) : il s'applique à la Discipline des troupes de la Compagnie, donc aux tests contre elle (Commander, Rallier, ordres en règles du livre). La Discipline étant une difficulté, le « +2 Discipline » des règles de la Compagnie la **baisse** : bon moral −2, solide −1, tensions 0, grogne +1, crise +2.
+**Moral de la Compagnie** (Cohésion, demande du 2026-11-01, v0.27.1) : il s'applique à la Discipline des troupes de la Compagnie, donc aux tests contre elle (Commander, Rallier, ordres en règles du livre). La Discipline étant une difficulté, le « +2 Discipline » des règles de la Compagnie la **baisse** : bon moral −2, solide −1, tensions 0, grogne +1, crise +2.
 
-**Points d'initiative** : retirés le 2026-11-02 (décision de Jules). Ils dataient de l'ancien Commander, qui donne maintenant directement des dés de bonus ; leurs usages (+1B, contre-ordre) passent par les points de plan.
+**Points d'initiative** : retirés le 2026-11-02. Ils dataient de l'ancien Commander, qui donne maintenant directement des dés de bonus ; leurs usages (+1B, contre-ordre) passent par les points de plan.
 
 ## 7. Les actions des PJ
 
@@ -322,7 +322,7 @@ Un tour de bataille dure **3 rounds individuels** (réponse de Jules aux joueurs
 | En déroute | 40 % |
 | Détruite | 70 % (le reste rejoint la Compagnie plus tard ou est prisonnier) |
 
-- **Report sur la Compagnie : manuel, à l'appréciation du MJ** (décision de Jules, 2026-11-01). Le Bilan donne les pertes ; rien n'est retiré automatiquement.
+- **Report sur la Compagnie : manuel, à l'appréciation du MJ** (décision du 2026-11-01). Le Bilan donne les pertes ; rien n'est retiré automatiquement.
 - **Cohésion** : victoire +1d6 × 3, défaite −1d6 × 3 ; lourdes pertes, chef blessé ou capturé −5 à −15 (règles de la Compagnie).
 - **Renommée, butin, prisonniers** : au jugement du MJ.
 - **PJ** : blessures et lésions selon les règles normales.
@@ -383,8 +383,8 @@ Un tour de bataille dure **3 rounds individuels** (réponse de Jules aux joueurs
 - Les pourcentages de pertes et leur effet sur la Compagnie sur plusieurs batailles.
 - L'expérience des unités après la bataille.
 - L'ordre Ready du livre.
-- Deuxième test : sur le VTT, scénario plus ouvert (plusieurs passages, cavalerie ennemie libre de manœuvrer). Batteries par agents du 2026-11-02 faites (`tests/resultats/bilan-brouillard.md`, `bilan-brouillard-2.md`, `bilan-flanc.md`, `bilan-contact.md`) ; prochaine étape : la table du 09/11.
+- Deuxième test : sur le VTT, scénario plus ouvert (plusieurs passages, cavalerie ennemie libre de manœuvrer). Batteries par agents du 2026-11-02 faites (`tests/resultats/bilan-brouillard.md`, `bilan-brouillard-2.md`, `bilan-flanc.md`, `bilan-contact.md`) ; prochaine étape : un test en partie réelle.
 - Peu éprouvés par les batteries : l'échange de cases, la relève sous forte pression, la retraite combattante (une seule partie, perdue), le +1B d'embuscade en bataille.
 - Règles encore à l'essai, à juger à la table : Tirer sans bonus contre Tenir, Course, 3 rounds individuels par tour, brouillard de guerre par case (option).
 - À coder : la Charge, l'Attaque ou le Tir sur une case qu'on ne voit pas.
-- Commander (mesuré le 2026-11-02 sur les officiers des batteries F et G, troupes entraînées de 100 à 300 hommes, difficulté 11 à 13) : la réussite dépend surtout de l'officier, de 3 % (Art militaire 2D) à 90-96 % (4D+1B ou 4D+2B) ; +2B (3 degrés) n'arrive presque jamais (0 à 9 %). Décision de Jules (2026-11-02) : on garde tel quel ; Art militaire 2 est le rang d'une personne sans formation, ses échecs sont normaux.
+- Commander (mesuré le 2026-11-02 sur les officiers des batteries F et G, troupes entraînées de 100 à 300 hommes, difficulté 11 à 13) : la réussite dépend surtout de l'officier, de 3 % (Art militaire 2D) à 90-96 % (4D+1B ou 4D+2B) ; +2B (3 degrés) n'arrive presque jamais (0 à 9 %). Décision du 2026-11-02 : on garde tel quel ; Art militaire 2 est le rang d'une personne sans formation, ses échecs sont normaux.
