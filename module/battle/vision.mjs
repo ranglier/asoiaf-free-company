@@ -6,8 +6,8 @@
  * - Colline : du sommet, on voit tout, sauf le pied d'une autre colline caché par celle-ci. Vue
  *   symétrique : entre une colline et la plaine, on calcule depuis la colline.
  * - Village et ruines bloquent la vue ; brouillard (météo) : 2 cases.
- * - Repérer n'est pas identifier : au-delà de 4 cases (5 pour des éclaireurs), une troupe vue reste
- *   inconnue ; le MJ l'identifie à la main (Lire le champ).
+ * - Repérer n'est pas identifier : au-delà de 3 cases (4 pour des éclaireurs ; décision de Jules du
+ *   2026-11-02, 4 et 5 avant), une troupe vue reste inconnue ; le MJ l'identifie à la main (Lire le champ).
  * - Embuscade : une troupe en lisière qui n'a pas encore agi n'est repérée qu'à 2 cases, des éclaireurs
  *   seulement au contact. Une troupe au contact est toujours vue.
  * Le MJ actif cache et montre les jetons ennemis (Foundry les masque alors aux joueurs) ; chaque client
@@ -21,7 +21,7 @@ import { getBattle } from "./state.mjs";
 
 const FOG = "fog";
 /** Distance d'identification, en cases (éclaireurs : une de plus). */
-export const IDENTIFY_RANGE = 4;
+export const IDENTIFY_RANGE = 3;
 const BLOCKERS = ["village", "ruins"];
 const loc = key => game.i18n.localize(key);
 

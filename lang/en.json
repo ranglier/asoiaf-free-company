@@ -592,7 +592,7 @@
         "flankLimit": "Limited flank (trial)",
         "flankLimitHint": "The flank bonus never exceeds +1B, however many allies touch the opponent.",
         "fog": "Fog of war by hex (trial)",
-        "fogHint": "Foundry works out what the Company sees: unseen hexes are darkened, enemy troops out of sight are hidden, \"?\" beyond 4 hexes (5 for scouts). Woods, hills, villages and ruins, ambush at the wood's edge. The GM keeps control through the token menu.",
+        "fogHint": "Foundry works out what the Company sees: unseen hexes are darkened, enemy troops out of sight are hidden, \"?\" beyond 3 hexes (4 for scouts). Woods, hills, villages and ruins, ambush at the wood's edge. The GM keeps control through the token menu.",
         "sameRoll": "Same roll",
         "morale": "Morale",
         "noBonus": "No bonus",

@@ -592,7 +592,7 @@
         "flankLimit": "Flanc limité (à l'essai)",
         "flankLimitHint": "Le bonus de flanc ne dépasse pas +1B, quel que soit le nombre d'alliés au contact de l'adversaire.",
         "fog": "Brouillard de guerre par case (à l'essai)",
-        "fogHint": "Foundry calcule ce que voit la Compagnie : cases non vues assombries, troupes ennemies cachées hors de vue, « ? » au-delà de 4 cases (5 pour des éclaireurs). Bois, collines, village et ruines, embuscade en lisière. Le MJ garde la main par le menu du jeton.",
+        "fogHint": "Foundry calcule ce que voit la Compagnie : cases non vues assombries, troupes ennemies cachées hors de vue, « ? » au-delà de 3 cases (4 pour des éclaireurs). Bois, collines, village et ruines, embuscade en lisière. Le MJ garde la main par le menu du jeton.",
         "sameRoll": "Même jet",
         "morale": "Moral",
         "noBonus": "Aucun bonus",
