@@ -75,6 +75,8 @@ tr.groupe td { font-family: var(--f-titre-court); background: #d4d4d4; color: #0
 tr.groupe td + td { border-left: none; }
 .ref tr:not(.groupe) td:last-child { font-weight: 700; text-align: center; white-space: nowrap; }
 .ref.texte tr:not(.groupe) td:last-child { font-weight: 400; text-align: left; white-space: normal; }
+.ref.multi td:not(:first-child), .ref.multi th:not(:first-child) { text-align: center; }
+.ref.multi tr:not(.groupe) td:last-child { font-weight: 400; }
 td.nom { font-weight: 700; white-space: nowrap; }
 
 /* Encadrés : ils évitent de se couper ; sinon chaque morceau garde son cadre */

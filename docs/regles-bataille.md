@@ -323,7 +323,8 @@ Un tour de bataille dure **3 rounds individuels** (à l'essai, 2026-11-02). Un P
 | Détruite | 70 % (le reste rejoint la Compagnie plus tard ou est prisonnier) |
 
 - **Report sur la Compagnie : manuel, à l'appréciation du MJ** (décision du 2026-11-01). Le Bilan donne les pertes ; rien n'est retiré automatiquement.
-- **Cohésion** : victoire +1d6 × 3, défaite −1d6 × 3 ; lourdes pertes, chef blessé ou capturé −5 à −15 (règles de la Compagnie).
+- **Soins** (2026-11-03, v0.29.0) : le petit hôpital de campagne rend un quart des pertes de chaque troupe de la Compagnie, les maîtres équestres un quart de celles des troupes montées ; les deux se cumulent (la moitié pour une troupe montée). Le Bilan les déduit et affiche les pertes sans eux. Éprouvée 10 → 8 → 5 % ; Désorganisée 25 → 19 → 13 % ; En déroute 40 → 30 → 20 % ; Brisée 70 → 53 → 35 %.
+- **Cohésion** : victoire +1d6 × 3, défaite −1d6 × 3 ; lourdes pertes, chef blessé ou capturé −5 à −15 (règles de la Compagnie). Aumôniers et congrégation en retirent 3 ou 6, au plus la moitié ; le Bilan le rappelle.
 - **Renommée, butin, prisonniers** : au jugement du MJ.
 - **PJ** : blessures et lésions selon les règles normales.
 - **Expérience des unités** : à définir (le catalogue a déjà une valeur d'expérience par entraînement).

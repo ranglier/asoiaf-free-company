@@ -16,7 +16,7 @@ Complément au document de règles maison de la Compagnie (document privé, qui 
 - **Cohésion de départ** : corrigée en v0.27.11, la création guidée la met au maximum.
 - **Mutinerie** : au récit, rien à définir (décision du 2026-11-02). La carte de fin de mois rappelle le risque au palier crise.
 - **Ordre du mois** : événement avant l'action (décision du 2026-11-02), codé en v0.27.11. L'événement tient compte de la Cohésion laissée par les revenus et l'entretien du mois ; le repos (+5) vient après.
-- **Discours du chef** (+1 par degré, une fois par mois) : non codé, à la main. Le Culte n'a donc que son bonus aux événements.
+- **Discours du chef** (+1 par degré, une fois par mois) : non codé, à la main.
 - **Victoire et défaite** (±1d6 × 3 Cohésion) : non codées, à la main sur la fiche.
 - **Achat d'un service** : le prix s'affiche, mais la Richesse n'est pas débitée.
 - **Contrats** : aide de jeu sans jet (besoins mensuels et conseils) ; la grille indicative de paie n'existe pas.
@@ -27,7 +27,7 @@ Complément au document de règles maison de la Compagnie (document privé, qui 
 
 - **Contrats** : mélange « le MJ fixe » et « négociation ». Le MJ fixe l'employeur, la durée et la paie de base ; un test de Persuasion (Marchandage) du négociateur améliore (degrés de réussite) ou dégrade (échec : clause défavorable) les conditions. Négociateur et Porte-parole s'y appliquent. Grille indicative de paie à prévoir (Renommée, danger).
 - **Butin et pillage** : rapportent en plus du contrat. Pillage : −1 disposition des habitants de la région (règle existante). **Rupture de contrat ou trahison d'un employeur : −1d6 Renommée.** Exactions : au jugement du MJ, avec le modèle de l'événement « Cruauté » (+1d6 Renommée, −1d6 Autorité).
-- **Solde** : comprise dans le Ravitaillement (vivres et solde). Si le Ravitaillement ne couvre pas l'entretien du mois, solde impayée : **Cohésion −10 % de son maximum** ; au deuxième mois impayé consécutif, **désertions (−1d6 Effectif)** puis risque de **Mutinerie**, joué au récit.
+- **Solde** : comprise dans le Ravitaillement (vivres et solde). Si le Ravitaillement ne couvre pas l'entretien du mois, solde impayée : **Cohésion −10 % de son maximum** (−5 % avec cantiniers ou cuisinier de campagne, v0.29.0) ; au deuxième mois impayé consécutif, **désertions (−1d6 Effectif)** puis risque de **Mutinerie**, joué au récit.
 - **Partage du butin** : le capitaine choisit la part distribuée aux hommes (de 0 à tout le butin ; chaque point distribué = +1 Cohésion), le reste va en caisse (Richesse). Révisé le 2026-10-29 (au lieu du tout ou rien), à rééquilibrer après quelques mois de jeu si besoin.
 - **Cohésion** : moral au quotidien, plafonné par l'Autorité (maximum = 3 × Autorité) ; valeur de départ = maximum.
   - Baisse : solde impayée −10 % du maximum par mois ; défaite −1d6 × 3 ; lourdes pertes, chef blessé ou capturé −5 à −15 (MJ) ; ordre impopulaire (MJ).
@@ -51,3 +51,19 @@ Complément au document de règles maison de la Compagnie (document privé, qui 
 - **Origines** : modificateurs inchangés (Soldats et Fanatiques à −20 en Richesse, voulu).
 
 **Discussion de révision terminée le 2026-10-29.** Codée ensuite, sauf les écarts listés en tête de section.
+
+## 2026-11-03 : services qui limitent les pertes (v0.29.0)
+
+Les réductions de pertes du catalogue n'avaient aucune prise : rien ne chiffrait les maladies ni les pertes d'Autorité au combat. Elles sont rebranchées sur ce qui existe : le Bilan de bataille, les événements du mois et la Cohésion.
+
+| Service | Effet sur les pertes | Effet conservé |
+|---|---|---|
+| Petit hôpital de campagne | Bilan : un quart des pertes de chaque troupe rendu ; événements du mois : pertes d'Effectif −2 | |
+| Maîtres équestres | Bilan : un quart des pertes des troupes montées rendu (cumul avec l'hôpital : la moitié) | −1 Puissance à l'achat d'unités montées |
+| Soigneurs | Événements du mois : pertes d'Effectif −1 | |
+| Maître forgeron / Guilde des armuriers | Événements du mois : pertes de Puissance −1 / −2 | +1 / +2 Puissance par mois |
+| Cantiniers / Cuisinier de campagne | Événements du mois : pertes d'Autorité −1 ; solde impayée −5 % de Cohésion au lieu de −10 % | Cuisinier : +2 Organisation |
+| Aumôniers / Congrégation | Défaite ou coup dur (lourdes pertes, chef blessé ou capturé) : 3 / 6 de Cohésion perdus en moins | +1 / +2 aux tests d'événements |
+
+- **Garde-fous** : une perte d'événement réduite ne descend jamais sous 1 ; le culte n'ôte jamais plus de la moitié d'une perte de Cohésion ; un seul service compte par catégorie (le meilleur) ; les désertions ne sont pas réduites.
+- **Dans Foundry** : le Bilan applique les soins et affiche les pertes sans eux, ainsi que la réduction du culte ; la carte d'événement rappelle les réductions sur Désastre, Calamité et Déclin (le MJ applique l'événement) ; la fin de mois applique la solde impayée à −5 %.
