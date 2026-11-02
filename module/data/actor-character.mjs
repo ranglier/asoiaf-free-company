@@ -41,8 +41,10 @@ export function prepareCombatValues(system, items) {
     combat: a.agility.rank + a.athletics.rank + a.awareness.rank + defenseBonus - armorPenalty,
     intrigue: a.awareness.rank + a.cunning.rank + a.status.rank
   };
-  // Valeur passive (4 x le rang) : difficulté d'un test fait contre quelqu'un qui ne lance pas (Discrétion contre Vigilance).
-  system.passive = { awareness: a.awareness.rank * 4 };
+  // Valeur passive : 4 x le rang, + 1 par dé de bonus de la spécialité qui s'applique (livre VO p. 51).
+  // Difficulté d'un test fait contre quelqu'un qui ne lance pas (Discrétion contre Vigilance).
+  const notice = specialtyBonus(a.awareness, SPECIALTY_NAMES.notice);
+  system.passive = { awareness: a.awareness.rank * 4 + notice, awarenessBase: a.awareness.rank * 4, awarenessBonus: notice };
   system.armor = { rating: armorRating, penalty: armorPenalty, bulk };
 
   // Déplacement : 4 m (3 m si Athlétisme 1), +1 m par 2B en Course, -1 m par 2 points d'Encombrement.

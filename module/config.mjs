@@ -43,7 +43,9 @@ export const ATTACK_ABILITIES = ["fighting", "marksmanship"];
 /** Spécialités reconnues par nom (fr et en) pour les calculs automatiques. */
 export const SPECIALTY_NAMES = {
   strength: ["force", "strength"],
-  run: ["course", "run"]
+  run: ["course", "run"],
+  // Spécialité de Vigilance ajoutée à la valeur passive (livre VO p. 51 : Notice).
+  notice: ["observation", "remarquer", "perception", "notice"]
 };
 
 /** Options du dialogue d'attaque : dés de test, dés bonus, dégâts de base. */

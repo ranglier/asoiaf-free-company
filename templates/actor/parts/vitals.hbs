@@ -15,7 +15,8 @@
       <span class="hint">{{#if system.injuries.value}}−{{system.injuries.value}}{{else}}—{{/if}}</span>
     </div>
     <div class="vital big"><span class="label">{{localize "AFC.Character.defenseCombat"}}</span><span class="value">{{system.defense.combat}}</span></div>
-    <div class="vital big" data-tooltip="AFC.Character.passiveAwarenessHint"><span class="label">{{localize "AFC.Character.passiveAwareness"}}</span><span class="value">{{system.passive.awareness}}</span></div>
+    <div class="vital big" data-tooltip="AFC.Character.passiveAwarenessHint"><span class="label">{{localize "AFC.Character.passiveAwareness"}}</span><span class="value">{{system.passive.awareness}}</span>
+      {{#if system.passive.awarenessBonus}}<span class="hint">{{localize "AFC.Character.passiveBase" n=system.passive.awarenessBase}}</span>{{/if}}</div>
     <div class="vital big"><span class="label">{{localize "AFC.Character.armor"}}</span><span class="value">{{system.armor.rating}}</span>
       {{#if system.armor.penalty}}<span class="hint">−{{system.armor.penalty}} {{localize "AFC.Character.armorPenalty"}}</span>{{/if}}</div>
     <div class="vital big"><span class="label">{{localize "AFC.Character.movement"}}</span><span class="value">{{system.movement.value}} m</span>
