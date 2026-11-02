@@ -10,6 +10,7 @@ import { TerrainPainter } from "./terrain.mjs";
 import { battleReport, commandTroop, endTurn, mayCommand, officerBonus, orderLabel, plannedEngagements, rallyTroop, resolveMelee, resolvePlanned, resolveShoot, revealOrders, shootRange } from "./engagement.mjs";
 import { chooseOfficer, giveOrder, hexNumber, hexNumbersOn, ORDER_ICONS, orderVisible, startMoveChoice, startTargetPick, TARGETED_ORDERS } from "./map.mjs";
 import { APPROACH_ORDERS, hasMoved, PATH_ORDERS } from "./moves.mjs";
+import { MANUAL_ACTIONS, mayAct, officerBusy, pcLines, recordAction, SCENE_ROUNDS } from "./pc-actions.mjs";
 import { BATTLE_OPTIONS, canCommand, clearBattle, getBattle, saveBattle, setUnit, unitOf } from "./state.mjs";
 import { createEnemyTroop, troopPool } from "./troops.mjs";
 
@@ -60,7 +61,10 @@ export class BattleApp extends HandlebarsApplicationMixin(ApplicationV2) {
       bookNext: BattleApp.#onBookNext,
       bookCommanders: BattleApp.#onBookCommanders,
       terrainPainter: BattleApp.#onTerrainPainter,
-      bookFree: BattleApp.#onBookFree
+      bookFree: BattleApp.#onBookFree,
+      pcAct: BattleApp.#onPcAct,
+      pcRound: BattleApp.#onPcRound,
+      pcClear: BattleApp.#onPcClear
     }
   };
 
@@ -115,6 +119,8 @@ export class BattleApp extends HandlebarsApplicationMixin(ApplicationV2) {
         officerName: officer?.name ?? null,
         officerNote: officerNote(battle, token.id, unit.officer, officer),
         canOfficerCommand: mayCommand(token, battle),
+        // L'officier a déjà agi ce tour : bouton grisé pour un joueur, confirmation pour le MJ.
+        officerBusy: isGM ? "" : officerBusy(battle, token.id),
         overload: officer && officerLoad[unit.officer] > commandMax(unit.officer) ? commandMax(unit.officer) : 0,
         cushion: s.cushion, cushionMax: s.cushionMax, disorders: s.disorders, rallies: s.rallies, ralliesMax: s.ralliesMax,
         move: s.move, range: shootRange(s, battle), meleeLabel: poolText(troopPool(s, "fighting", battle)), shootLabel: poolText(troopPool(s, s.shootSkill, battle)), units: s.units, weight: s.weight,
@@ -143,6 +149,9 @@ export class BattleApp extends HandlebarsApplicationMixin(ApplicationV2) {
       weathers: Object.fromEntries(Object.keys(WEATHER).map(k => [k, `AFC.Battle.Weather.${k}`])),
       weatherLabel: `AFC.Battle.Weather.${battle.weather}`,
       plans,
+      pcs: scene && !book ? pcLines(battle, scene) : [],
+      pcActionOptions: Object.fromEntries(MANUAL_ACTIONS.map(k => [k, loc(`AFC.Battle.PcActions.Action.${k}`)])),
+      sceneRounds: SCENE_ROUNDS,
       controlled: controlled?.actor?.type === "troop" ? controlled.name : null,
       target: targeted?.actor?.type === "troop" ? targeted.name : null,
       ...(book ? bookContext(battle, scene, { orderLabel }) : {})
@@ -281,6 +290,16 @@ export class BattleApp extends HandlebarsApplicationMixin(ApplicationV2) {
     const { from, to, shoot } = target.dataset;
     return resolvePlanned({ from, to, shoot: shoot === "true" });
   }
+
+  /** Actions des PJ : action de bataille choisie dans la liste, round de scène individuelle, effacement (MJ). */
+  static async #onPcAct(event, target) {
+    const line = target.closest("[data-pc]");
+    const action = line.querySelector("select[data-pc-action]")?.value;
+    if (!action || !(await mayAct(line.dataset.pc))) return;
+    return recordAction(line.dataset.pc, { action });
+  }
+  static #onPcRound(event, target) { return recordAction(target.closest("[data-pc]").dataset.pc, "round"); }
+  static #onPcClear(event, target) { return recordAction(target.closest("[data-pc]").dataset.pc, null); }
 
   static #onTerrainPainter() { return TerrainPainter.open(); }
   static #onBookNext() { return nextStep(); }

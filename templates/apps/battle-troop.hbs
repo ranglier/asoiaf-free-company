@@ -35,7 +35,7 @@
     <div class="line officer">
       <i class="fa-solid fa-user-tie"></i> {{#if t.officerName}}{{t.officerName}}{{#if t.officerNote}} <small>({{t.officerNote}})</small>{{/if}}{{else}}<i>{{localize "AFC.Battle.NoOfficerRank"}}</i>{{/if}}
       {{#if t.mine}}<a class="icon" data-action="officer" data-tooltip="AFC.Battle.OfficerButton"><i class="fa-solid fa-pen"></i></a>{{/if}}
-      {{#if t.canOfficerCommand}}<button type="button" class="small" data-action="command" data-tooltip="AFC.Battle.Options.commandHint"><i class="fa-solid fa-bullhorn"></i> {{localize "AFC.Battle.Options.commandButton"}}</button>{{/if}}
+      {{#if t.canOfficerCommand}}{{#if t.officerBusy}}<span data-tooltip="{{t.officerBusy}}"><button type="button" class="small" disabled><i class="fa-solid fa-bullhorn"></i> {{localize "AFC.Battle.Options.commandButton"}}</button></span>{{else}}<button type="button" class="small" data-action="command" data-tooltip="AFC.Battle.Options.commandHint"><i class="fa-solid fa-bullhorn"></i> {{localize "AFC.Battle.Options.commandButton"}}</button>{{/if}}{{/if}}
       {{#if t.overload}}<span class="warn">{{localize "AFC.Battle.TooMany" n=t.overload}}</span>{{/if}}
     </div>
     <div class="line stats">

@@ -424,6 +424,16 @@ body.detached .application.afc.afc-fill.afc-dialog .window-content { max-height:
 .afc .afc-battle .battle-plans { list-style: none; margin: 0 0 0.5rem; padding: 0; }
 .afc .afc-battle .battle-plans li { display: flex; gap: 0.4rem; align-items: center; border-top: 1px dotted var(--afc-line); padding: 0.2rem 0; color: var(--afc-ink); }
 .afc .afc-battle .battle-plans button { margin-left: auto; width: auto; flex: none; }
+/* Actions des PJ (v0.27.13) : une ligne par PJ ou officier, grisée une fois son action faite. */
+.afc .afc-battle .battle-pcs { border-top: 2px solid var(--afc-border); margin-top: 0.6rem; padding-top: 0.4rem; }
+.afc .afc-battle .battle-pcs h3 small { font-weight: normal; }
+.afc .afc-battle .pc-line { display: flex; gap: 0.4rem; align-items: center; border-top: 1px dotted var(--afc-line); padding: 0.2rem 0; color: var(--afc-ink); }
+.afc .afc-battle .pc-line img { width: 28px; height: 28px; border: none; object-fit: cover; flex: none; }
+.afc .afc-battle .pc-line .pc-status { font-style: italic; opacity: 0.8; }
+.afc .afc-battle .pc-line.done .pc-status { opacity: 1; font-weight: bold; }
+.afc .afc-battle .pc-line .pc-buttons { margin-left: auto; display: flex; gap: 0.3rem; align-items: center; }
+.afc .afc-battle .pc-line .pc-buttons select { width: auto; }
+.afc .afc-battle .pc-line .pc-buttons button { width: auto; flex: none; }
 /* Fenêtre Bataille, v0.17 : fiches de troupes. */
 .afc .afc-battle { display: flex; flex-direction: column; overflow: hidden; color: var(--afc-ink); }
 .afc .afc-battle .battle-scroll { flex: 1 1 auto; overflow-y: auto; min-height: 0; padding-right: 0.2rem; }

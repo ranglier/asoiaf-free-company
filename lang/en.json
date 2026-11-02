@@ -799,6 +799,23 @@
       "RemoveTroop": "Remove from group",
       "TooMany": "Too many troops for this officer (maximum {n}).",
       "NoGroup": "No group.",
+      "PcActions": {
+        "Title": "PC actions",
+        "Hint": "Each round: one battle action, or a personal scene of {n} rounds.",
+        "Free": "Free",
+        "Rounds": "Scene: {n}/{max} rounds",
+        "Act": "Act",
+        "Round": "Round",
+        "RoundHint": "One round of a personal scene (duel, climb, banner…), instead of a battle action.",
+        "Clear": "Clear this round's action",
+        "None": "No PC or officer on this scene.",
+        "Busy": "{name} has already acted this round: {what}.",
+        "BusyConfirm": "{name} has already acted this round: {what}. Act anyway?",
+        "Action": {
+          "command": "Command", "rally": "Rally", "readField": "Read the field", "carryOrder": "Carry an order",
+          "frontLine": "Fight in the front line", "shootWith": "Shoot with the unit", "feat": "Feat", "free": "Free action"
+        }
+      },
       "GiveOrder": "Give order",
       "Counter": "Counter-order",
       "Countered": "counter-order given",

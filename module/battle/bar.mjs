@@ -32,6 +32,32 @@ function orderCount(battle, scene) {
   return { given: troops.filter(t => unitOf(battle, t.id).order).length, total: troops.length };
 }
 
+/**
+ * Carrousel de combat (module Carousel Combat Tracker, `combat-tracker-dock`) : quand il s'affiche en haut
+ * de l'écran, la barre passe dessous ; elle remonte quand il disparaît.
+ */
+function placeBar() {
+  const bar = document.getElementById(ID);
+  if (!bar) return;
+  const dock = document.getElementById("combat-dock");
+  const r = dock && !dock.classList.contains("hidden") ? dock.getBoundingClientRect() : null;
+  bar.style.top = r?.height && r.top < window.innerHeight / 3 ? `${Math.round(r.bottom + 8)}px` : "";
+}
+let dockWatch = null;
+function watchDock() {
+  if (dockWatch || !window.ResizeObserver) return;
+  const top = document.getElementById("ui-top") ?? document.body;
+  dockWatch = new ResizeObserver(() => placeBar());
+  dockWatch.observe(top);
+  // Le carrousel se crée ou se remplace au début d'un combat : on le suit aussi.
+  new MutationObserver(() => {
+    const dock = document.getElementById("combat-dock");
+    if (dock && dock !== dockWatch.dock) { dockWatch.observe(dock); dockWatch.dock = dock; }
+    placeBar();
+  }).observe(top, { childList: true, subtree: true, attributes: true, attributeFilter: ["class", "style"] });
+  window.addEventListener("resize", () => placeBar());
+}
+
 const button = (action, icon, label, { disabled = false, primary = false } = {}) =>
   `<button type="button" data-bar="${action}" class="${primary ? "primary" : ""}" ${disabled ? "disabled" : ""}><i class="fa-solid ${icon}"></i> ${esc(label)}</button>`;
 
@@ -47,6 +73,8 @@ export function renderBattleBar() {
     bar.addEventListener("click", onClick);
     document.body.append(bar);
   }
+  watchDock();
+  placeBar();
   const battle = getBattle(scene);
   const count = orderCount(battle, scene);
   const book = isBook(scene);

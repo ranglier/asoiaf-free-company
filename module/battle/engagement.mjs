@@ -9,6 +9,7 @@ import {
   MAX_LOSS, MOVING_ORDERS, OFFICER_TEST, ORDER_ICONS, STATE_ORDER, TERRAINS, TRIANGLE, TROOP_STATES, WEATHER
 } from "./battle-config.mjs";
 import { executeMoves } from "./moves.mjs";
+import { mayAct, recordAction, withAction } from "./pc-actions.mjs";
 import { moraleMod, troopPool } from "./troops.mjs";
 import { askHandlers, askUser, canCommand, getBattle, gmHandlers, requestGM, resetOrders, saveBattle, sceneOf, unitOf } from "./state.mjs";
 
@@ -528,11 +529,13 @@ export async function rallyTroop(tokenId) {
     ok: { label: loc("AFC.Battle.Roll"), callback: (ev, button) => ({ id: button.form.elements.who.value, b: Number(button.form.elements.b.value) || 0 }) },
     rejectClose: false
   });
-  if (!pick) return;
+  if (!pick || !(await mayAct(pick.id))) return;
   const rallier = game.actors.get(pick.id);
   const warfare = rallier.system.abilities.warfare;
   const p = { rank: warfare.rank, bonus: specialtyBonus(warfare, COMMAND) + pick.b };
   const test = await rollDice({ ...p, difficulty: discipline });
+  // Rallier est l'action de bataille du personnage ce tour-ci, réussie ou non.
+  await recordAction(pick.id, { action: "rally", troop: tokenId });
   const success = test.outcome?.success;
   if (success) {
     // Le joueur qui commande par son officier sans posséder la troupe passe par le MJ.
@@ -637,6 +640,8 @@ export async function commandTroop(tokenId) {
     const s = token.actor.system;
     const officerId = unitOf(battle, tokenId).officer;
     const officer = game.actors.get(officerId);
+    // Une action de bataille par personnage et par tour.
+    if (!(await mayAct(officerId, battle))) return;
     const d = commandDifficulty(s);
     const detail = [fmt("AFC.Battle.Options.commandDetail", { d: s.discipline, m: OFFICER_TEST.margin }), ...(d.size ? [fmt("AFC.Battle.Options.commandSize", { n: d.size })] : []), ...(d.morale ? [moraleLabel(d.morale)] : [])].join(" + ");
     const opts = await commandDialog(token, officer, d, fmt("AFC.Battle.Card.Against", { n: d.total, detail }));
@@ -668,6 +673,8 @@ gmHandlers.setCommand = async data => {
   const scene = sceneOf(data);
   const battle = getBattle(scene);
   battle.command = [...battle.command.filter(c => c.id !== id), { id, officer, bonus }];
+  // Commander est l'action de bataille de l'officier ce tour-ci.
+  battle.actions = withAction(battle, officer, { kind: "battle", action: "command", troop: id });
   await saveBattle(battle, scene);
 };
 
@@ -799,6 +806,7 @@ async function endTurnNow() {
   battle.command = [];
   battle.defenseDice = [];
   battle.pendingShots = [];
+  battle.actions = [];
   await saveBattle(battle);
   // On garde l'officier ; ordre, cible et contre-ordre repartent de zéro.
   await resetOrders();

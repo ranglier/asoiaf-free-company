@@ -35,6 +35,21 @@
       <p>{{localize "AFC.Battle.HelpTurn"}}</p>
     </details>
 
+    <section class="battle-pcs">
+      <h3>{{localize "AFC.Battle.PcActions.Title"}} <small class="hint">{{localize "AFC.Battle.PcActions.Hint" n=sceneRounds}}</small></h3>
+      {{#each pcs as |p|}}
+      <div class="pc-line {{#if p.done}}done{{/if}}" data-pc="{{p.id}}">
+        <img src="{{p.img}}" alt=""><b>{{p.name}}</b><span class="pc-status">{{p.status}}</span>
+        <span class="pc-buttons">
+          {{#if p.canAct}}<select data-pc-action>{{selectOptions @root.pcActionOptions}}</select>
+          <button type="button" class="small" data-action="pcAct"><i class="fa-solid fa-check"></i> {{localize "AFC.Battle.PcActions.Act"}}</button>{{/if}}
+          {{#if p.canRound}}<button type="button" class="small" data-action="pcRound" data-tooltip="AFC.Battle.PcActions.RoundHint"><i class="fa-solid fa-hourglass-half"></i> {{localize "AFC.Battle.PcActions.Round"}}</button>{{/if}}
+          {{#if p.canClear}}<button type="button" class="small icon" data-action="pcClear" data-tooltip="AFC.Battle.PcActions.Clear"><i class="fa-solid fa-xmark"></i></button>{{/if}}
+        </span>
+      </div>
+      {{else}}<p class="hint">{{localize "AFC.Battle.PcActions.None"}}</p>{{/each}}
+    </section>
+
     {{#if isGM}}
     <section class="battle-engage">
       <h3>{{localize "AFC.Battle.Planned"}}</h3>

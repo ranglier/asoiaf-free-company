@@ -809,6 +809,23 @@
       "RemoveTroop": "Retirer du groupe",
       "TooMany": "Trop de troupes pour cet officier (maximum {n}).",
       "NoGroup": "Aucun groupe.",
+      "PcActions": {
+        "Title": "Actions des PJ",
+        "Hint": "Par tour : une action de bataille, ou une scène individuelle de {n} rounds.",
+        "Free": "Libre",
+        "Rounds": "Scène : {n}/{max} rounds",
+        "Act": "Agir",
+        "Round": "Round",
+        "RoundHint": "Un round de scène individuelle (duel, escalade, étendard…), à la place d'une action de bataille.",
+        "Clear": "Effacer l'action de ce tour",
+        "None": "Aucun PJ ni officier sur cette scène.",
+        "Busy": "{name} a déjà agi ce tour : {what}.",
+        "BusyConfirm": "{name} a déjà agi ce tour : {what}. Agir quand même ?",
+        "Action": {
+          "command": "Commander", "rally": "Rallier", "readField": "Lire le champ", "carryOrder": "Porter un ordre",
+          "frontLine": "Combattre en première ligne", "shootWith": "Tirer avec l'unité", "feat": "Exploit", "free": "Action libre"
+        }
+      },
       "GiveOrder": "Donner l'ordre",
       "Counter": "Contre-ordre",
       "Countered": "contre-ordre donné",

@@ -26,6 +26,7 @@ import { evaluateTest, rollAbilityTest, rollTest } from "./module/dice/test-roll
 import { onRenderChatMessage, resolveDamage, rollAttack } from "./module/dice/attack.mjs";
 import { registerSettings } from "./module/settings.mjs";
 import { runCreation } from "./module/creation.mjs";
+import { AFCCombatant } from "./module/dice/initiative.mjs";
 
 Hooks.once("init", () => {
   CONFIG.AFC = AFC;
@@ -49,6 +50,9 @@ Hooks.once("init", () => {
     holding: HoldingData,
     unit: UnitData
   });
+  // Initiative : test d'Agilité (Vivacité), pour le Combat Tracker et le carrousel de combat.
+  CONFIG.Combatant.documentClass = AFCCombatant;
+  CONFIG.Combat.initiative = { formula: "2d6kh2", decimals: 1 };
 
   const { DocumentSheetConfig } = foundry.applications.apps;
   const sheets = { character: CharacterSheet, npc: NpcSheet, house: HouseSheet, company: CompanySheet, troop: TroopSheet };
