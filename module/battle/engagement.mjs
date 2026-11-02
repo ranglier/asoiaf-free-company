@@ -3,6 +3,7 @@
  * traits et les flancs), pertes d'états avec encaissement, ralliement, fin de tour et bilan.
  */
 import { ABILITIES, SYSTEM_ID } from "../config.mjs";
+import { cohesionLossReduction } from "../company-services.mjs";
 import { specialtyBonus } from "../data/actor-character.mjs";
 import { autoPenalties, evaluateTest, rollDice } from "../dice/test-roll.mjs";
 import {
@@ -852,7 +853,7 @@ function troopFacts(s, stat = {}) {
 /** Ce que le bilan retient d'une troupe. */
 const reportEntry = token => {
   const s = token.actor.system;
-  return { id: token.id, name: token.name, hidden: token.hidden, side: s.side, state: s.state, men: s.men, lostMen: s.lostMen, loss: s.loss, rallies: s.rallies, disorders: s.disorders };
+  return { id: token.id, name: token.name, hidden: token.hidden, side: s.side, state: s.state, men: s.men, lostMen: s.lostMen, loss: s.loss, lossBase: s.lossBase, care: s.care, rallies: s.rallies, disorders: s.disorders };
 };
 
 /** Troupe touchée retirée de la scène (une troupe détruite, par exemple) : ses pertes restent au bilan (MJ). */
@@ -875,10 +876,20 @@ export async function battleReport() {
     const lost = list.reduce((n, t) => n + t.lostMen, 0);
     const pct = men ? Math.round(lost * 100 / men) : 0;
     const touched = list.filter(t => t.loss > 0);
-    const rows = touched.map(t => ({ name: t.name, state: t.state, stateLabel: loc(TROOP_STATES[t.state].label), loss: t.loss, lostMen: t.lostMen, facts: troopFacts(t, battle.stats?.[t.id]) }))
-      .sort((a, b) => b.loss - a.loss || b.lostMen - a.lostMen);
+    const rows = touched.map(t => ({
+      name: t.name, state: t.state, stateLabel: loc(TROOP_STATES[t.state].label), loss: t.loss, lostMen: t.lostMen, facts: troopFacts(t, battle.stats?.[t.id]),
+      // Soins de la Compagnie : part rendue et pertes qu'il y aurait eu sans eux.
+      care: t.care ? fmt("AFC.Battle.ReportCard.Care", { pct: Math.round(t.care * 100), n: Math.round(t.men * (t.lossBase ?? t.loss) / 100) }) : ""
+    })).sort((a, b) => b.loss - a.loss || b.lostMen - a.lostMen);
     const intact = list.length - touched.length;
-    return { key, label: loc(`AFC.Battle.Side.${key}`), men, lost, pct, rows, intact: intact ? fmt(intact === 1 ? "AFC.Battle.ReportCard.Intact1" : "AFC.Battle.ReportCard.IntactN", { n: intact }) : "" };
+    // Rappel des services de culte : moins de Cohésion perdue sur une défaite ou un coup dur.
+    const company = key === "company" ? game.actors.get(canvas.scene.tokens.find(t => t.actor?.system.side === "company")?.actor.system.source.actor) : null;
+    const cohesionCare = company ? cohesionLossReduction(company) : 0;
+    return {
+      key, label: loc(`AFC.Battle.Side.${key}`), men, lost, pct, rows,
+      intact: intact ? fmt(intact === 1 ? "AFC.Battle.ReportCard.Intact1" : "AFC.Battle.ReportCard.IntactN", { n: intact }) : "",
+      cohesionCare: cohesionCare ? fmt("AFC.Battle.ReportCard.CohesionCare", { n: cohesionCare }) : ""
+    };
   });
   return ChatMessage.create({
     whisper: ChatMessage.getWhisperRecipients("GM"),

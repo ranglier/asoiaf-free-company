@@ -11,6 +11,7 @@
     <span class="label">{{event.name}}</span>
     <span class="value">{{event.test.total}}</span>
     <small>{{event.effect}}</small>
+    {{#if event.care}}<small class="care">{{event.care}}</small>{{/if}}
   </div>
   {{/if}}
   <footer>

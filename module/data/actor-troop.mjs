@@ -4,6 +4,7 @@
  */
 import { UNIT_TRAININGS } from "../config.mjs";
 import { typeMight } from "../unit-mix.mjs";
+import { battleCare } from "../company-services.mjs";
 import {
   DISORDER_LOSS, MAX_LOSS, MOUNTED_UNIT_STRENGTH, RANGES, RETIRED_TRAITS, STATE_ORDER, TRAINING_BATTLE, TRAITS, TROOP_STATES
 } from "../battle/battle-config.mjs";
@@ -87,8 +88,11 @@ export default class TroopData extends foundry.abstract.TypeDataModel {
     // Puissance de la troupe (repère, hors des règles de bataille) et force pour le surnombre : ses hommes, ou ses unités montées.
     this.weight = this.units * (this.mightPerUnit || typeMight(this.unitType, this.unitType2));
     this.strength = this.has.mounted ? Math.max(this.men, this.units * MOUNTED_UNIT_STRENGTH) : this.men;
-    // Pertes en fin de bataille : état + 5 % par désorganisation, plafonnées.
-    this.loss = Math.min(MAX_LOSS, (TROOP_STATES[this.state]?.loss ?? 0) + this.disorders * DISORDER_LOSS);
+    // Pertes en fin de bataille : état + 5 % par désorganisation, plafonnées. Les soins de la Compagnie (petit
+    // hôpital, maîtres équestres pour les montées) en rendent une part.
+    this.lossBase = Math.min(MAX_LOSS, (TROOP_STATES[this.state]?.loss ?? 0) + this.disorders * DISORDER_LOSS);
+    this.care = this.side === "company" ? battleCare(game.actors?.get(this.source.actor), this.has.mounted) : 0;
+    this.loss = Math.round(this.lossBase * (1 - this.care));
     this.lostMen = Math.round(this.men * this.loss / 100);
     this.canCushion = this.state === "fresh" && this.cushion > 0;
     // Vigilance passive (4 x le rang), comme pour les personnages : embuscades, éclaireurs.

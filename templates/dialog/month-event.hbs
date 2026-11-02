@@ -6,6 +6,6 @@
   <p class="mods">{{#each mods as |m|}}<span class="tag">{{m.label}} {{numberFormat m.value sign=true}}</span>{{/each}}</p>
   <div class="event-result">
     <span class="total">{{test.total}}</span>
-    <div><strong>{{name}}</strong><small>{{effect}}</small></div>
+    <div><strong>{{name}}</strong><small>{{effect}}</small>{{#if care}}<small class="care">{{care}}</small>{{/if}}</div>
   </div>
 </div>

@@ -253,6 +253,7 @@
 .afc-card .damage-box .label { grid-row: 1 / 3; font-family: var(--afc-font-label); font-size: 16px; }
 .afc-card .damage-box .value { font-size: 28px; font-weight: 600; color: var(--afc-wax); line-height: 1; text-align: right; }
 .afc-card .damage-box small { font-size: 13px; color: var(--afc-ink-soft); text-align: right; }
+.afc-card .damage-box small.care { grid-column: 1 / 3; text-align: left; font-style: italic; }
 .afc-card button { margin: 0; font-family: var(--afc-font-label); font-size: 16px; background: var(--afc-wax); color: var(--afc-wax-text); border: 1px solid var(--afc-wax); }
 
 /* Détails en pied de carte */
@@ -327,6 +328,7 @@
 .afc-month-event .event-result { display: flex; align-items: center; gap: 0.6rem; padding: 0.4rem; border: 1px solid var(--afc-wax); border-radius: 5px; }
 .afc-month-event .event-result .total { font-family: var(--font-primary, "Signika", sans-serif); font-size: 32px; font-weight: 600; color: var(--afc-wax); }
 .afc-month-event .event-result strong { display: block; font-family: var(--afc-font-label); font-weight: normal; font-size: 18px; }
+.afc-month-event .event-result small.care { display: block; font-style: italic; color: var(--afc-ink-soft); }
 .afc-card.month .month-lines { margin: 0; padding-left: 1.1rem; font-size: 14px; }
 .afc-card.month .damage-box.event .value { font-size: 24px; }
 .afc-month-dialog .loot-split { display: flex; flex-direction: column; gap: 2px; }
@@ -595,6 +597,7 @@ body.detached .application.afc.afc-fill.afc-dialog .window-content { max-height:
 .afc-card.battle.report .report-row .state-chip { margin-left: 0; padding: 0 0.3rem; font-size: 13px; line-height: 1.35; flex: none; }
 .afc-card.battle.report .report-row .men { flex: none; min-width: 2.4em; text-align: right; font-weight: 600; }
 .afc-card.battle.report .report-row.intact { color: var(--afc-ink-soft); font-size: 14px; border-bottom: none; }
+.afc-card.battle.report .report-row.care { padding-left: 1rem; font-style: italic; }
 .afc-card.battle.report button { margin-top: 0.3rem; padding: 0 0.3rem; min-height: 0; height: 1.6rem; line-height: 1.5rem; font-size: 13px; }
 
 /* Améliorations d'une unité */

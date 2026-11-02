@@ -14,12 +14,22 @@ import {
   COHESION_TIERS, COMPANY_ACTIONS, COMPANY_MONTH_EVENTS, EVENT_ORGANIZATION_MODS,
   SERVICE_EVENT_BONUS, SERVICE_MONTHLY, SYSTEM_ID
 } from "./config.mjs";
+import { eventLossReductions, unpaidHalved } from "./company-services.mjs";
 import { specialtyBonus } from "./data/actor-character.mjs";
 import { rollDice } from "./dice/test-roll.mjs";
 
 const { DialogV2 } = foundry.applications.api;
 const renderTemplate = (...args) => foundry.applications.handlebars.renderTemplate(...args);
 const loc = key => game.i18n.localize(key);
+
+/** Événements du mois qui font perdre des ressources : les services de soins en réduisent la perte. */
+const LOSS_EVENTS = ["disaster", "calamity", "decline"];
+
+/** Rappel des réductions de pertes de la Compagnie (vide si aucune). */
+function lossCare(company) {
+  const list = Object.entries(eventLossReductions(company)).map(([k, n]) => `${loc(`AFC.Company.Resource.${k}`)} −${n}`).join(", ");
+  return list ? game.i18n.format("AFC.Month.EventCare", { list }) : "";
+}
 
 /** Spécialité Intendance (fr / en) de la compétence Statut. */
 const STEWARDSHIP = ["intendance", "stewardship"];
@@ -69,7 +79,8 @@ async function rollEvent(company, stewardId, cohesion) {
   const event = COMPANY_MONTH_EVENTS.find(e => test.total <= e.max);
   return {
     steward: steward?.name ?? loc("AFC.Month.NoSteward"), rank, bonus, mods, modifier, test,
-    key: event.key, name: loc(`AFC.Month.Event.${event.key}.name`), effect: loc(`AFC.Month.Event.${event.key}.effect`)
+    key: event.key, name: loc(`AFC.Month.Event.${event.key}.name`), effect: loc(`AFC.Month.Event.${event.key}.effect`),
+    care: LOSS_EVENTS.includes(event.key) ? lossCare(company) : ""
   };
 }
 
@@ -172,7 +183,7 @@ export async function runMonthEnd(company) {
     unpaidMonths = 0;
     add("upkeep", { n: upkeep, left: supply });
   } else {
-    const cohesionLoss = Math.ceil(s.cohesionState.max / 10);
+    const cohesionLoss = Math.ceil(s.cohesionState.max / (unpaidHalved(company) ? 20 : 10));
     unpaidMonths += 1;
     supply = 0;
     cohesion -= cohesionLoss;
