@@ -233,7 +233,8 @@
       "history": "History",
       "holdings": "Holdings",
       "household": "Household",
-      "members": "Members"
+      "members": "Members",
+      "troop": "Unit"
     },
     "Table": {
       "equipped": "Equipped",
@@ -775,6 +776,7 @@
       "Rallies": "Rallies",
       "Men": "Men",
       "Loss": "Losses",
+      "LostMen": "{n} men",
       "Traits": "Traits",
       "ResetTraits": "Type traits",
       "Notes": "Notes",
@@ -1034,6 +1036,8 @@
       "destiny": "Destiny",
       "defenseCombat": "Combat defense",
       "defenseIntrigue": "Intrigue defense",
+      "passiveAwareness": "Passive Awareness",
+      "passiveAwarenessHint": "4 × Awareness rank. Difficulty of a Stealth test against them when unwary; once on guard, they roll a real Awareness test.",
       "armor": "Armor",
       "armorPenalty": "penalty",
       "movement": "Movement",

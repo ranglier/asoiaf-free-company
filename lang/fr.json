@@ -233,7 +233,8 @@
       "history": "Histoire",
       "holdings": "Possessions",
       "household": "Foyer",
-      "members": "Membres"
+      "members": "Membres",
+      "troop": "Unité"
     },
     "Table": {
       "equipped": "Équipé",
@@ -785,6 +786,7 @@
       "Rallies": "Ralliements",
       "Men": "Hommes",
       "Loss": "Pertes",
+      "LostMen": "{n} hommes",
       "Traits": "Traits",
       "ResetTraits": "Traits du type",
       "Notes": "Notes",
@@ -1044,6 +1046,8 @@
       "destiny": "Destinée",
       "defenseCombat": "Défense de combat",
       "defenseIntrigue": "Défense d'intrigue",
+      "passiveAwareness": "Vigilance passive",
+      "passiveAwarenessHint": "4 × le rang de Vigilance. Difficulté d'un test de Discrétion contre lui s'il ne se méfie pas ; sur ses gardes, il lance un vrai test de Vigilance.",
       "armor": "Armure",
       "armorPenalty": "malus",
       "movement": "Déplacement",

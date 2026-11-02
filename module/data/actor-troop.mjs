@@ -91,6 +91,8 @@ export default class TroopData extends foundry.abstract.TypeDataModel {
     this.loss = Math.min(MAX_LOSS, (TROOP_STATES[this.state]?.loss ?? 0) + this.disorders * DISORDER_LOSS);
     this.lostMen = Math.round(this.men * this.loss / 100);
     this.canCushion = this.state === "fresh" && this.cushion > 0;
+    // Vigilance passive (4 x le rang), comme pour les personnages : embuscades, éclaireurs.
+    this.passive = { awareness: skills.awareness * 4 };
     this.prepareBook();
   }
 
