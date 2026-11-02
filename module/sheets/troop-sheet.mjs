@@ -44,42 +44,43 @@ export class TroopSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     const pips = (value, max) => Array.from({ length: max }, (_, i) => ({ n: i + 1, on: i < value }));
     const passive = { label: "AFC.Character.passiveAwareness", value: s.passive.awareness, hint: "AFC.Character.passiveAwarenessHint" };
     const discipline = { label: book ? "AFC.BattleBook.Discipline" : "AFC.Battle.Discipline", value: s.discipline, raw: s.discipline, input: "system.discipline" };
-    // Ligne de profil : ce qu'on regarde pendant la bataille.
-    const profile = book ? [
+    // Pistes du haut : état (une pastille par niveau, cliquable), compteurs de bataille, hommes.
+    const current = book ? s.book.status : s.state;
+    const order = book ? BOOK_STATUS : STATE_ORDER;
+    const at = order.indexOf(current);
+    const stateLabel = k => book ? `AFC.BattleBook.Status.${k}` : TROOP_STATES[k].label;
+    const stateTrack = {
+      label: book ? "AFC.BattleBook.StatusLabel" : "AFC.Battle.StateLabel", state: true, note: loc(stateLabel(current)),
+      pips: order.map((k, i) => ({ n: i + 1, key: k, label: stateLabel(k), on: i <= at }))
+    };
+    const menTrack = { label: "AFC.Battle.Men", input: "system.men", raw: s.men };
+    const tracks = book ? [
+      stateTrack,
+      { label: "AFC.BattleBook.Health", input: "system.book.damage", raw: s.book.damage, note: `${loc("AFC.BattleBook.DamageTaken")} · ${s.book.healthLeft} / ${s.book.health}` },
+      { label: "AFC.BattleBook.Penalties", path: "system.book.penalties", pips: pips(s.book.penalties, Math.max(3, s.book.penalties + 1)) },
+      menTrack
+    ] : [
+      stateTrack,
+      { label: "AFC.Battle.Cushion", path: "system.cushion", pips: pips(s.cushion, Math.max(s.cushionMax, s.cushion)) },
+      { label: "AFC.Battle.Rallies", path: "system.rallies", pips: pips(s.rallies, Math.max(s.ralliesMax, s.rallies)) },
+      { ...menTrack, note: `${loc("AFC.Battle.Loss")} ${s.loss} % (${men(s.lostMen)})` }
+    ];
+    // Colonne de droite : valeurs de bataille.
+    const stats = book ? [
       { label: "AFC.BattleBook.Defense", value: s.book.defense },
       { label: "AFC.BattleBook.ArmorRating", value: s.book.ar },
       { label: "AFC.BattleBook.FightDamage", value: s.book.fightDamage },
       { label: "AFC.BattleBook.ShootDamage", value: s.book.shoot?.damage ?? "—" },
       { label: "AFC.BattleBook.MoveYards", value: s.book.moveYards },
-      discipline, passive
+      discipline, passive,
+      { label: "AFC.BattleBook.FormationLabel", select: "system.book.formation", raw: s.book.formation,
+        options: Object.fromEntries(Object.keys(BOOK_FORMATIONS).map(k => [k, `AFC.BattleBook.Formation.${k}`])) }
     ] : [
-      { label: "AFC.Ability.fighting", value: `${s.melee}D`, roll: "fighting" },
-      { label: `AFC.Ability.${s.shootSkill}`, value: s.range ? `${s.shootRank}D` : "—", roll: s.range ? s.shootSkill : null },
       discipline,
-      { label: "AFC.Battle.Move", value: s.move },
-      { label: "AFC.Battle.Range", value: s.range || "—" },
+      { label: "AFC.Battle.Disorders", path: "system.disorders", pips: pips(s.disorders, Math.max(3, s.disorders + 1)) },
+      { label: "AFC.Battle.MoveRange", value: `${s.move} / ${s.range || "—"}` },
       passive
     ];
-    // Échelle d'état et compteurs.
-    const current = book ? s.book.status : s.state;
-    const order = book ? BOOK_STATUS : STATE_ORDER;
-    const states = order.map((k, i) => ({
-      key: k, label: book ? `AFC.BattleBook.Status.${k}` : TROOP_STATES[k].label, on: k === current, past: i < order.indexOf(current)
-    }));
-    const counters = book ? [
-      { label: "AFC.BattleBook.Health", text: `${s.book.healthLeft} / ${s.book.health}` },
-      { label: "AFC.BattleBook.DamageTaken", input: "system.book.damage", raw: s.book.damage },
-      { label: "AFC.BattleBook.Penalties", path: "system.book.penalties", pips: pips(s.book.penalties, Math.max(3, s.book.penalties + 1)) },
-      { label: "AFC.Battle.Men", input: "system.men", raw: s.men }
-    ] : [
-      { label: "AFC.Battle.Cushion", path: "system.cushion", pips: pips(s.cushion, Math.max(s.cushionMax, s.cushion)) },
-      { label: "AFC.Battle.Rallies", path: "system.rallies", pips: pips(s.rallies, Math.max(s.ralliesMax, s.rallies)) },
-      { label: "AFC.Battle.Disorders", path: "system.disorders", pips: pips(s.disorders, Math.max(3, s.disorders + 1)) },
-      { label: "AFC.Battle.Men", input: "system.men", raw: s.men },
-      { label: "AFC.Battle.Loss", text: `${s.loss} % (${men(s.lostMen)})` }
-    ];
-    // Compétences hors de la ligne de profil.
-    const inProfile = book ? [] : ["fighting", s.range ? s.shootSkill : null];
     const traits = ACTIVE_TRAITS.map(k => ({ key: k, label: loc(`AFC.Battle.Trait.${k}.name`), effect: loc(`AFC.Battle.Trait.${k}.effect`), on: s.traits.includes(k) }));
     const upgrades = book ? [
       { name: "system.book.upArmor", label: "AFC.BattleBook.UpArmor", on: s.book.upArmor },
@@ -96,17 +97,15 @@ export class TroopSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       .sort((a, b) => a.name.localeCompare(b.name, game.i18n.lang));
     Object.assign(context, {
       actor: this.document, system: s, editable: this.isEditable,
-      editMode: this.isEditable && this.editMode, subtitle, profile, states, counters,
-      stateLabel: book ? "AFC.BattleBook.StatusLabel" : "AFC.Battle.StateLabel",
+      editMode: this.isEditable && this.editMode, subtitle, tracks, stats,
       traits, activeTraits: traits.filter(t => t.on), upgrades,
       sides: { company: "AFC.Battle.Side.company", enemy: "AFC.Battle.Side.enemy" },
       trainings: Object.fromEntries(Object.entries(UNIT_TRAININGS).map(([k, v]) => [k, v.label])),
       types: Object.fromEntries(Object.keys(TYPE_TRAITS).map(k => [k, typeLabel(k)]).sort((a, b) => a[1].localeCompare(b[1]))),
       bookRules: book, isSpecial: s.book.type === "special", customImage: !isAutoIcon(this.document.img),
-      bookAbilities, otherAbilities: bookAbilities.filter(a => !inProfile.includes(a.key)),
+      bookAbilities,
       bookRanges: { close: "AFC.BattleBook.RangeClose", long: "AFC.BattleBook.RangeLong" },
-      bookTypes: Object.fromEntries(Object.keys(BOOK_EQUIPMENT).map(k => [k, `AFC.BattleBook.Type.${k}`])),
-      bookFormations: Object.fromEntries(Object.keys(BOOK_FORMATIONS).map(k => [k, `AFC.BattleBook.Formation.${k}`]))
+      bookTypes: Object.fromEntries(Object.keys(BOOK_EQUIPMENT).map(k => [k, `AFC.BattleBook.Type.${k}`]))
     });
     return context;
   }

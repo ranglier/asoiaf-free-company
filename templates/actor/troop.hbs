@@ -1,4 +1,4 @@
-<div class="afc-sheet parchment troop-profile {{#if editMode}}edit-mode{{else}}play-mode{{/if}}">
+<div class="afc-sheet parchment {{#if editMode}}edit-mode{{else}}play-mode{{/if}}">
   <header class="afc-header">
     <img class="portrait" src="{{actor.img}}" data-action="editImage" alt="{{actor.name}}" data-tooltip="AFC.Battle.ChangeImage">
     <div class="identity">
@@ -23,41 +23,61 @@
     </div>
   </header>
 
-  {{!-- Profil : les valeurs de la troupe en une ligne. --}}
-  <div class="profile-line" style="--n: {{profile.length}}">
-    {{#each profile as |p|}}
-    <div class="profile-cell" {{#if p.hint}}data-tooltip="{{p.hint}}"{{/if}}>
-      <span class="label">{{localize p.label}}</span>
-      {{#if p.input}}{{#if @root.editMode}}<input type="number" name="{{p.input}}" value="{{p.raw}}" min="0">{{else}}<span class="value">{{p.value}}</span>{{/if}}
-      {{else if p.roll}}{{#if @root.editable}}<a class="value" data-action="rollSkill" data-ability="{{p.roll}}" data-tooltip="AFC.Roll.QuickHint">{{p.value}}</a>{{else}}<span class="value">{{p.value}}</span>{{/if}}
-      {{else}}<span class="value">{{p.value}}</span>{{/if}}
+  {{!-- Pistes de bataille, comme les pistes de santé d'un PJ : modifiables dans les deux modes. --}}
+  <section class="afc-vitals troop-tracks">
+    {{#each tracks as |c|}}
+    <div class="vital" {{#if c.hint}}data-tooltip="{{c.hint}}"{{/if}}>
+      <span class="label">{{localize c.label}}</span>
+      {{#if c.pips}}<span class="pips">{{#each c.pips as |p|}}<a class="pip {{#if p.on}}on{{/if}}" data-action="{{#if c.state}}setState{{else}}setPip{{/if}}" data-path="{{c.path}}" data-n="{{p.n}}" data-state="{{p.key}}" {{#if p.label}}data-tooltip="{{localize p.label}}"{{/if}}></a>{{/each}}</span>{{/if}}
+      {{#if c.text}}<span class="value">{{c.text}}</span>{{/if}}
+      {{#if c.input}}<span class="value"><input type="number" name="{{c.input}}" value="{{c.raw}}" min="0"></span>{{/if}}
+      {{#if c.note}}<span class="hint">{{c.note}}</span>{{/if}}
     </div>
     {{/each}}
+  </section>
+
+  <div class="troop-columns">
+    {{!-- Compétences en registre, comme sur la fiche de PJ. --}}
+    <section class="afc-ability-groups troop-abilities">
+      <div class="ability-group">
+        <h3>{{localize "AFC.Battle.Skills"}}</h3>
+        {{#each bookAbilities as |a|}}
+        <div class="ability-row">
+          {{#if @root.editable}}<a class="ability-name" data-action="rollSkill" data-ability="{{a.key}}" data-tooltip="AFC.Roll.QuickHint">{{a.name}}</a>{{else}}<span class="ability-name">{{a.name}}</span>{{/if}}
+          <span class="specialties"></span>
+          {{#if @root.editMode}}<input class="rank" type="number" name="system.book.abilities.{{a.key}}" value="{{a.value}}" min="1" max="9" aria-label="{{a.name}}">{{else}}<span class="rank-value">{{a.value}}</span>{{/if}}
+        </div>
+        {{/each}}
+        {{#if editMode}}<a class="add-item" data-action="resetBook"><i class="fa-solid fa-rotate"></i> {{localize "AFC.BattleBook.ResetUnit"}}</a>{{/if}}
+      </div>
+    </section>
+
+    {{!-- Valeurs de bataille, traits et améliorations. --}}
+    <section class="afc-ability-groups troop-stats">
+      <div class="ability-group">
+        <h3>{{localize "AFC.Battle.Troop"}}</h3>
+        {{#each stats as |p|}}
+        <div class="ability-row" {{#if p.hint}}data-tooltip="{{p.hint}}"{{/if}}>
+          <span class="ability-name">{{localize p.label}}</span>
+          <span class="specialties"></span>
+          {{#if p.pips}}<span class="pips">{{#each p.pips as |q|}}<a class="pip {{#if q.on}}on{{/if}}" data-action="setPip" data-path="{{p.path}}" data-n="{{q.n}}"></a>{{/each}}</span>
+          {{else if p.select}}<select name="{{p.select}}">{{selectOptions p.options selected=p.raw localize=true}}</select>
+          {{else if p.input}}{{#if @root.editMode}}<input class="rank" type="number" name="{{p.input}}" value="{{p.raw}}" min="0">{{else}}<span class="rank-value">{{p.value}}</span>{{/if}}
+          {{else}}<span class="rank-value">{{p.value}}</span>{{/if}}
+        </div>
+        {{/each}}
+        {{#unless editMode}}
+        <div class="trait-chips">
+          {{#unless bookRules}}{{#each activeTraits as |t|}}<span class="chip" data-tooltip="{{t.effect}}">{{t.label}}</span>{{/each}}{{/unless}}
+          {{#each upgrades as |u|}}{{#if u.on}}<span class="chip upgrade" data-tooltip="{{u.effect}}"><i class="fa-solid fa-hammer"></i> {{localize u.label}}</span>{{/if}}{{/each}}
+        </div>
+        {{/unless}}
+      </div>
+    </section>
   </div>
 
-  {{!-- État : échelle cliquable, dans les deux modes (il bouge en bataille). --}}
-  <div class="state-ladder">
-    <span class="label">{{localize stateLabel}}</span>
-    {{#each states as |s|}}{{#unless @first}}<i class="fa-solid fa-angle-right"></i>{{/unless}}<a class="step {{#if s.on}}on{{/if}} {{#if s.past}}past{{/if}}" data-action="setState" data-state="{{s.key}}">{{localize s.label}}</a>{{/each}}
-  </div>
-
-  {{!-- Compteurs : pastilles cliquables (re-clic sur la dernière = la retire). --}}
-  <div class="counters">
-    {{#each counters as |c|}}
-    <span class="counter" {{#if c.hint}}data-tooltip="{{c.hint}}"{{/if}}><span class="label">{{localize c.label}}</span>
-      {{#if c.pips}}<span class="pips">{{#each c.pips as |p|}}<a class="pip {{#if p.on}}on{{/if}}" data-action="setPip" data-path="{{c.path}}" data-n="{{p.n}}"></a>{{/each}}</span>{{/if}}
-      {{#if c.text}}<b>{{c.text}}</b>{{/if}}
-      {{#if c.input}}<input type="number" name="{{c.input}}" value="{{c.raw}}" min="0">{{/if}}
-    </span>
-    {{/each}}
-    {{#if bookRules}}<label class="counter"><span class="label">{{localize "AFC.BattleBook.FormationLabel"}}</span><select name="system.book.formation">{{selectOptions bookFormations selected=system.book.formation localize=true}}</select></label>{{/if}}
-  </div>
-
-  {{!-- Traits et améliorations : étiquettes en jeu, cases à cocher en édition. --}}
   {{#if editMode}}
-  <div class="section-title">
-    <h2>{{localize "AFC.Unit.Upgrade.title"}}</h2>
-  </div>
+  <div class="section-title"><h2>{{localize "AFC.Unit.Upgrade.title"}}</h2></div>
   <div class="troop-traits">
     {{#each upgrades as |u|}}<label class="checkbox" data-tooltip="{{u.effect}}"><input type="checkbox" name="{{u.name}}" {{checked u.on}}> {{localize u.label}}</label>{{/each}}
   </div>
@@ -70,26 +90,6 @@
     {{#each traits as |t|}}<label class="checkbox" data-tooltip="{{t.effect}}"><input type="checkbox" name="trait.{{t.key}}" {{checked t.on}}> {{t.label}}</label>{{/each}}
   </div>
   {{/unless}}
-  {{else}}
-  <div class="trait-chips">
-    {{#unless bookRules}}{{#each activeTraits as |t|}}<span class="chip" data-tooltip="{{t.effect}}">{{t.label}}</span>{{/each}}{{/unless}}
-    {{#each upgrades as |u|}}{{#if u.on}}<span class="chip upgrade" data-tooltip="{{u.effect}}"><i class="fa-solid fa-hammer"></i> {{localize u.label}}</span>{{/if}}{{/each}}
-  </div>
-  {{/if}}
-
-  {{!-- Autres compétences : une ligne en jeu, une grille de rangs en édition. --}}
-  {{#if editMode}}
-  <div class="section-title">
-    <h2>{{localize "AFC.Battle.Skills"}}</h2>
-    <a class="add-item" data-action="resetBook"><i class="fa-solid fa-rotate"></i> {{localize "AFC.BattleBook.ResetUnit"}}</a>
-  </div>
-  <div class="book-abilities">
-    {{#each bookAbilities as |a|}}<label class="book-ability">{{a.name}}<input type="number" name="system.book.abilities.{{a.key}}" value="{{a.value}}" min="1" max="9"></label>{{/each}}
-  </div>
-  {{else}}
-  <p class="other-abilities"><span class="label">{{localize "AFC.Battle.OtherSkills"}}</span>
-    {{#each otherAbilities as |a|}}{{#if @root.editable}}<a data-action="rollSkill" data-ability="{{a.key}}" data-tooltip="AFC.Roll.QuickHint">{{a.name}} {{a.value}}</a>{{else}}<span>{{a.name}} {{a.value}}</span>{{/if}}{{#unless @last}} · {{/unless}}{{/each}}
-  </p>
   {{/if}}
 
   <label class="troop-notes">{{localize "AFC.Battle.Notes"}}<input type="text" name="system.notes" value="{{system.notes}}"></label>
