@@ -3,7 +3,7 @@
  */
 import { SYSTEM_ID, UNIT_TRAININGS } from "../config.mjs";
 import { rollAbilityTest } from "../dice/test-roll.mjs";
-import { mergeTraits, STATE_ORDER, TRAITS, TROOP_STATES, TYPE_TRAITS } from "../battle/battle-config.mjs";
+import { ACTIVE_TRAITS, mergeTraits, STATE_ORDER, TROOP_STATES, TYPE_TRAITS } from "../battle/battle-config.mjs";
 import { BOOK_ABILITIES, BOOK_EQUIPMENT, BOOK_FORMATIONS, BOOK_STATUS } from "../battle/book-config.mjs";
 import { prepareBookTroop } from "../battle/book.mjs";
 import { isBook } from "../battle/rules.mjs";
@@ -39,7 +39,7 @@ export class TroopSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       trainings: Object.fromEntries(Object.entries(UNIT_TRAININGS).map(([k, v]) => [k, v.label])),
       states: Object.fromEntries(STATE_ORDER.map(k => [k, TROOP_STATES[k].label])),
       types: Object.fromEntries(Object.keys(TYPE_TRAITS).map(k => [k, typeLabel(k)]).sort((a, b) => a[1].localeCompare(b[1]))),
-      traits: TRAITS.map(k => ({ key: k, label: loc(`AFC.Battle.Trait.${k}.name`), effect: loc(`AFC.Battle.Trait.${k}.effect`), on: s.traits.includes(k) })),
+      traits: ACTIVE_TRAITS.map(k => ({ key: k, label: loc(`AFC.Battle.Trait.${k}.name`), effect: loc(`AFC.Battle.Trait.${k}.effect`), on: s.traits.includes(k) })),
       bookRules: isBook(), isSpecial: s.book.type === "special", customImage: !isAutoIcon(this.document.img),
       bookAbilities: BOOK_ABILITIES.map(k => ({ key: k, label: `AFC.Ability.${k}`, value: s.book.abilities[k] })),
       bookRanges: { close: "AFC.BattleBook.RangeClose", long: "AFC.BattleBook.RangeLong" },
@@ -58,9 +58,9 @@ export class TroopSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     const s = this.document.system;
     if (armor !== undefined && armor !== s.upgrades.armor) foundry.utils.setProperty(data, "system.cushion", Math.max(0, s.cushion + (armor ? 1 : -1)));
     // Règles du livre : la fiche n'affiche pas les traits, on n'y touche pas.
-    if (!form.elements[`trait.${TRAITS[0]}`]) return data;
-    const traits = TRAITS.filter(k => form.elements[`trait.${k}`]?.checked);
-    for (const k of TRAITS) delete data[`trait.${k}`];
+    if (!form.elements[`trait.${ACTIVE_TRAITS[0]}`]) return data;
+    const traits = ACTIVE_TRAITS.filter(k => form.elements[`trait.${k}`]?.checked);
+    for (const k of ACTIVE_TRAITS) delete data[`trait.${k}`];
     delete data.trait;
     foundry.utils.setProperty(data, "system.traits", traits);
     return data;

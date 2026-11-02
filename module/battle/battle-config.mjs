@@ -41,12 +41,15 @@ export const TRAITS = [
   "heavyArmor", "shields", "shock", "heavyShock", "pikes", "mounted", "light", "bows", "crossbows",
   "piercing", "reload", "javelins", "slings", "green", "steadfast", "scouts", "defenders", "noncombat"
 ];
+/** Traits retirés des règles : gardés dans la liste pour que les fiches existantes restent valides, sans effet ni affichage. */
+export const RETIRED_TRAITS = ["green"];
+export const ACTIVE_TRAITS = TRAITS.filter(k => !RETIRED_TRAITS.includes(k));
 /** Portée de tir des traits de tir. */
 export const RANGES = { bows: 4, crossbows: 3, javelins: 2, slings: 3 };
 
 /** Traits déduits du type d'unité (catalogues de la Compagnie et de la Maison). */
 export const TYPE_TRAITS = {
-  volunteers: ["green", "light"],
+  volunteers: ["light"],
   lightInfantry: ["light", "javelins"],
   heavyInfantry: ["heavyArmor", "shields"],
   personalGuard: ["heavyArmor", "shields", "steadfast"],
@@ -70,7 +73,7 @@ export const TYPE_TRAITS = {
   guerillas: ["light", "javelins"],
   engineers: [],
   mercenaries: [],
-  peasants: ["green"]
+  peasants: []
 };
 
 /** Traits d'une unité à un ou deux types : une arme de tir remplace les armes de jet, l'armure lourde exclut Léger. */

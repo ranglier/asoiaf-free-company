@@ -282,6 +282,8 @@ export function resolveMelee(att, def) {
 
 async function meleeOnce(att, def) {
   const scene = att.parent;
+  // Les tirs se résolvent avant les mêlées : leurs pertes en attente s'appliquent d'abord.
+  await flushShots(scene);
   const battle = getBattle(scene);
   const m = meleeMods(att, def, battle);
   m.warnings.push(...uncommanded([att, def], battle));
@@ -308,6 +310,12 @@ async function meleeOnce(att, def) {
   const notes = [];
   if (winner === att && m.heavyShock) { losses += 1; notes.push(loc("AFC.Battle.Trait.heavyShock.name")); }
   if (loser?.actor.system.has.heavyArmor && degrees >= 2) { losses -= 1; notes.push(loc("AFC.Battle.Trait.heavyArmor.name")); }
+  // Se replier : un état de moins, au moins un ; une troupe légère peut n'en perdre aucun.
+  const loserOrder = loser === att ? m.aOrder : m.dOrder;
+  if (loser && loserOrder === "withdraw" && losses > 0) {
+    const kept = loser.actor.system.has.light ? Math.max(0, losses - 1) : Math.max(1, losses - 1);
+    if (kept < losses) { losses = kept; notes.push(loc("AFC.Battle.Order.withdraw")); }
+  }
   // Deux troupes qui se visent : une seule mêlée, les deux engagements sont résolus.
   const mutual = unitOf(battle, def.id).target === att.id && ["charge", "attack"].includes(m.dOrder);
   await markEngaged(scene, [att.id, def.id], mutual ? [att.id, def.id] : [att.id], winner ? [[winner.id, "won", 1], [loser.id, "lost", 1], [winner.id, "inflicted", losses]] : []);
@@ -352,6 +360,8 @@ async function shootOnce(shooter, target) {
     rejectClose: false
   });
   if (!opts || stale(battle, shooter, target, scene)) return;
+  // Tirs simultanés : pendant la phase de tir, les pertes attendent le dernier tir du tour.
+  const volley = opts.auto && battle.revealed && unitOf(battle, shooter.id).order === "shoot";
   const p = pool(r, m.mods, opts);
   const test = await rollDice({ ...p, difficulty: m.difficulty });
   const degrees = test.outcome?.success ? test.outcome.degrees : 0;
@@ -367,19 +377,40 @@ async function shootOnce(shooter, target) {
     verdict: degrees ? `${loc("AFC.Battle.Card.Hit")} : ${lossLabel(target.name, losses)}` : loc("AFC.Battle.Card.Miss"),
     detail: fmt("AFC.Battle.Card.Against", { n: m.difficulty, detail: m.diff.map(d => `${d.label} ${d.value}`).join(" + ") }),
     pool: poolLabel(p, test), tags: [r.name, ...modTags(m.mods)],
-    ...cardApply(apply, opts.auto)
+    ...cardApply(apply, opts.auto, volley)
   });
-  return postResult({ content, rolls: [test.roll], apply, auto: opts.auto });
+  const message = await postResult({ content, rolls: [test.roll], apply, auto: opts.auto, volley, scene });
+  // Dernier tir du tour : toutes les pertes des tirs s'appliquent ensemble.
+  if (volley && !plannedEngagements(getBattle(scene), scene).some(e => e.shoot)) await flushShots(scene);
+  return message;
 }
 
-/** Pertes de la carte : appliquées tout de suite (en attendant l'encaissement), ou bouton pour le MJ. */
-const cardApply = (apply, auto) => ({ apply: auto ? null : apply, pending: apply && auto ? loc("AFC.Battle.Card.Pending") : null });
+/** Pertes de la carte : appliquées tout de suite (en attendant l'encaissement), après le dernier tir, ou bouton pour le MJ. */
+const cardApply = (apply, auto, volley = false) => ({
+  apply: auto ? null : apply,
+  pending: apply && auto ? loc(volley ? "AFC.Battle.Card.ShotPending" : "AFC.Battle.Card.Pending") : null
+});
+const PENDING_KEYS = ["AFC.Battle.Card.Pending", "AFC.Battle.Card.ShotPending"];
 
-/** Publie la carte du résultat, puis applique les pertes si la case était cochée : la carte se complète. */
-async function postResult({ content, rolls, apply, auto }) {
+/** Publie la carte du résultat, puis applique les pertes si la case était cochée (ou les met en attente du dernier tir) : la carte se complète. */
+async function postResult({ content, rolls, apply, auto, volley = false, scene = null }) {
   const message = await ChatMessage.create({ rolls, content });
-  if (apply && auto) await applyLosses(apply.token, apply.losses, message, apply.scene);
+  if (apply && auto && volley) {
+    const battle = getBattle(scene);
+    battle.pendingShots = [...(battle.pendingShots ?? []), { ...apply, message: message.id }];
+    await saveBattle(battle, scene);
+  } else if (apply && auto) await applyLosses(apply.token, apply.losses, message, apply.scene);
   return message;
+}
+
+/** Applique les pertes des tirs mises en attente : après le dernier tir, avant une mêlée, ou à la fin du tour (MJ). */
+export async function flushShots(scene = canvas.scene) {
+  const battle = getBattle(scene);
+  const list = battle.pendingShots ?? [];
+  if (!list.length) return;
+  battle.pendingShots = [];
+  await saveBattle(battle, scene);
+  for (const shot of list) await applyLosses(shot.token, shot.losses, game.messages.get(shot.message) ?? null, scene.id);
 }
 
 /** Inscrit le résultat des pertes dans la carte d'origine et retire le bouton. */
@@ -441,7 +472,7 @@ async function lossesOnce(tokenId, losses, message, sceneId) {
   if (!actor) return ui.notifications.warn(loc("AFC.Battle.TroopGone"));
   // Carte déjà remplie (bouton cliqué deux fois, ou par deux MJ) : rien à refaire.
   const card = message ? game.messages.get(message.id) ?? message : null;
-  if (card && !card.content.includes('data-afc-battle="apply"') && !card.content.includes(loc("AFC.Battle.Card.Pending"))) return;
+  if (card && !card.content.includes('data-afc-battle="apply"') && !PENDING_KEYS.some(k => card.content.includes(loc(k)))) return;
   const s = actor.system;
   let spend = 0;
   if (s.canCushion) {
@@ -463,8 +494,6 @@ async function lossesOnce(tokenId, losses, message, sceneId) {
   const lossNow = Math.min(MAX_LOSS, (TROOP_STATES[STATE_ORDER[index]].loss) + disorders * 5);
   if (lossNow >= MAX_LOSS && index < 4) { index = 4; notes.push(loc("AFC.Battle.Broken")); }
   const state = STATE_ORDER[index];
-  if (s.has.green && losses - spend > 0 && !actor.getFlag(SYSTEM_ID, "firstLoss")) notes.push(loc("AFC.Battle.GreenCheck"));
-  if (losses - spend > 0) await actor.setFlag(SYSTEM_ID, "firstLoss", true);
   if (state === "routed") notes.push(loc("AFC.Battle.Flee"));
   await actor.update({ "system.state": state, "system.cushion": s.cushion - spend, "system.disorders": disorders });
   const outcome = `<strong class="troop">${esc(token.name)}</strong>
@@ -742,6 +771,8 @@ export async function endTurn() {
       });
       if (!ok || getBattle().round !== before.round) return;
     }
+    // Tirs encore en attente (le MJ a sauté un tir) : leurs pertes s'appliquent avant le nouveau tour.
+    await flushShots();
     return await endTurnNow();
   } finally { ending = false; }
 }
@@ -767,6 +798,7 @@ async function endTurnNow() {
   battle.moved = [];
   battle.command = [];
   battle.defenseDice = [];
+  battle.pendingShots = [];
   await saveBattle(battle);
   // On garde l'officier ; ordre, cible et contre-ordre repartent de zéro.
   await resetOrders();

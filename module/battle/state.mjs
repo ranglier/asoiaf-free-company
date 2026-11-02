@@ -54,8 +54,8 @@ export async function saveBattle(battle, scene = canvas.scene) {
 
 /**
  * Efface la bataille de la scène, les ordres et les officiers des troupes (MJ). Ce qui vaut « par
- * bataille » repart à neuf : encaissement, ralliements, Indéfectible, première perte des Bleus.
- * L'état des troupes ne change pas.
+ * bataille » repart à neuf : encaissement, ralliements, Indéfectible (et l'ancien drapeau de première
+ * perte des Bleus, trait retiré). L'état des troupes ne change pas.
  */
 export async function clearBattle(scene = canvas.scene) {
   for (const t of scene.tokens.filter(t => t.actor?.type === "troop")) {

@@ -5,7 +5,7 @@
 import { UNIT_TRAININGS } from "../config.mjs";
 import { typeMight } from "../unit-mix.mjs";
 import {
-  DISORDER_LOSS, MAX_LOSS, MOUNTED_UNIT_STRENGTH, RANGES, STATE_ORDER, TRAINING_BATTLE, TRAITS, TROOP_STATES
+  DISORDER_LOSS, MAX_LOSS, MOUNTED_UNIT_STRENGTH, RANGES, RETIRED_TRAITS, STATE_ORDER, TRAINING_BATTLE, TRAITS, TROOP_STATES
 } from "../battle/battle-config.mjs";
 import { BOOK_ABILITIES, BOOK_EQUIPMENT, BOOK_FORMATIONS, BOOK_MOVE, BOOK_RANGES, BOOK_STATUS } from "../battle/book-config.mjs";
 
@@ -69,6 +69,8 @@ export default class TroopData extends foundry.abstract.TypeDataModel {
     const t = TRAINING_BATTLE[this.training] ?? TRAINING_BATTLE.trained;
     this.cushionMax = t.cushion + (this.upgrades.armor ? 1 : 0);
     this.ralliesMax = t.cushion + 1;
+    // Traits retirés des règles (Bleus, 2026-11-02) : ignorés, et effacés au prochain enregistrement de la fiche.
+    this.traits = this.traits.filter(k => !RETIRED_TRAITS.includes(k));
     this.has = Object.fromEntries(this.traits.map(k => [k, true]));
     // Compétences de l'unité (type + entraînement) : Corps à corps en mêlée, Tir ou Athlétisme (armes de jet) au tir.
     const skills = this.book.abilities;
