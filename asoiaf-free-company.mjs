@@ -113,6 +113,13 @@ Hooks.on("updateScene", (scene, changes) => {
 Hooks.on("canvasReady", () => {
   // Compétences des troupes posées avant leur introduction, ou calculées autrement.
   if (game.users.activeGM === game.user) for (const t of canvas.scene?.tokens ?? []) if (t.actor?.type === "troop") prepareBookTroop(t.actor);
+  // Foundry fait contrôler à un joueur sans jeton de personnage sur la scène tous les jetons qu'il possède :
+  // sur une carte de bataille, toutes ses troupes se retrouvent sélectionnées. On les relâche.
+  if (!game.user.isGM) {
+    const controlled = canvas.tokens.controlled;
+    const ownedTroops = canvas.tokens.placeables.filter(t => t.actor?.type === "troop" && t.isOwner);
+    if (controlled.length > 1 && controlled.every(t => t.actor?.type === "troop") && controlled.length === ownedTroops.length) canvas.tokens.releaseAll();
+  }
   TerrainPainter.refresh();
   migrateBattle();
   drawHexNumbers();
