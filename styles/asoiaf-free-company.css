@@ -423,8 +423,7 @@ body.detached .application.afc.afc-fill.afc-dialog .window-content { max-height:
 .afc.troop .trait-chips:empty { display: none; }
 .afc.troop .trait-chips .chip { font-family: var(--afc-font-label); font-size: 16px; color: var(--afc-ink); cursor: default; background: var(--afc-paper); border: 1px solid var(--afc-line); border-radius: 3px; padding: 0 0.4rem; }
 .afc.troop .trait-chips .chip.upgrade { border-color: var(--afc-wax); color: var(--afc-wax); }
-.afc.troop .troop-notes { display: flex; flex-direction: row; align-items: center; gap: 0.5rem; font-family: var(--afc-font-label); color: var(--afc-ink-soft); }
-.afc.troop .troop-notes input { flex: 1; }
+.afc.troop textarea.troop-notes { width: 100%; min-height: 7rem; resize: vertical; font-size: 17px; line-height: 1.35; background: rgba(243, 234, 214, 0.5); border: 1px solid var(--afc-line); }
 .afc .afc-battle .battle-group, .afc .afc-battle .battle-group-head strong, .afc .afc-battle .battle-group-head small { color: var(--afc-ink); }
 .afc .afc-battle .tag { background: var(--afc-paper); color: var(--afc-ink); border: 1px solid var(--afc-line); border-radius: 3px; padding: 0 0.3rem; font-size: 0.85rem; }
 .afc .afc-battle .battle-group-head strong { font-family: var(--afc-font-label); }
