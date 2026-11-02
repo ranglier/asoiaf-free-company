@@ -5,10 +5,10 @@ const { fields } = foundry.data;
 /** Schéma d'une compétence : rang + spécialités (dés de bonus). */
 export function abilitySchema() {
   return new fields.SchemaField({
-    rank: new fields.NumberField({ required: true, integer: true, min: 1, max: 7, initial: DEFAULT_RANK }),
+    rank: new fields.NumberField({ required: true, nullable: false, integer: true, min: 1, max: 7, initial: DEFAULT_RANK }),
     specialties: new fields.ArrayField(new fields.SchemaField({
       name: new fields.StringField({ required: true, blank: true }),
-      bonus: new fields.NumberField({ required: true, integer: true, min: 0, max: 7, initial: 1 })
+      bonus: new fields.NumberField({ required: true, nullable: false, integer: true, min: 0, max: 7, initial: 1 })
     }))
   });
 }
@@ -54,7 +54,7 @@ export function prepareCombatValues(system, items) {
 }
 
 const track = (initial = 0) => new fields.SchemaField({
-  value: new fields.NumberField({ required: true, integer: true, min: 0, initial })
+  value: new fields.NumberField({ required: true, nullable: false, integer: true, min: 0, initial })
 });
 
 export default class CharacterData extends foundry.abstract.TypeDataModel {
@@ -72,12 +72,12 @@ export default class CharacterData extends foundry.abstract.TypeDataModel {
       wounds: track(),
       injuries: track(),
       destiny: new fields.SchemaField({
-        value: new fields.NumberField({ required: true, integer: true, min: 0, initial: 0 }),
-        max: new fields.NumberField({ required: true, integer: true, min: 0, initial: 0 })
+        value: new fields.NumberField({ required: true, nullable: false, integer: true, min: 0, initial: 0 }),
+        max: new fields.NumberField({ required: true, nullable: false, integer: true, min: 0, initial: 0 })
       }),
       experience: new fields.SchemaField({
-        total: new fields.NumberField({ required: true, integer: true, min: 0, initial: 0 }),
-        spent: new fields.NumberField({ required: true, integer: true, min: 0, initial: 0 })
+        total: new fields.NumberField({ required: true, nullable: false, integer: true, min: 0, initial: 0 }),
+        spent: new fields.NumberField({ required: true, nullable: false, integer: true, min: 0, initial: 0 })
       }),
       biography: new fields.HTMLField({ blank: true })
     };

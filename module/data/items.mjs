@@ -3,7 +3,7 @@ import { ABILITIES, ATTACK_ABILITIES, HOLDING_RESOURCES, SERVICE_SIZES, UNIT_CLA
 const { fields } = foundry.data;
 
 const description = () => new fields.HTMLField({ blank: true });
-const int = (initial = 0, opts = {}) => new fields.NumberField({ required: true, integer: true, initial, ...opts });
+const int = (initial = 0, opts = {}) => new fields.NumberField({ required: true, nullable: false, integer: true, initial, ...opts });
 
 export class WeaponData extends foundry.abstract.TypeDataModel {
   static defineSchema() {

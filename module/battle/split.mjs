@@ -2,8 +2,9 @@
  * Découpage d'un bataillon (règles maison) : une troupe de plusieurs unités en détache une partie sur
  * une case voisine. Le nouveau bloc peut recevoir un officier libre ou rester sans officier.
  */
+import { SYSTEM_ID } from "../config.mjs";
 import { center } from "./engagement.mjs";
-import { getBattle, gmHandlers, requestGM } from "./state.mjs";
+import { getBattle, gmHandlers, gmOnScene, requestGM } from "./state.mjs";
 
 const { DialogV2 } = foundry.applications.api;
 const loc = key => game.i18n.localize(key);
@@ -22,7 +23,10 @@ function freeNeighbor(token) {
 }
 
 /** Sépare `units` unités de la troupe, confiées à `officer`. */
-export async function splitTroop({ token: id, units, officer, name = null }) {
+export async function splitTroop(data) {
+  const { token: id, units, officer, name = null } = data;
+  // La case voisine se cherche sur la carte affichée : le MJ doit regarder la scène du joueur.
+  if (!gmOnScene(data)) return null;
   const scene = canvas.scene;
   const token = scene.tokens.get(id);
   const s = token?.actor?.system;
@@ -32,17 +36,21 @@ export async function splitTroop({ token: id, units, officer, name = null }) {
   const men = Math.round(s.men * units / s.units);
   // L'encaissement se partage au prorata, arrondi au profit du bloc d'origine : découper n'en crée pas.
   const cushion = Math.floor(s.cushion * units / s.units);
-  const data = token.actor.toObject();
-  delete data._id;
-  foundry.utils.mergeObject(data, {
+  const source = token.actor.toObject();
+  delete source._id;
+  // Ordre et officier vont sur le jeton : l'acteur copié ne garde pas ceux de la troupe d'origine.
+  delete source.flags?.[SYSTEM_ID]?.unit;
+  foundry.utils.mergeObject(source, {
     name: name ?? `${token.name} (${units})`,
     "system.units": units, "system.men": men, "system.cushion": cushion,
-    [`flags.asoiaf-free-company.unit`]: { order: "", target: "", officer, countered: false, path: [] },
     "prototypeToken.name": name ?? `${token.name} (${units})`
   });
-  const actor = await Actor.create(data);
+  const actor = await Actor.create(source);
   await token.actor.update({ "system.units": s.units - units, "system.men": s.men - men, "system.cushion": s.cushion - cushion });
-  const doc = await actor.getTokenDocument({ x: at.x - canvas.grid.sizeX / 2, y: at.y - canvas.grid.sizeY / 2, hidden: token.hidden });
+  const doc = await actor.getTokenDocument({
+    x: at.x - canvas.grid.sizeX / 2, y: at.y - canvas.grid.sizeY / 2, hidden: token.hidden,
+    flags: { [SYSTEM_ID]: { unit: { order: "", target: "", officer, countered: false, path: [] } } }
+  });
   const [created] = await scene.createEmbeddedDocuments("Token", [doc.toObject()]);
   return created;
 }

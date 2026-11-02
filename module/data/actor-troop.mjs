@@ -10,7 +10,7 @@ import {
 import { BOOK_ABILITIES, BOOK_EQUIPMENT, BOOK_FORMATIONS, BOOK_MOVE, BOOK_RANGES, BOOK_STATUS } from "../battle/book-config.mjs";
 
 const fields = foundry.data.fields;
-const int = (initial, opts = {}) => new fields.NumberField({ required: true, integer: true, initial, ...opts });
+const int = (initial, opts = {}) => new fields.NumberField({ required: true, nullable: false, integer: true, initial, ...opts });
 
 export default class TroopData extends foundry.abstract.TypeDataModel {
   static defineSchema() {

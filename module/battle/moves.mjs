@@ -5,7 +5,7 @@
  */
 import { adjacent, center, distance, regionTerrainKey, shootRange } from "./engagement.mjs";
 import { isBook } from "./rules.mjs";
-import { getBattle, gmHandlers, requestGM, saveBattle, setUnit, unitOf } from "./state.mjs";
+import { getBattle, gmHandlers, gmOnScene, requestGM, saveBattle, sceneOf, setUnit, unitOf } from "./state.mjs";
 
 const loc = key => game.i18n.localize(key);
 const fmt = (key, data) => game.i18n.format(key, data);
@@ -304,11 +304,15 @@ export async function executeMoves(scene = canvas.scene) {
 }
 
 /** Mouvement d'une seule troupe (contre-ordre). */
-gmHandlers.troopMove = ({ token: id }) => {
+gmHandlers.troopMove = data => {
+  const id = data.token;
+  // Le calcul des cases se fait sur la carte affichée : le MJ doit regarder la scène du joueur.
+  if (!gmOnScene(data)) return;
   // Laisse arriver l'ordre écrit par le joueur sur la troupe.
   setTimeout(async () => {
-    const scene = canvas.scene;
-    const token = scene?.tokens.get(id);
+    const scene = sceneOf(data);
+    if (scene?.id !== canvas.scene?.id) return;
+    const token = scene.tokens.get(id);
     if (!token?.actor || !canMove(token)) return;
     const battle = getBattle(scene);
     if ((battle.moved ?? []).includes(id)) return;

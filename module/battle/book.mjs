@@ -15,7 +15,7 @@ import {
 } from "./book-config.mjs";
 import { adjacent, center, distance, regionTerrainKey } from "./engagement.mjs";
 import { hexNumber, startTargetPick, togglePalette } from "./map.mjs";
-import { gmHandlers, getBattle, requestGM, resetOrders, saveBattle, unitOf } from "./state.mjs";
+import { gmHandlers, getBattle, gmOnScene, requestGM, resetOrders, saveBattle, sceneOf, unitOf, writeUnit } from "./state.mjs";
 import { isBook } from "./rules.mjs";
 
 const { DialogV2 } = foundry.applications.api;
@@ -574,7 +574,8 @@ async function resolveDefend(token, ctx) {
 /** Ordre donné à une troupe : test d'Art militaire, puis effet. S'exécute chez le MJ. */
 async function executeOrder(data) {
   const scene = game.scenes.get(data.scene);
-  if (scene?.id !== canvas.scene?.id) return ui.notifications.warn(loc(`${L}.GmElsewhere`));
+  // Cases et distances se lisent sur la carte affichée : le joueur est prévenu si le MJ regarde ailleurs.
+  if (!gmOnScene(data, scene)) return;
   const battle = getBattle(scene);
   const book = bookState(battle);
   const token = scene.tokens.get(data.token);
@@ -605,7 +606,7 @@ async function executeOrder(data) {
     book.acted.push(token.id);
     await token.actor.update({ "system.book.defendResult": null, "system.book.setCharge": false, "system.book.readied": "" });
     await applyOrderEffect(token, data.order, data, target, ctx);
-    await token.actor.setFlag(SYSTEM_ID, "unit", { order: data.order, target: target?.id ?? "", officer: unit.officer, countered: false, mode: ctx.mode });
+    await writeUnit(token, { order: data.order, target: target?.id ?? "", officer: unit.officer, countered: false, mode: ctx.mode });
   } else {
     if (critical) book.noStanding.push(token.id);
     if (!unit.order) card.note = loc(`${L}.NoStanding`);
@@ -731,14 +732,16 @@ export async function nextStep() {
 }
 
 /** Le camp dont c'est le tour renonce à ses ordres restants. */
-export async function passTurn() {
-  const battle = getBattle();
+export async function passTurn(data = {}) {
+  const scene = sceneOf(data);
+  const battle = getBattle(scene);
   const book = bookState(battle);
   if (!book.turn) return;
   book.passed.push(book.turn);
   const other = otherSide(book.turn);
-  book.turn = ordersLeft(book, other) > 0 ? other : "";
-  return saveBook(battle, book);
+  book.turn = ordersLeft(book, other, scene) > 0 ? other : "";
+  battle.book = book;
+  return saveBattle(battle, scene);
 }
 gmHandlers.bookPass = passTurn;
 
@@ -776,7 +779,7 @@ async function attackDialog(att, def, book, title) {
 
 async function executeFreeAttack(data) {
   const scene = game.scenes.get(data.scene);
-  if (scene?.id !== canvas.scene?.id) return ui.notifications.warn(loc(`${L}.GmElsewhere`));
+  if (!gmOnScene(data, scene)) return;
   const battle = getBattle(scene);
   const book = bookState(battle);
   const att = scene.tokens.get(data.token), def = scene.tokens.get(data.target);

@@ -15,7 +15,7 @@ import { BattleApp } from "./module/battle/battle-app.mjs";
 import { prepareBookTroop } from "./module/battle/book.mjs";
 import { isBook } from "./module/battle/rules.mjs";
 import { TerrainPainter } from "./module/battle/terrain.mjs";
-import { onRenderBattleCard } from "./module/battle/engagement.mjs";
+import { keepRemovedTroop, onRenderBattleCard } from "./module/battle/engagement.mjs";
 import { migrateBattle, registerBattleSocket } from "./module/battle/state.mjs";
 import { renderBattleBar } from "./module/battle/bar.mjs";
 import { cancelMovePick } from "./module/battle/moves.mjs";
@@ -139,6 +139,8 @@ for (const hook of ["createToken", "deleteToken"]) {
     renderBattleBar();
   });
 }
+// Troupe touchée retirée de la carte : ses pertes restent au bilan.
+Hooks.on("preDeleteToken", (doc, options, userId) => { if (userId === game.user.id) keepRemovedTroop(doc); });
 Hooks.on("canvasTearDown", () => { cancelTargetPick(); cancelMovePick(); });
 // Règles maison : pendant les ordres, un joueur ne déplace pas ses jetons (ils bougent à la révélation), sauf au déploiement.
 Hooks.on("preUpdateToken", (doc, changes) => {
@@ -151,6 +153,13 @@ Hooks.on("preUpdateToken", (doc, changes) => {
 // Une troupe déplacée peut ouvrir ou fermer un engagement ; une image changée redessine ses marques.
 Hooks.on("updateToken", (doc, changes) => {
   if (doc.object && "texture" in changes) drawTroopMarks(doc.object);
+  // Ordre ou cible changés (drapeau du jeton) : fenêtre, barre, pastilles et flèches.
+  if (doc.actor?.type === "troop" && foundry.utils.hasProperty(changes, `flags.${AFC.SYSTEM_ID}`) && doc.parent?.id === canvas.scene?.id) {
+    BattleApp.refresh();
+    renderBattleBar();
+    refreshOrderBadges();
+    scheduleArrows();
+  }
   if (doc.actor?.type !== "troop" || !("x" in changes || "y" in changes)) return;
   BattleApp.refresh();
   renderBattleBar();

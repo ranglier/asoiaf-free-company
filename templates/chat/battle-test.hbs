@@ -16,5 +16,5 @@
 
   <footer><span class="pool">{{pool}}</span>{{#each tags}}<span class="tag">{{this}}</span>{{/each}}</footer>
   {{#if pending}}<div class="battle-outcome"><small>{{pending}}</small></div>{{/if}}
-  {{#if apply}}<div class="battle-outcome"></div><button type="button" data-afc-battle="apply" data-token="{{apply.token}}" data-losses="{{apply.losses}}"><i class="fa-solid fa-heart-crack"></i> {{localize "AFC.Battle.ApplyLosses"}}</button>{{/if}}
+  {{#if apply}}<div class="battle-outcome"></div><button type="button" data-afc-battle="apply" data-token="{{apply.token}}" data-losses="{{apply.losses}}" data-scene="{{apply.scene}}"><i class="fa-solid fa-heart-crack"></i> {{localize "AFC.Battle.ApplyLosses"}}</button>{{/if}}
 </div>

@@ -10,7 +10,7 @@ import {
 } from "./battle-config.mjs";
 import { executeMoves } from "./moves.mjs";
 import { moraleMod, troopPool } from "./troops.mjs";
-import { askHandlers, askUser, canCommand, getBattle, gmHandlers, requestGM, resetOrders, saveBattle, unitOf } from "./state.mjs";
+import { askHandlers, askUser, canCommand, getBattle, gmHandlers, requestGM, resetOrders, saveBattle, sceneOf, unitOf } from "./state.mjs";
 
 const { DialogV2 } = foundry.applications.api;
 const loc = key => game.i18n.localize(key);
@@ -234,8 +234,8 @@ const modTags = mods => mods.map(m => `${m.label}${m.b ? ` +${m.b}B` : ""}${m.d 
 const lossLabel = (name, n) => (n > 0 ? fmt(n === 1 ? "AFC.Battle.Card.Lose1" : "AFC.Battle.Card.LoseN", { l: name, n }) : loc("AFC.Battle.Card.NoLoss"));
 
 /** Jet unique de la cible (option) : une fois par tour, les mêmes dés servent contre chaque attaquant. */
-async function defenseRoll(p, id) {
-  const battle = getBattle();
+async function defenseRoll(p, id, scene) {
+  const battle = getBattle(scene);
   const kept = battle.defenseDice.find(e => e.id === id)?.dice ?? [];
   const bonus = Math.max(0, Math.min(p.bonus, p.rank));
   const count = p.rank + bonus;
@@ -244,14 +244,45 @@ async function defenseRoll(p, id) {
     roll = await new Roll(`${count - kept.length}d6`).evaluate();
     dice = [...kept, ...roll.dice[0].results.map(d => d.result)];
     battle.defenseDice = [...battle.defenseDice.filter(e => e.id !== id), { id, dice }];
-    await saveBattle(battle);
+    await saveBattle(battle, scene);
   }
   return { roll, bonus, reused: kept.length > 0, ...evaluateTest(dice.slice(0, count), p) };
 }
 
+/** Engagements dont la fenêtre de résolution est ouverte : un double clic n'en ouvre pas une deuxième. */
+const resolving = new Set();
+export const resolvingOpen = () => resolving.size > 0;
+
+/** Résolution protégée : une seule fenêtre par engagement. */
+async function guarded(att, def, run) {
+  const key = `${att.id}>${def.id}`;
+  if (resolving.has(key)) return;
+  resolving.add(key);
+  try { return await run(); } finally { resolving.delete(key); }
+}
+
+/** Après la fenêtre : le tour a-t-il changé, ou l'engagement a-t-il été résolu entre-temps ? */
+function stale(before, att, def, scene) {
+  const now = getBattle(scene);
+  if (now.round !== before.round || now.revealed !== before.revealed) {
+    ui.notifications.warn(fmt("AFC.Battle.TurnChanged", { a: att.name, d: def.name }));
+    return true;
+  }
+  if (!before.done.includes(att.id) && now.done.includes(att.id)) {
+    ui.notifications.warn(fmt("AFC.Battle.AlreadyResolved", { a: att.name, d: def.name }));
+    return true;
+  }
+  return false;
+}
+
 /** Mêlée entre deux jetons (attaquant : jeton contrôlé ; défenseur : cible). */
-export async function resolveMelee(att, def) {
-  const battle = getBattle();
+export function resolveMelee(att, def) {
+  return guarded(att, def, () => meleeOnce(att, def));
+}
+
+async function meleeOnce(att, def) {
+  const scene = att.parent;
+  const battle = getBattle(scene);
   const m = meleeMods(att, def, battle);
   m.warnings.push(...uncommanded([att, def], battle));
   const ra = roller(att, battle), rd = roller(def, battle);
@@ -266,10 +297,10 @@ export async function resolveMelee(att, def) {
     ok: { label: loc("AFC.Battle.Roll"), callback: (ev, button) => ({ a: readExtra(button.form.elements, "a"), d: readExtra(button.form.elements, "d"), auto: button.form.elements.auto.checked }) },
     rejectClose: false
   });
-  if (!opts) return;
+  if (!opts || stale(battle, att, def, scene)) return;
   const pa = pool(ra, m.am, opts.a), pd = pool(rd, m.dm, opts.d);
   const ta = await rollDice(pa);
-  const td = battle.singleDefense ? await defenseRoll(pd, def.id) : await rollDice(pd);
+  const td = battle.singleDefense ? await defenseRoll(pd, def.id, scene) : await rollDice(pd);
   let winner = null, loser = null, degrees = 0;
   if (ta.total > td.total) { winner = att; loser = def; degrees = degreesOf(ta.total - td.total); }
   else if (td.total > ta.total) { winner = def; loser = att; degrees = degreesOf(td.total - ta.total); }
@@ -279,12 +310,12 @@ export async function resolveMelee(att, def) {
   if (loser?.actor.system.has.heavyArmor && degrees >= 2) { losses -= 1; notes.push(loc("AFC.Battle.Trait.heavyArmor.name")); }
   // Deux troupes qui se visent : une seule mêlée, les deux engagements sont résolus.
   const mutual = unitOf(battle, def.id).target === att.id && ["charge", "attack"].includes(m.dOrder);
-  await markEngaged([att.id, def.id], mutual ? [att.id, def.id] : [att.id], winner ? [[winner.id, "won", 1], [loser.id, "lost", 1], [winner.id, "inflicted", losses]] : []);
+  await markEngaged(scene, [att.id, def.id], mutual ? [att.id, def.id] : [att.id], winner ? [[winner.id, "won", 1], [loser.id, "lost", 1], [winner.id, "inflicted", losses]] : []);
   const side = (token, r, mods, p, test, order) => ({
     name: token.name, roller: r.name, order: orderLabel(order), total: test.total, dice: test.dice,
     pool: poolLabel(p, test), tags: [...modTags(mods), ...(test.reused ? [loc("AFC.Battle.Options.sameRoll")] : [])], winner: winner === token
   });
-  const apply = loser && losses > 0 ? { token: loser.id, losses } : null;
+  const apply = loser && losses > 0 ? { token: loser.id, losses, scene: scene.id } : null;
   const sides = [side(att, ra, m.am, pa, ta, m.aOrder), side(def, rd, m.dm, pd, td, m.dOrder)];
   // Le vainqueur d'abord : le verdict se lit d'une traite.
   if (winner === def) sides.reverse();
@@ -298,8 +329,13 @@ export async function resolveMelee(att, def) {
 }
 
 /** Tir (tireur : jeton contrôlé ; cible : jeton ciblé). */
-export async function resolveShoot(shooter, target) {
-  const battle = getBattle();
+export function resolveShoot(shooter, target) {
+  return guarded(shooter, target, () => shootOnce(shooter, target));
+}
+
+async function shootOnce(shooter, target) {
+  const scene = shooter.parent;
+  const battle = getBattle(scene);
   const m = shootMods(shooter, target, battle);
   m.warnings.push(...uncommanded([shooter], battle));
   const r = roller(shooter, battle, "shoot");
@@ -315,15 +351,15 @@ export async function resolveShoot(shooter, target) {
     ok: { label: loc("AFC.Battle.Roll"), callback: (ev, button) => ({ ...readExtra(button.form.elements, "a"), auto: button.form.elements.auto.checked }) },
     rejectClose: false
   });
-  if (!opts) return;
+  if (!opts || stale(battle, shooter, target, scene)) return;
   const p = pool(r, m.mods, opts);
   const test = await rollDice({ ...p, difficulty: m.difficulty });
   const degrees = test.outcome?.success ? test.outcome.degrees : 0;
   const losses = m.uncapped ? degrees : Math.min(1, degrees);
-  if (shooter.actor.system.has.reload) await setReload(shooter.id);
+  if (shooter.actor.system.has.reload) await setReload(shooter.id, scene);
   // Touchée, même si elle encaisse : pas de réorganisation en fin de tour.
-  await markEngaged(degrees ? [target.id] : [], [shooter.id], [[shooter.id, "shots", 1], [shooter.id, "hits", degrees ? 1 : 0], [shooter.id, "inflicted", losses]]);
-  const apply = losses ? { token: target.id, losses } : null;
+  await markEngaged(scene, degrees ? [target.id] : [], [shooter.id], [[shooter.id, "shots", 1], [shooter.id, "hits", degrees ? 1 : 0], [shooter.id, "inflicted", losses]]);
+  const apply = losses ? { token: target.id, losses, scene: scene.id } : null;
   const content = await renderCard("battle-test", {
     title: loc("AFC.Battle.Card.Shoot"),
     subtitle: fmt("AFC.Battle.Card.ShootAt", { a: shooter.name, d: target.name }),
@@ -342,7 +378,7 @@ const cardApply = (apply, auto) => ({ apply: auto ? null : apply, pending: apply
 /** Publie la carte du résultat, puis applique les pertes si la case était cochée : la carte se complète. */
 async function postResult({ content, rolls, apply, auto }) {
   const message = await ChatMessage.create({ rolls, content });
-  if (apply && auto) await applyLosses(apply.token, apply.losses, message);
+  if (apply && auto) await applyLosses(apply.token, apply.losses, message, apply.scene);
   return message;
 }
 
@@ -387,12 +423,25 @@ async function askCushion(token, losses) {
 
 /**
  * Applique des pertes d'états à une troupe, après le choix d'encaissement. Le résultat s'inscrit dans
- * la carte d'origine (message), sinon dans une carte à part.
+ * la carte d'origine (message), sinon dans une carte à part. La troupe est cherchée sur la scène de
+ * la carte : le MJ peut en regarder une autre. Une carte ne s'applique qu'une fois.
  */
-export async function applyLosses(tokenId, losses, message = null) {
-  const token = canvas.scene.tokens.get(tokenId);
+export async function applyLosses(tokenId, losses, message = null, sceneId = null) {
+  const key = message?.id ?? tokenId;
+  if (applying.has(key)) return;
+  applying.add(key);
+  try { return await lossesOnce(tokenId, losses, message, sceneId); } finally { applying.delete(key); }
+}
+const applying = new Set();
+
+async function lossesOnce(tokenId, losses, message, sceneId) {
+  const scene = game.scenes.get(sceneId) ?? canvas.scene;
+  const token = scene?.tokens.get(tokenId);
   const actor = token?.actor;
-  if (!actor) return;
+  if (!actor) return ui.notifications.warn(loc("AFC.Battle.TroopGone"));
+  // Carte déjà remplie (bouton cliqué deux fois, ou par deux MJ) : rien à refaire.
+  const card = message ? game.messages.get(message.id) ?? message : null;
+  if (card && !card.content.includes('data-afc-battle="apply"') && !card.content.includes(loc("AFC.Battle.Card.Pending"))) return;
   const s = actor.system;
   let spend = 0;
   if (s.canCushion) {
@@ -568,7 +617,7 @@ export async function commandTroop(tokenId) {
     const success = test.outcome.success;
     const degrees = success ? test.outcome.degrees : 0;
     const bonus = Math.min(OFFICER_TEST.max, Math.ceil(degrees / OFFICER_TEST.degreesPerBonus));
-    const result = { id: tokenId, officer: officerId, bonus };
+    const result = { id: tokenId, officer: officerId, bonus, scene: token.parent.id };
     await (game.user.isGM ? gmHandlers.setCommand(result) : requestGM("setCommand", result));
     return await ChatMessage.create({
       rolls: [test.roll], speaker: ChatMessage.getSpeaker({ actor: officer }),
@@ -585,17 +634,19 @@ export async function commandTroop(tokenId) {
   } finally { commanding.delete(tokenId); }
 }
 
-gmHandlers.setCommand = async ({ id, officer, bonus }) => {
-  const battle = getBattle();
+gmHandlers.setCommand = async data => {
+  const { id, officer, bonus } = data;
+  const scene = sceneOf(data);
+  const battle = getBattle(scene);
   battle.command = [...battle.command.filter(c => c.id !== id), { id, officer, bonus }];
-  await saveBattle(battle);
+  await saveBattle(battle, scene);
 };
 
 /* ---------- Suivi du tour ---------- */
 
 /** Note les troupes engagées en mêlée et les engagements résolus ce tour-ci. */
-async function markEngaged(ids, done = [], stats = []) {
-  const battle = getBattle();
+async function markEngaged(scene, ids, done = [], stats = []) {
+  const battle = getBattle(scene);
   battle.stats ??= {};
   for (const [id, key, n] of stats) {
     battle.stats[id] ??= {};
@@ -603,7 +654,7 @@ async function markEngaged(ids, done = [], stats = []) {
   }
   battle.engaged = [...new Set([...battle.engaged, ...ids])];
   battle.done = [...new Set([...battle.done, ...done])];
-  await saveBattle(battle);
+  await saveBattle(battle, scene);
 }
 
 /**
@@ -614,7 +665,7 @@ export function plannedEngagements(battle = getBattle(), scene = canvas.scene) {
   return battle.units.filter(u => u.target && ["charge", "attack", "shoot"].includes(u.order) && !battle.done.includes(u.id)).map(u => {
     const from = scene.tokens.get(u.id), to = scene.tokens.get(u.target);
     if (!from?.actor || !to?.actor || ["routed", "destroyed"].includes(from.actor.system.state)) return null;
-    // Une cible dÃ©truite sort du combat ; une cible en dÃ©route ne combat plus, on peut encore lui tirer dessus.
+    // Une cible détruite sort du combat ; une cible en déroute ne combat plus, on peut encore lui tirer dessus.
     if (to.actor.system.state === "destroyed" || (u.order !== "shoot" && to.actor.system.state === "routed")) return null;
     // Rechargement : pas de tir au tour qui suit un tir.
     if (u.order === "shoot" && (battle.reload ?? []).includes(u.id)) return null;
@@ -632,10 +683,10 @@ export function resolvePlanned(plan) {
   if (!a || !d) return;
   return plan.shoot ? resolveShoot(a, d) : resolveMelee(a, d);
 }
-async function setReload(id) {
-  const battle = getBattle();
+async function setReload(id, scene) {
+  const battle = getBattle(scene);
   battle.reloadNext = [...new Set([...(battle.reloadNext ?? []), id])];
-  await saveBattle(battle);
+  await saveBattle(battle, scene);
 }
 
 export const orderLabel = key => (key ? loc(`AFC.Battle.Order.${key}`) : "—");
@@ -666,8 +717,36 @@ export async function revealOrders() {
   return message;
 }
 
-/** Fin de tour : réorganisation (Tenir sans combat), fuites, nouveau tour. */
+let ending = false;
+
+/**
+ * Fin de tour : réorganisation (Tenir sans combat), fuites, nouveau tour. Une seule à la fois (double
+ * clic), et confirmation si elle efface des ordres non révélés ou laisse des engagements.
+ */
 export async function endTurn() {
+  if (ending) return;
+  ending = true;
+  try {
+    const before = getBattle();
+    const warn = [];
+    if (!before.revealed) warn.push(loc("AFC.Battle.EndTurnWarn.notRevealed"));
+    else {
+      const left = plannedEngagements(before).length;
+      if (left) warn.push(fmt(left === 1 ? "AFC.Battle.EndTurnWarn.left1" : "AFC.Battle.EndTurnWarn.leftN", { n: left }));
+    }
+    if (resolvingOpen()) warn.push(loc("AFC.Battle.EndTurnWarn.open"));
+    if (warn.length) {
+      const ok = await DialogV2.confirm({
+        window: { title: loc("AFC.Battle.EndTurn") }, classes: ["afc", "afc-dialog"],
+        content: `${warn.map(w => `<p>${esc(w)}</p>`).join("")}<p>${loc("AFC.Battle.EndTurnWarn.confirm")}</p>`, rejectClose: false
+      });
+      if (!ok || getBattle().round !== before.round) return;
+    }
+    return await endTurnNow();
+  } finally { ending = false; }
+}
+
+async function endTurnNow() {
   const battle = getBattle();
   const lines = [];
   for (const token of canvas.scene.tokens.filter(t => t.actor?.type === "troop")) {
@@ -709,20 +788,34 @@ function troopFacts(s, stat = {}) {
   return facts.join(" · ");
 }
 
+/** Ce que le bilan retient d'une troupe. */
+const reportEntry = token => {
+  const s = token.actor.system;
+  return { id: token.id, name: token.name, hidden: token.hidden, side: s.side, state: s.state, men: s.men, lostMen: s.lostMen, loss: s.loss, rallies: s.rallies, disorders: s.disorders };
+};
+
+/** Troupe touchée retirée de la scène (une troupe détruite, par exemple) : ses pertes restent au bilan (MJ). */
+export function keepRemovedTroop(token) {
+  const scene = token.parent;
+  if (!game.user.isGM || token.actor?.type !== "troop" || !token.actor.system.loss || !scene?.getFlag(SYSTEM_ID, "battle")) return;
+  const entry = reportEntry(token);
+  const battle = getBattle(scene);
+  battle.removed = [...(battle.removed ?? []).filter(r => r.id !== entry.id), entry];
+  saveBattle(battle, scene);
+}
+
 /** Bilan compact : pertes par camp, une ligne par troupe touchée (ses faits d'armes au survol). Réservé au MJ jusqu'à publication. */
 export async function battleReport() {
   const battle = getBattle();
-  const troops = canvas.scene.tokens.filter(t => t.actor?.type === "troop" && !t.hidden);
+  const troops = [...canvas.scene.tokens.filter(t => t.actor?.type === "troop").map(reportEntry), ...(battle.removed ?? [])].filter(t => !t.hidden);
   const sides = ["company", "enemy"].map(key => {
-    const list = troops.filter(t => t.actor.system.side === key);
-    const men = list.reduce((n, t) => n + t.actor.system.men, 0);
-    const lost = list.reduce((n, t) => n + t.actor.system.lostMen, 0);
+    const list = troops.filter(t => t.side === key);
+    const men = list.reduce((n, t) => n + t.men, 0);
+    const lost = list.reduce((n, t) => n + t.lostMen, 0);
     const pct = men ? Math.round(lost * 100 / men) : 0;
-    const touched = list.filter(t => t.actor.system.loss > 0);
-    const rows = touched.map(t => {
-      const s = t.actor.system;
-      return { name: t.name, state: s.state, stateLabel: loc(TROOP_STATES[s.state].label), loss: s.loss, lostMen: s.lostMen, facts: troopFacts(s, battle.stats?.[t.id]) };
-    }).sort((a, b) => b.loss - a.loss || b.lostMen - a.lostMen);
+    const touched = list.filter(t => t.loss > 0);
+    const rows = touched.map(t => ({ name: t.name, state: t.state, stateLabel: loc(TROOP_STATES[t.state].label), loss: t.loss, lostMen: t.lostMen, facts: troopFacts(t, battle.stats?.[t.id]) }))
+      .sort((a, b) => b.loss - a.loss || b.lostMen - a.lostMen);
     const intact = list.length - touched.length;
     return { key, label: loc(`AFC.Battle.Side.${key}`), men, lost, pct, rows, intact: intact ? fmt(intact === 1 ? "AFC.Battle.ReportCard.Intact1" : "AFC.Battle.ReportCard.IntactN", { n: intact }) : "" };
   });
@@ -738,7 +831,10 @@ export async function battleReport() {
 export function onRenderBattleCard(message, html) {
   html.querySelectorAll('[data-afc-battle="apply"]').forEach(button => {
     if (!game.user.isGM) return button.remove();
-    button.addEventListener("click", () => applyLosses(button.dataset.token, Number(button.dataset.losses), message));
+    button.addEventListener("click", () => {
+      button.disabled = true;
+      applyLosses(button.dataset.token, Number(button.dataset.losses), message, button.dataset.scene || null);
+    });
   });
   // Bilan : le MJ le montre aux joueurs quand il est prêt.
   html.querySelectorAll('[data-afc-battle="publish"]').forEach(button => {

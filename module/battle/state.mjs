@@ -1,8 +1,9 @@
 /**
  * État de la bataille.
  * - Sur la scène (drapeau, écrit par le MJ) : tour, révélation, météo, engagements du tour.
- * - Sur chaque troupe (drapeau de l'acteur) : ordre, cible, officier, contre-ordre. Le propriétaire
- *   de la troupe l'écrit lui-même : pas besoin qu'un MJ soit connecté pour donner un ordre.
+ * - Sur chaque jeton de troupe (drapeau du jeton) : ordre, cible, officier, contre-ordre. Le propriétaire
+ *   de la troupe l'écrit lui-même : pas besoin qu'un MJ soit connecté pour donner un ordre. Porté par le
+ *   jeton et non par l'acteur : une même troupe posée sur deux scènes garde des ordres distincts.
  * Seul cas qui passe par le MJ : un joueur qui commande une troupe par son officier sans posséder la
  * troupe. Les ordres restent lisibles par les clients (discrétion d'interface, pas un secret fort).
  */
@@ -16,10 +17,16 @@ const EMPTY_UNIT = { order: "", target: "", officer: "", countered: false, path:
 export const BATTLE_OPTIONS = ["outnumber", "officerTest", "trainingBonus", "singleDefense", "holdBreaks", "flankLimit"];
 const TRIAL_OPTIONS = ["flankLimit"];
 
-/** Ordre, cible, officier et contre-ordre d'un jeton de troupe. */
+/** Ordre, cible, officier et contre-ordre d'un jeton de troupe (versions 0.27.9 et avant : sur l'acteur). */
 function readUnit(token, legacy) {
-  const flag = token.actor?.getFlag(SYSTEM_ID, UNIT);
+  const flag = token.getFlag(SYSTEM_ID, UNIT) ?? token.actor?.getFlag(SYSTEM_ID, UNIT);
   return { id: token.id, ...EMPTY_UNIT, ...(flag ?? legacy ?? {}) };
+}
+
+/** Écrit ordre, cible et officier sur le jeton, et retire l'ancien drapeau de l'acteur. */
+export async function writeUnit(token, data) {
+  await token.setFlag(SYSTEM_ID, UNIT, data);
+  if (token.actor?.getFlag(SYSTEM_ID, UNIT) && token.actor.isOwner) await token.actor.unsetFlag(SYSTEM_ID, UNIT);
 }
 
 /** Bataille de la scène (copie modifiable) ; les troupes sont lues sur leurs acteurs. */
@@ -45,9 +52,18 @@ export async function saveBattle(battle, scene = canvas.scene) {
   return scene.setFlag(SYSTEM_ID, FLAG, rest);
 }
 
-/** Efface la bataille de la scène et les ordres des troupes (MJ). */
+/**
+ * Efface la bataille de la scène, les ordres et les officiers des troupes (MJ). Ce qui vaut « par
+ * bataille » repart à neuf : encaissement, ralliements, Indéfectible, première perte des Bleus.
+ * L'état des troupes ne change pas.
+ */
 export async function clearBattle(scene = canvas.scene) {
-  for (const t of scene.tokens.filter(t => t.actor?.type === "troop")) await t.actor.unsetFlag(SYSTEM_ID, UNIT);
+  for (const t of scene.tokens.filter(t => t.actor?.type === "troop")) {
+    await t.unsetFlag(SYSTEM_ID, UNIT);
+    const a = t.actor;
+    if (a.getFlag(SYSTEM_ID, UNIT)) await a.unsetFlag(SYSTEM_ID, UNIT);
+    await a.update({ "system.cushion": a.system.cushionMax, "system.rallies": 0, [`flags.${SYSTEM_ID}.-=steadfastUsed`]: null, [`flags.${SYSTEM_ID}.-=firstLoss`]: null });
+  }
   return scene.unsetFlag(SYSTEM_ID, FLAG);
 }
 
@@ -55,7 +71,7 @@ export async function clearBattle(scene = canvas.scene) {
 export async function resetOrders(scene = canvas.scene) {
   for (const t of scene.tokens.filter(t => t.actor?.type === "troop")) {
     const officer = readUnit(t).officer;
-    await t.actor.setFlag(SYSTEM_ID, UNIT, { ...EMPTY_UNIT, officer });
+    await writeUnit(t, { ...EMPTY_UNIT, officer });
   }
 }
 
@@ -79,7 +95,7 @@ export function canCommand(token, battle = getBattle(token.parent), user = game.
 export async function setUnit(tokenId, changes) {
   const token = canvas.scene.tokens.get(tokenId);
   if (!token?.actor) return;
-  if (token.actor.isOwner) return applyUnit(canvas.scene, tokenId, changes, game.user);
+  if (token.isOwner) return applyUnit(canvas.scene, tokenId, changes, game.user);
   // Commande par l'officier sans posséder la troupe : le MJ écrit à notre place.
   game.socket.emit(CHANNEL, { action: "unit", scene: canvas.scene.id, token: tokenId, changes, user: game.user.id });
 }
@@ -104,7 +120,7 @@ async function applyUnit(scene, tokenId, changes, user) {
   // Un ordre sans cible n'en garde pas (Tenir, Manœuvrer, Se replier).
   if ("order" in changes && !["charge", "attack", "shoot"].includes(unit.order)) unit.target = "";
   const { id, ...data } = unit;
-  await token.actor.setFlag(SYSTEM_ID, UNIT, data);
+  await writeUnit(token, data);
   if (counter) {
     ChatMessage.create({ content: `<div class="afc-card battle"><p>${game.i18n.format("AFC.Battle.CounterOrder", {
       group: foundry.utils.escapeHTML(token.name), order: game.i18n.localize(`AFC.Battle.Order.${unit.order}`)
@@ -133,11 +149,31 @@ export function askUser(userId, kind, data, timeout = 60000) {
 /** Actions, par type (remplies par les modules qui en ont besoin). */
 export const gmHandlers = {};
 
-/** Exécute une action chez le MJ actif : tout de suite si c'est nous, sinon par le canal du système. */
+/**
+ * Exécute une action chez le MJ actif : tout de suite si c'est nous, sinon par le canal du système.
+ * La demande porte la scène de qui la fait : le MJ peut en regarder une autre.
+ */
 export function requestGM(kind, data) {
-  if (game.users.activeGM === game.user) return gmHandlers[kind]?.(data);
+  const payload = { scene: canvas.scene?.id, user: game.user.id, ...data };
+  if (game.users.activeGM === game.user) return gmHandlers[kind]?.(payload);
   if (!game.users.activeGM) return ui.notifications.warn(game.i18n.localize("AFC.BattleBook.NoGM"));
-  game.socket.emit(CHANNEL, { action: "gm", kind, data });
+  game.socket.emit(CHANNEL, { action: "gm", kind, data: payload });
+}
+
+/** Scène d'une action demandée au MJ : celle de la demande, sinon celle qu'il regarde. */
+export const sceneOf = data => game.scenes.get(data?.scene) ?? canvas.scene;
+
+/** Avertit l'utilisateur qui a fait la demande (chez lui) et le MJ qui la traite. */
+export function tellUser(userId, key, data = {}) {
+  ui.notifications.warn(game.i18n.format(key, data));
+  if (userId && userId !== game.user.id) game.socket.emit(CHANNEL, { action: "notify", user: userId, key, data });
+}
+
+/** Action qui a besoin de la carte (cases, distances) : le MJ doit regarder la scène de la demande. */
+export function gmOnScene(data, scene = sceneOf(data)) {
+  if (scene?.id === canvas.scene?.id) return true;
+  tellUser(data?.user, "AFC.Battle.GmElsewhere", { scene: scene?.name ?? "?" });
+  return false;
 }
 
 /** Écoute du canal : questions aux joueurs, et un MJ (le premier connecté) écrit pour le joueur qui commande par son officier. */
@@ -149,6 +185,10 @@ export function registerBattleSocket() {
       return game.socket.emit(CHANNEL, { action: "answer", id: data.id, answer: answer ?? null });
     }
     if (data?.action === "answer") return asks.get(data.id)?.(data.answer);
+    if (data?.action === "notify") {
+      if (data.user === game.user.id) ui.notifications.warn(game.i18n.format(data.key, data.data ?? {}));
+      return;
+    }
     if (data?.action === "gm") {
       if (game.users.activeGM === game.user) gmHandlers[data.kind]?.(data.data);
       return;
@@ -171,7 +211,7 @@ export async function migrateBattle(scene = canvas.scene) {
   for (const u of battle.units) {
     const token = scene.tokens.get(u.id);
     const { id, ...data } = u;
-    if (token?.actor && !token.actor.getFlag(SYSTEM_ID, UNIT)) await token.actor.setFlag(SYSTEM_ID, UNIT, data);
+    if (token?.actor && !token.getFlag(SYSTEM_ID, UNIT)) await writeUnit(token, data);
   }
   await saveBattle(battle, scene);
 }

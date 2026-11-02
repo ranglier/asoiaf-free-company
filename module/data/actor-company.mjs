@@ -6,7 +6,7 @@ const PEOPLE_PER_RESERVE_POINT = 40;
 const { fields } = foundry.data;
 
 const resource = () => new fields.SchemaField({
-  value: new fields.NumberField({ required: true, integer: true, min: 0, initial: 0 })
+  value: new fields.NumberField({ required: true, nullable: false, integer: true, min: 0, initial: 0 })
 });
 
 /** Compagnie de mercenaires (règles maison), modifiable par les joueurs. */
@@ -18,19 +18,19 @@ export default class CompanyData extends foundry.abstract.TypeDataModel {
       motto: new fields.StringField({ blank: true }),
       leader: new fields.ForeignDocumentField(foundry.documents.BaseActor, { idOnly: true }),
       resources: new fields.SchemaField(Object.fromEntries(COMPANY_RESOURCES.map(k => [k, resource()]))),
-      supply: new fields.NumberField({ required: true, integer: true, min: 0, initial: 0 }),
-      cohesion: new fields.NumberField({ required: true, integer: true, min: 0, initial: 0 }),
+      supply: new fields.NumberField({ required: true, nullable: false, integer: true, min: 0, initial: 0 }),
+      cohesion: new fields.NumberField({ required: true, nullable: false, integer: true, min: 0, initial: 0 }),
       // Contrat en cours (fixé par le MJ) et suivi des mois.
       contract: new fields.SchemaField({
         employer: new fields.StringField({ blank: true }),
-        pay: new fields.NumberField({ required: true, integer: true, min: 0, initial: 0 }),
-        months: new fields.NumberField({ required: true, integer: true, min: 0, initial: 0 }),
+        pay: new fields.NumberField({ required: true, nullable: false, integer: true, min: 0, initial: 0 }),
+        months: new fields.NumberField({ required: true, nullable: false, integer: true, min: 0, initial: 0 }),
         terms: new fields.StringField({ blank: true })
       }),
       // Création guidée déjà faite : le bouton de création disparaît.
       created: new fields.BooleanField({ initial: false }),
-      month: new fields.NumberField({ required: true, integer: true, min: 0, initial: 0 }),
-      unpaidMonths: new fields.NumberField({ required: true, integer: true, min: 0, initial: 0 }),
+      month: new fields.NumberField({ required: true, nullable: false, integer: true, min: 0, initial: 0 }),
+      unpaidMonths: new fields.NumberField({ required: true, nullable: false, integer: true, min: 0, initial: 0 }),
       // Membres : rôle (texte libre), nom, et lien éventuel vers un acteur du monde.
       members: new fields.ArrayField(new fields.SchemaField({
         role: new fields.StringField({ blank: true }),

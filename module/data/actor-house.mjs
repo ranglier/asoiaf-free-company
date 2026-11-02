@@ -6,7 +6,7 @@ const LEGACY_ROLES = ["lord", "lady", "heir", "maester", "septon", "masterAtArms
 const { fields } = foundry.data;
 
 const resource = () => new fields.SchemaField({
-  value: new fields.NumberField({ required: true, integer: true, min: 0, initial: 0 })
+  value: new fields.NumberField({ required: true, nullable: false, integer: true, min: 0, initial: 0 })
 });
 
 /** Maison noble (règles d'origine). */
@@ -23,7 +23,7 @@ export default class HouseData extends foundry.abstract.TypeDataModel {
       heraldry: new fields.ObjectField(),
       founding: new fields.StringField({ blank: true }),
       resources: new fields.SchemaField(Object.fromEntries(HOUSE_RESOURCES.map(k => [k, resource()]))),
-      glory: new fields.NumberField({ required: true, integer: true, min: 0, initial: 0 }),
+      glory: new fields.NumberField({ required: true, nullable: false, integer: true, min: 0, initial: 0 }),
       // Création faite : le bouton de création est alors masqué (sauf pour le MJ en mode édition).
       created: new fields.BooleanField({ initial: false }),
       // Événements historiques tirés à la création (leurs effets sont déjà reportés dans les ressources).
