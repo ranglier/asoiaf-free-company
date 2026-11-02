@@ -1,5 +1,5 @@
 /**
- * Tables des règles de bataille (règles maison, docs/regles-bataille.md du projet VTT_GOT).
+ * Tables des règles de bataille (règles maison, docs/regles-bataille.md).
  */
 
 /** États d'une troupe, du meilleur au pire, avec le pourcentage de pertes en fin de bataille. */

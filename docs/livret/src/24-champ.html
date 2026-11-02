@@ -1,0 +1,77 @@
+<header class="chapitre" id="s24">
+  <p class="surtitre">Batailles</p>
+  <h1><span class="num">2.4</span> Le champ de bataille</h1>
+</header>
+
+<section class="corps">
+
+<h2>Terrains</h2>
+<table class="ref texte long">
+  <caption>Terrains</caption>
+  <thead><tr><th>Terrain</th><th>Effet</th></tr></thead>
+  <tbody>
+    <tr><td class="nom">Colline</td><td>+1B en défense et au tir contre un adversaire plus bas&nbsp;; charger vers le haut −1D. Rien si les deux sont dessus. Cache la vue.</td></tr>
+    <tr><td class="nom">Bois</td><td>Couvert +3 contre les tirs. Cavalerie −1D. Cache la vue.</td></tr>
+    <tr><td class="nom">Marais</td><td>Coûte 2 cases de déplacement. Pas de Charge. Cavalerie −1D.</td></tr>
+    <tr><td class="nom">Rivière</td><td>Infranchissable hors gué ou pont.</td></tr>
+    <tr><td class="nom">Gué</td><td>L'attaquant qui traverse −1D, le défenseur +1B. Cavalerie −1D.</td></tr>
+    <tr><td class="nom">Pont</td><td>Comme un gué&nbsp;; une troupe par tour <span class="mj">Arbitré par le MJ</span>.</td></tr>
+    <tr><td class="nom">Route</td><td>+1 case en Manœuvrant le long de la route.</td></tr>
+    <tr><td class="nom">Village</td><td>Couvert +3, +1B pour Tenir, cavalerie −1D. Cache la vue.</td></tr>
+    <tr><td class="nom">Obstacles</td><td>Haies, pieux, fossé&nbsp;: charge à travers −1D, couvert +1.</td></tr>
+    <tr><td class="nom">Ruines, fortifications</td><td>Couvert +3, trait Défenseurs. Cachent la vue.</td></tr>
+  </tbody>
+</table>
+<p><b>Pluie</b>&nbsp;: −1D au tir, pas de Charge dans la boue. <b>Brouillard</b>&nbsp;: vue limitée à 2 cases.</p>
+
+<h2>La vue</h2>
+<p>On voit une case si la <b>ligne droite</b> entre les centres des deux cases ne traverse aucune case qui cache la vue. Les troupes ne cachent rien&nbsp;; une troupe au contact est toujours vue. <b>De jour, pas de limite de distance</b>&nbsp;: seul le terrain coupe la vue. La vue est symétrique, sauf dans un bois.</p>
+<p><b>Colline</b>&nbsp;: on ne voit pas derrière, sauf si l'on est dessus. Du sommet on voit tout, sauf l'<b>angle mort</b>&nbsp;: le pied d'une autre colline. Entre colline et plaine, la vue se juge depuis la colline.</p>
+<p><b>Village, ruines</b>&nbsp;: cachent ce qui est au-delà. Marais, haies, rivière, gué, pont et route ne cachent rien.</p>
+
+<figure class="schema colonne">
+  <svg id="schema-colline" viewBox="0 0 380 205" role="img" aria-label="Une colline entre deux troupes."></svg>
+  <figcaption>La colline coupe la vue entre <b>A</b> et <b>X</b>. Du sommet, <b>B</b> voit les deux.</figcaption>
+</figure>
+
+<aside class="exemple">
+  <p class="titre">Exemple · Herberouge</p>
+  <p>Brynden Rivers poste ses archers, les Dents de Freux, au sommet de Crête-en-Pleurs&nbsp;: sur le schéma, ils sont <b>B</b>. De là, ils voient toute la plaine où charge l'armée de Daemon Feunoyr, <b>X</b>, et les troupes royales postées derrière la crête, <b>A</b>. Les rebelles, en bas, ne voient pas <b>A</b>&nbsp;: la colline la leur cache, et ils ne découvrent ce qui les attend qu'en arrivant au contact. Seul le pied d'une autre hauteur échapperait aux archers&nbsp;: c'est l'angle mort (<a href="#s27">2.7</a>).</p>
+</aside>
+
+<p><b>Bois</b>&nbsp;: de l'extérieur, on ne voit que la lisière&nbsp;; depuis la lisière, 2 cases dans le bois et dehors sans limite&nbsp;; plus au fond, 2 cases dans le bois et 1 case dehors. Qui se déplace au fond d'un bois reste caché.</p>
+
+<figure class="schema colonne">
+  <svg id="schema-bois" viewBox="0 0 420 252" role="img" aria-label="Trois positions par rapport à un bois, et les cases vues depuis chacune."></svg>
+  <figcaption>Cases sombres&nbsp;: non vues. Le bois va de la 4<sup>e</sup> à la 9<sup>e</sup> case.</figcaption>
+</figure>
+
+
+<h2>La nuit</h2>
+<p>Une troupe ne voit que les <b>cases qui la touchent</b> (Éclaireurs&nbsp;: 2). Mais une <b>case éclairée</b> (feux, village, torches) se voit de partout, et une troupe qui a <b>combattu ou tiré</b> ce tour se voit à 3 cases.</p>
+
+<figure class="schema colonne">
+  <svg id="schema-nuit" viewBox="0 0 420 228" role="img" aria-label="Une attaque de nuit près d'un camp éclairé."></svg>
+  <figcaption><b>A</b> voit <b>X</b> (au contact), le camp et <b>Y</b> (éclairés), <b>Z</b> (a tiré, à 3 cases). <b>W</b> lui échappe.</figcaption>
+</figure>
+
+<aside class="exemple">
+  <p class="titre">Exemple · Devant Yunkaï</p>
+  <p>Daenerys frappe de nuit le camp de l'armée yunkaïie&nbsp;; sur le schéma, <b>A</b> est l'une de ses troupes. Les feux trahissent le camp&nbsp;: <b>A</b> voit de loin les tentes et <b>Y</b>, qui les garde. <b>X</b>, une sentinelle dans le noir, ne voit <b>A</b> qu'au moment où celle-ci la touche. <b>Z</b> tire au jugé&nbsp;: son tir la montre à 3 cases. <b>W</b>, dans l'obscurité, échappe à <b>A</b> comme <b>A</b> lui échappe&nbsp;: c'est ainsi que les Corbeaux Tempête, passés au service de Daenerys, tombent sur les arrières yunkaïis sans que personne les ait vus venir.</p>
+</aside>
+
+<h2>Repérer et identifier</h2>
+<p>Jusqu'à <b>3 cases</b> (Éclaireurs&nbsp;: 4), une troupe vue est <b>identifiée</b>&nbsp;: genre, état apparent, traits visibles, jamais l'entraînement. Au-delà, c'est une <b>troupe inconnue</b>&nbsp;: sa position seulement. Lire le champ l'identifie de loin (<a href="#s28">2.8</a>).</p>
+<p>Il faut voir sa cible pour Tirer ou Charger. On peut viser une <b>case</b> non vue, à −1D&nbsp;: si elle est vide, l'ordre est perdu&nbsp;; sinon le MJ résout <span class="mj">Arbitré par le MJ</span>.</p>
+
+<aside class="exemple">
+  <p class="titre">Exemple · La bataille des Cloches</p>
+  <p>Blessé, Robert Baratheon se cache dans Pierremoûtier&nbsp;; les habitants le tiennent à l'abri. Jon Connington occupe la ville, mais le village cache la vue&nbsp;: ses troupes doivent fouiller les maisons, case par case. Il cherche encore quand Eddard Stark et Hoster Tully arrivent&nbsp;: les cloches sonnent, et les rebelles cachés sortent au contact. Dans les rues, l'infanterie qui Tient profite du couvert et du +1B du village&nbsp;; la cavalerie royale, à −1D, n'y vaut rien.</p>
+</aside>
+
+<aside class="foundry">
+  <p class="titre">Dans Foundry</p>
+  <p>«&nbsp;Peindre les terrains&nbsp;» type chaque région&nbsp;; «&nbsp;Éclairé de nuit&nbsp;» l'allume. L'option «&nbsp;Brouillard de guerre par case&nbsp;» calcule la vue de la Compagnie&nbsp;: cases non vues assombries, ennemis cachés, inconnus en «&nbsp;?&nbsp;». Case «&nbsp;Nuit&nbsp;» dans la fenêtre Bataille. Menu du jeton ennemi&nbsp;: <b>Identifier</b>, <b>Rendre au brouillard</b>.</p>
+</aside>
+
+</section>

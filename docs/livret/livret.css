@@ -1,0 +1,209 @@
+/* ASOIAF Free Company : Règles. Mise en page du livret, style C retenu par Jules (2026-11-02) : noir et blanc,
+   deux colonnes, tableaux marqués, schémas en couleur, cartouche noir « Arbitré par le MJ ». */
+:root {
+  --papier: #ffffff; --encre: #111111; --encre-forte: #000000; --encre-douce: #444444; --titre: #000000; --accent: #333333;
+  --f-corps: "Georgia", "Cambria", serif; --f-titre: "Georgia", serif; --f-titre-court: "Georgia", serif;
+  --taille: 10.2pt; --interligne: 1.4; --h1: 26pt; --h2: 14pt; --h3: 10.5pt;
+  --filet-colonnes: .3pt solid #999;
+  /* Schémas en couleur (seule touche de couleur du livret) : colline ocre, bois vert, eau bleue, village brun,
+     Compagnie bleue, ennemi rouge. */
+  --case-bord: #9aa3ad; --case-plaine: #f7f6f2; --case-colline: #e3c27a; --case-bois: #8fb87e; --case-ombre: #2b2b2b;
+  --case-village: #c9a27e; --case-eau: #9cc3e0; --case-gue: #c7dcea; --case-route: #ddd6c6;
+  --compagnie: #1f6fb2; --compagnie-bord: #154e7d; --compagnie-texte: #ffffff;
+  --ennemi: #c0392b; --ennemi-bord: #87281e; --ennemi-texte: #ffffff; --fleche: #111111; --feu: #e67e22;
+}
+
+@page {
+  size: A4;
+  margin: 17mm 24mm 18mm 24mm;
+  @bottom-center { content: counter(page); font-family: var(--f-titre-court); font-size: 9pt; color: var(--encre-douce); }
+  @top-right { content: "ASOIAF Free Company : Règles"; font-family: var(--f-titre-court); font-size: 8pt; color: var(--encre-douce); }
+}
+@page couverture { margin: 0; @top-right { content: none; } @bottom-center { content: none; } }
+html { -webkit-print-color-adjust: exact; print-color-adjust: exact; background: var(--papier); }
+body { margin: 0; font-family: var(--f-corps); font-size: var(--taille); line-height: var(--interligne); color: var(--encre); hyphens: auto; }
+b { font-weight: 700; color: var(--encre-forte); }
+
+/* Couverture */
+.couverture { page: couverture; height: 297mm; box-sizing: border-box; padding: 70mm 22mm 25mm; display: flex; flex-direction: column; border: 0; }
+.couverture .titre-couv { font-weight: 700; text-align: left;  font-size: 46pt; margin: 0; line-height: 1; border-bottom: 2pt solid #000; padding-bottom: 6mm; }
+.couverture .sous-titre { font-size: 15pt; font-style: italic; margin: 6mm 0 0; }
+.couverture .pied { margin-top: auto; font-size: 9pt; color: var(--encre-douce); border-top: .5pt solid #000; padding-top: 3mm; }
+.couverture svg { width: 120mm; margin: 22mm 0 0; }
+
+/* Sections regroupées par sections.js : une section courte est insécable et suit la précédente si elle tient
+   en entier dans la page, une section longue (ou le chapitre) ouvre une page. La marge du haut disparaît en
+   haut de page. À l'écran, le corps prend la largeur de la page imprimée pour mesurer les sections. */
+@media screen { body { width: 162mm; } }
+.section { margin-top: 9mm; }
+.section.courte { break-inside: avoid; }
+.section.nouvelle-page { break-before: page; margin-top: 0; }
+.chapitre { margin: 0 0 3mm; padding-bottom: 1.5mm; border-bottom: 1.5pt solid #000; break-inside: avoid; break-after: avoid; }
+.chapitre .surtitre { font-size: 7.5pt; margin-bottom: .5mm; }
+.surtitre { margin: 0; font-family: var(--f-titre-court); font-size: 9pt; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); }
+h1 { margin: 0; font-family: var(--f-titre); font-weight: 600; font-size: 19pt; line-height: 1.1; color: var(--titre); }
+h1 .num { display: inline-block; min-width: 13mm; color: #666; }
+.ouverture-chap { border-bottom: 3pt double #000; padding-bottom: 3mm; margin-bottom: 0; }
+.ouverture-chap h1 { font-size: 34pt; }
+.ouverture-chap + .chapitre { margin-top: 5mm; }
+a { color: inherit; text-decoration: none; }
+.corps a { border-bottom: .5pt dotted #555; }
+.formule { text-align: center; font-weight: 700; border-top: .5pt solid #000; border-bottom: .5pt solid #000; padding: 1.2mm 0; }
+
+/* Corps en deux colonnes */
+.corps { }
+.corps.memo { column-count: 2; column-gap: 8mm; column-rule: var(--filet-colonnes); }
+.corps.une-colonne { column-count: 1; }
+h2 { margin: 6mm 0 2mm; font-family: var(--f-titre); font-weight: 600; font-size: var(--h2); color: var(--titre); break-after: avoid; border-bottom: .5pt solid #000; padding-bottom: 1mm; font-variant-caps: all-small-caps; letter-spacing: .04em; }
+h2:first-child { margin-top: 0; }
+h3 { margin: 4mm 0 1mm; font-family: var(--f-titre-court); font-size: var(--h3); font-style: italic; color: var(--accent); break-after: avoid; }
+p { margin: 0 0 2mm; text-align: justify; }
+ul, ol { margin: 0 0 2mm; padding-left: 5mm; }
+li { margin-bottom: .6mm; }
+.renvoi { font-style: italic; color: var(--encre-douce); }
+
+/* Tableaux marqués : cadre noir, colonnes séparées, lignes alternées, groupes en bandeau */
+.pleine { column-span: all; margin: 3mm 0; background: var(--papier); position: relative; }
+table { width: 100%; border-collapse: collapse; font-size: .92em; break-inside: avoid; border: 1pt solid #000; }
+table.mini { margin: 1mm auto 2.5mm; width: auto; min-width: 90mm; }
+caption { caption-side: top; text-align: left; font-family: var(--f-titre-court); font-weight: 700; text-transform: uppercase; letter-spacing: .05em; font-size: 1em; color: var(--titre); border-bottom: 1.5pt solid #000; margin-bottom: 1mm; padding-bottom: 1mm; }
+th { text-align: left; font-family: var(--f-titre-court); font-weight: 600; background: #000; color: #fff; text-transform: uppercase; font-size: .9em; letter-spacing: .04em; padding: 1.5mm 2mm; }
+td { padding: 1mm 2mm; border-bottom: .4pt solid #888; vertical-align: top; }
+th + th, td + td { border-left: .4pt solid #999; }
+tbody tr:nth-child(even):not(.groupe) td { background: #f3f3f3; }
+tr.groupe td { font-family: var(--f-titre-court); background: #d4d4d4; color: #000; font-weight: 700; text-transform: uppercase; font-size: .88em; letter-spacing: .05em; border-top: 1pt solid #000; border-bottom: 1pt solid #000; padding-top: 1.4mm; }
+tr.groupe td + td { border-left: none; }
+.ref tr:not(.groupe) td:last-child { font-weight: 700; text-align: center; white-space: nowrap; }
+.ref.texte tr:not(.groupe) td:last-child { font-weight: 400; text-align: left; white-space: normal; }
+td.nom { font-weight: 700; white-space: nowrap; }
+
+/* Encadrés : ils évitent de se couper ; sinon chaque morceau garde son cadre */
+aside { break-inside: avoid; box-decoration-break: clone; -webkit-box-decoration-break: clone; margin: 3mm 0; padding: 2.5mm 3.5mm; }
+aside .titre { margin: 0 0 1.5mm; font-family: var(--f-titre-court); font-size: 1.02em; font-weight: 700; letter-spacing: .03em; text-align: left; }
+aside p { margin-bottom: 1.4mm; }
+aside p:last-child, aside ul:last-child { margin-bottom: 0; }
+.exemple { background: #f2f2f2; border: .5pt solid #000; }
+.foundry { background: #fff; border: .5pt dashed #000; font-size: .93em; }
+.conseil { background: #fff; border: 1pt solid #000; }
+.mj { display: inline-block; font-family: var(--f-titre-court); font-size: .72em; font-weight: 600; letter-spacing: .03em; text-transform: uppercase; white-space: nowrap; padding: .2mm 1.5mm; border-radius: 1mm; background: #000; color: #fff; vertical-align: .15em; }
+
+/* Schémas */
+figure.schema { column-span: all; break-inside: avoid; margin: 3mm 0; padding: 1mm 0; text-align: center; background: var(--papier); position: relative; }
+figure.schema.colonne { column-span: none; }
+figure.schema svg { width: 125mm; height: auto; }
+figure.schema.colonne svg { width: 105mm; }
+figure.schema.large svg { width: 150mm; }
+figcaption { margin: 1mm auto 0; max-width: 150mm; font-size: .9em; font-style: italic; color: var(--encre-douce); text-align: left; }
+.hex { stroke: var(--case-bord); stroke-width: .8; }
+.hex-plaine { fill: var(--case-plaine); }
+.hex-colline { fill: var(--case-colline); }
+.hex-bois { fill: var(--case-bois); }
+.hex-village { fill: var(--case-village); }
+.hex-eau { fill: var(--case-eau); }
+.hex-gue { fill: var(--case-gue); }
+.hex-route { fill: var(--case-route); }
+.hex-angle-mort { fill: var(--case-ombre); fill-opacity: .55; }
+.hex-voile { fill: #1d2430; fill-opacity: .55; stroke: none; }
+.hex-vu { fill: none; stroke: #111; stroke-width: 1.6; }
+.unit { stroke-width: 1.4; }
+.unit-compagnie { fill: var(--compagnie); stroke: var(--compagnie-bord); }
+.unit-ennemi { fill: var(--ennemi); stroke: var(--ennemi-bord); }
+.unit-inconnu { fill: #777; stroke: #333; }
+.unit-lettre { font-family: var(--f-titre-court); font-size: 13px; font-weight: 700; }
+.unit-lettre-compagnie, .unit-lettre-ennemi, .unit-lettre-inconnu { fill: #fff; }
+.fleche { stroke: var(--fleche); stroke-width: 2; }
+.fleche.coupee { stroke-dasharray: 5 4; }
+.fleche.fin { stroke: #555; stroke-dasharray: 2 3; }
+.pointe { fill: var(--fleche); }
+.bloque { stroke: var(--ennemi); stroke-width: 2.6; }
+.feu { fill: var(--feu); stroke: #8a4a10; stroke-width: .6; }
+.etiquette, .note, .note-case { font-family: var(--f-titre-court); font-size: 11px; fill: var(--encre); }
+.note-case { font-size: 10px; font-style: italic; }
+.note.titre { font-weight: 700; font-size: 12px; }
+.note.petite { font-size: 10px; }
+
+/* Séquence du tour */
+.sequence { column-span: all; display: flex; gap: 1.5mm; margin: 3mm 0 4mm; break-inside: avoid; }
+.sequence div { flex: 1; border: 1pt solid #000; padding: 1.5mm 2mm; font-size: .86em; line-height: 1.25; }
+.sequence div b { display: block; font-size: 1.05em; margin-bottom: .8mm; }
+.sequence div span { display: block; font-size: 1.6em; font-weight: 700; line-height: 1; margin-bottom: .8mm; }
+.sequence div.mj-phase { background: #f2f2f2; }
+
+/* Fiche de troupe, sur le modèle de la fiche Foundry : en-tête (bannière, nom, sous-titre), quatre pistes,
+   puis deux colonnes (compétences ; valeurs de troupe et traits). */
+.fiche { break-inside: avoid; border: 1.5pt solid #000; margin: 3mm 0; padding: 2.5mm 3mm 3mm; font-size: .92em; }
+.fiche .tete { display: flex; gap: 3mm; align-items: center; border-bottom: 1pt solid #000; padding-bottom: 2mm; margin-bottom: 2.5mm; }
+.fiche .banniere { width: 15mm; height: 15mm; flex: none; }
+.fiche .nom { margin: 0; font-family: var(--f-titre); font-size: 1.7em; font-weight: 600; line-height: 1.1; }
+.fiche .sous { margin: .6mm 0 0; font-style: italic; color: #333; }
+.fiche .pistes { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 2mm; margin-bottom: 2.5mm; }
+.fiche .piste, .fiche .bloc { border: .6pt solid #000; border-radius: 1.2mm; padding: 1.3mm 2.2mm 1.6mm; }
+.fiche .lbl { display: block; font-weight: 700; font-size: .86em; margin-bottom: 1mm; }
+.fiche .pips { display: inline-flex; gap: 1.1mm; vertical-align: middle; }
+.fiche .pips i { display: inline-block; width: 3.2mm; height: 3.2mm; border: .7pt solid #000; border-radius: 50%; }
+.fiche .pips i.on { background: #000; }
+.fiche .note { display: block; font-size: .8em; font-style: italic; color: #444; margin-top: .8mm; }
+.fiche .valeur { display: inline-block; min-width: 12mm; border: .6pt solid #000; border-radius: 1mm; padding: .2mm 2.5mm; text-align: center; font-weight: 700; }
+.fiche .colonnes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 3mm; align-items: start; }
+.fiche .bloc .t { margin: 0 0 .8mm; font-family: var(--f-titre); font-weight: 700; font-size: 1.08em; border-bottom: .7pt solid #000; padding-bottom: .5mm; }
+.fiche .ligne { display: flex; justify-content: space-between; align-items: center; gap: 2mm; border-bottom: .4pt dotted #999; padding: .75mm 0; }
+.fiche .ligne:last-of-type { border-bottom: none; }
+.fiche .ligne > b { min-width: 7mm; text-align: right; }
+.fiche .ligne.cle > span { font-weight: 700; }
+.fiche .etiquettes { display: flex; flex-wrap: wrap; gap: 1.2mm; margin-top: 1.4mm; }
+.fiche .etiquettes span { border: .6pt solid #000; border-radius: .8mm; padding: .1mm 1.6mm; font-size: .9em; }
+.fiche .etiquettes span.amelio { border-style: dashed; }
+.fiche .num { display: inline-block; width: 4.2mm; height: 4.2mm; line-height: 4.2mm; border-radius: 50%; background: #000; color: #fff; text-align: center; font-size: .75em; font-weight: 700; font-style: normal; margin-right: 1mm; vertical-align: .2mm; }
+/* Fiche vierge : cases à remplir à la main. */
+.fiche.vierge .nom { flex: 1; border-bottom: .6pt dotted #000; font-size: 1.2em; padding-bottom: 1mm; }
+.fiche.vierge .sous { font-size: .85em; }
+.fiche.vierge .case { display: inline-block; width: 8mm; height: 4.6mm; border: .6pt solid #000; border-radius: .8mm; }
+.fiche.vierge .case.large { width: 16mm; }
+.fiche.vierge .ecrire { display: block; border-bottom: .4pt dotted #999; height: 5mm; }
+.legende-fiche { font-size: .9em; margin: 0 0 3mm; text-align: left; }
+.vierge + .vierge { margin-top: 5mm; }
+
+/* Sommaire */
+.sommaire { list-style: none; padding: 0; margin: 3mm 0 6mm; font-size: 1em; }
+.sommaire li { border-bottom: .4pt dotted #888; padding: .6mm 0; margin: 0; }
+.sommaire li a, .sommaire li.plus-tard { display: flex; gap: 3mm; }
+.sommaire li span:first-child { width: 12mm; font-weight: 700; }
+.sommaire .p { margin-left: auto; font-weight: 700; }
+.sommaire li.chap { font-weight: 700; border-bottom: 1pt solid #000; margin-top: 3mm; text-transform: uppercase; letter-spacing: .05em; }
+.legende-encadres { columns: 2; column-gap: 8mm; font-size: .95em; }
+.legende-encadres aside { margin: 0 0 2.5mm; }
+.legende-encadres p { break-inside: avoid; }
+/* Aucun tableau n'est coupé : s'il ne tient pas en bas de page, il passe entier à la suivante. */
+table.long { break-inside: avoid; margin-bottom: 3mm; }
+.memo p { break-inside: avoid; }
+table.long thead { display: table-header-group; }
+table.long tr { break-inside: avoid; }
+table.long tr.groupe, table.long caption { break-after: avoid; }
+.sommaire li.plus-tard { color: #777; }
+
+/* Aide-mémoire : texte serré */
+.memo { font-size: 8.4pt; line-height: 1.28; }
+.memo .titre-memo { font-size: 10.5pt; font-weight: 700; font-variant-caps: all-small-caps; letter-spacing: .04em; margin: 3mm 0 1.2mm; border-bottom: .5pt solid #000; break-after: avoid; }
+.memo p { margin-bottom: 1.2mm; text-align: left; }
+.memo table { font-size: .95em; }
+figure.schema.moyen svg { width: 100mm; }
+/* Une phrase qui présente un tableau reste avec lui (le titre qui la précède aussi, par h2). */
+p:has(+ table), p:has(+ .formule) { break-after: avoid; }
+/* Tableau très large (8 colonnes) : en-têtes et marges resserrés pour tenir dans la page sans abréger. */
+table.compact th { font-size: .74em; letter-spacing: 0; padding: 1.5mm 1.2mm; }
+table.compact td { padding-left: 1.2mm; padding-right: 1.2mm; }
+table.compact td[colspan] { white-space: normal; }
+.fiche .etiquettes span.num { border: none; border-radius: 50%; padding: 0; width: 4.2mm; font-size: .75em; align-self: center; }
+/* Fiche vierge resserrée : deux par page. */
+.fiche.vierge .banniere { width: 11mm; height: 11mm; }
+.fiche.vierge .tete { padding-bottom: 1.5mm; margin-bottom: 2mm; }
+.fiche.vierge .pistes { margin-bottom: 2mm; }
+.fiche.vierge .ligne { padding: .35mm 0; }
+.fiche.vierge .case { height: 4mm; }
+/* Titre de table numéroté (tables.pl) : un h5 dans la légende, pour qu'il entre dans les signets. */
+caption h5 { margin: 0; font: inherit; letter-spacing: inherit; color: inherit; text-transform: inherit; }
+.sommaire.index li span:first-child { width: 22mm; }
+.sommaire.index li.chap { display: flex; gap: 3mm; }
+table.ref { margin-bottom: 3mm; }
+/* Schéma et exemple qui l'accompagne : jamais séparés (sections.js les réunit dans .paire). */
+.paire { break-inside: avoid; }

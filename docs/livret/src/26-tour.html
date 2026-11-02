@@ -1,0 +1,65 @@
+<header class="chapitre" id="s26">
+  <p class="surtitre">Batailles</p>
+  <h1><span class="num">2.6</span> Le tour de bataille</h1>
+</header>
+
+<section class="corps">
+
+<h2>1. Ordres secrets</h2>
+<p>Chaque troupe reçoit <b>un ordre</b>&nbsp;: avec sa cible pour Charger, Attaquer et Tirer, avec sa case d'arrivée pour Manœuvrer, Course et Se replier.</p>
+
+<table class="ref texte long">
+  <caption>Ordres</caption>
+  <thead><tr><th>Ordre</th><th>Effet</th></tr></thead>
+  <tbody>
+    <tr><td class="nom">Charger</td><td>Rejoint sa cible et frappe avec élan (Choc, volée)&nbsp;; malus de pente et d'obstacles. Interdit dans un marais et Désorganisée.</td></tr>
+    <tr><td class="nom">Attaquer</td><td>Rejoint sa cible et frappe sans élan&nbsp;: ni bonus ni malus de charge.</td></tr>
+    <tr><td class="nom">Tenir</td><td>Défend sur place&nbsp;; se réorganise si personne ne l'a touchée.</td></tr>
+    <tr><td class="nom">Tirer</td><td>Tire sur une cible vue, à portée (<a href="#s27">2.7</a>).</td></tr>
+    <tr><td class="nom">Manœuvrer</td><td>Se déplace sans attaquer. +1 case si Monté ou Léger, +1 sur route.</td></tr>
+    <tr><td class="nom">Course</td><td>Une case de plus que Manœuvrer. −1D si on l'attaque en mêlée ce tour.</td></tr>
+    <tr><td class="nom">Se replier</td><td>Recule d'une case. Perd un état de moins en mêlée (au moins un&nbsp;; Léger&nbsp;: aucun). Seul ordre qui rompt le contact.</td></tr>
+  </tbody>
+</table>
+
+<p><b>Ordres gagnants</b> (+1B)&nbsp;: <b>Charger bat Tirer</b>. <b>Tenir bat Charger</b>&nbsp;: la charge perd Choc, Choc lourd et volée, et le défenseur gagne +1B s'il a Boucliers ou Piques. <b>Attaquer</b> est neutre&nbsp;: c'est ainsi qu'on aborde une ligne qui Tient. Charger, Attaquer, Manœuvrer ou Courir, c'est être <b>en mouvement</b> face aux tirs.</p>
+<p><b>Officiers</b>&nbsp;: une troupe lance ses propres dés&nbsp;; son officier ne l'aide que s'il prend l'action Commander (<a href="#s28">2.8</a>). Il mène au plus 1 + ses dés de bonus en Commandement troupes.</p>
+
+<h2>2. Révélation et mouvements</h2>
+<p>Les ordres sont montrés ensemble. Un <b>contre-ordre</b> (nouvel ordre ou nouvelle cible) coûte un point de plan ou l'action Porter un ordre&nbsp;; un par troupe et par tour, jamais en réponse à un autre.</p>
+<p>On joue d'abord manœuvres, courses et replis, puis charges et attaques vers la <b>position réelle</b> de leur cible&nbsp;:</p>
+<ul>
+  <li>une case prise ou un ennemi arrête la troupe&nbsp;;</li>
+  <li>deux troupes visent la même case&nbsp;: la plus rapide l'obtient, à égalité aucune&nbsp;;</li>
+  <li>on peut viser la case d'un allié qui part&nbsp;;</li>
+  <li>une charge dont la case est prise se rabat sur la case libre la plus proche au contact&nbsp;;</li>
+  <li>hors contact, deux alliés peuvent <b>échanger</b> leurs cases.</li>
+</ul>
+
+<h2>Le contact</h2>
+<p>Une troupe qui touche un ennemi au moment des ordres est <b>au contact</b>&nbsp;: ni Manœuvrer ni Course&nbsp;; elle ne charge ou n'attaque que l'ennemi qu'elle touche&nbsp;; elle ne rompt le contact qu'en <b>Se repliant</b>.</p>
+<p><b>Repli au contact</b>&nbsp;: la troupe reste sur sa case pendant tirs et mêlées, avec l'avantage du repli, puis recule à la fin du tour. Un ennemi qui Tient la laisse partir.</p>
+<p><b>Relève</b>&nbsp;: une troupe hors contact Manœuvre vers la case de celle qui se replie et y entre à la fin du tour. Pas de relève si celle-ci est en déroute.</p>
+
+<p><b>Rompre pour charger ailleurs</b> <span class="mj">Arbitré par le MJ</span>&nbsp;: l'officier y consacre son action, test d'Art militaire (Tactiques) contre la difficulté de Commander. Réussite&nbsp;: la troupe rompt et charge. Échec&nbsp;: elle Tient.</p>
+
+<figure class="schema colonne">
+  <svg id="schema-releve" viewBox="0 0 345 180" role="img" aria-label="Repli et relève."></svg>
+  <figcaption><b>A</b> se replie au contact de <b>X</b>&nbsp;; <b>R</b> la relève. Pendant tirs et mêlées, <b>A</b> reste et <b>X</b> l'attaque&nbsp;; à la fin du tour, <b>A</b> recule et <b>R</b> entre.</figcaption>
+</figure>
+
+<aside class="exemple">
+  <p class="titre">Exemple · Les Dorniens après la conquête</p>
+  <p>Daeron I<sup>er</sup> a pris Dorne, mais les Dorniens ne se battent plus en ligne&nbsp;: ils harcèlent. Sur le schéma, <b>A</b> est une troupe de lanciers dorniens, de l'infanterie légère, au contact de <b>X</b>, une colonne royale. <b>A</b> reçoit Se replier&nbsp;: elle reste sur sa case pendant la mêlée, et <b>X</b> l'emporte d'un seul degré. Repli et trait Léger&nbsp;: <b>A</b> ne perd <b>aucun état</b>, puis recule d'une case à la fin du tour. <b>R</b>, une autre troupe dornienne restée en retrait, Manœuvre vers sa case et y entre&nbsp;: <b>X</b> retrouve devant elle des hommes frais, et la colonne n'avance pas.</p>
+</aside>
+
+<h2>3 à 6. Actions, tirs, mêlées, fin du tour</h2>
+<p>Chaque personnage joue son action (<a href="#s28">2.8</a>), Commander avant le jet de sa troupe. Puis les <b>tirs</b>, tous ensemble, et les <b>mêlées</b>, une par une (<a href="#s27">2.7</a>). À la fin du tour, les replis au contact reculent, les relèves entrent, une troupe qui a Tenu sans être touchée <b>remonte d'un état</b> (sauf En déroute), et les déroutes fuient <span class="mj">Arbitré par le MJ</span>.</p>
+<p>Un personnage peut jouer à la place une <b>scène individuelle</b> de trois rounds (duel, escalade, étendard) pendant que la bataille avance d'un tour.</p>
+
+<aside class="foundry">
+  <p class="titre">Dans Foundry</p>
+  <p>Clic droit sur une troupe&nbsp;: ordre, officier, ralliement, puis clic sur la cible ou la case. Pastille et flèche visibles du camp avant la révélation, de tous après. La barre du tour révèle, résout (tirs d'abord), termine. Les jetons bougent seuls&nbsp;; replis et relèves aussi. Manœuvrer ou Courir au contact est refusé à un joueur.</p>
+</aside>
+
+</section>
