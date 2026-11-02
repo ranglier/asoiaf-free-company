@@ -233,8 +233,7 @@
       "history": "History",
       "holdings": "Holdings",
       "household": "Household",
-      "members": "Members",
-      "troop": "Unit"
+      "members": "Members"
     },
     "Table": {
       "equipped": "Equipped",
@@ -776,7 +775,8 @@
       "Rallies": "Rallies",
       "Men": "Men",
       "Loss": "Losses",
-      "LostMen": "{n} men",
+      "MenCount": "{n} men",
+      "OtherSkills": "Other skills:",
       "Traits": "Traits",
       "ResetTraits": "Type traits",
       "Notes": "Notes",

@@ -408,18 +408,34 @@ body.detached .application.afc.afc-fill.afc-dialog .window-content { max-height:
 .afc .afc-battle-roll .warn, .afc-card.battle .warn { color: var(--afc-wax); }
 .afc-card.battle .battle-result { font-weight: 600; margin: 0.3rem 0; }
 .afc-card.battle button { width: 100%; margin-top: 0.3rem; }
-/* Fiche de troupe : mêmes tuiles, onglets et compétences que les fiches de personnage. */
 .afc-vitals.combatant { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-.afc.troop .troop-vitals { grid-template-columns: repeat(auto-fill, minmax(112px, 1fr)); }
-.afc.troop .troop-vitals select { font-size: 16px; }
-.afc.troop .troop-vitals .value input.wide { width: 3.6em; }
-.afc.troop .troop-abilities { grid-template-columns: minmax(0, 1fr); }
-.afc.troop .troop-abilities .ability-group { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 1.4rem; }
-.afc.troop .tab-body .section-title .hint { flex: 1; margin: 0; }
-.afc.troop .troop-traits { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.2rem 0.6rem; margin-bottom: 0.6rem; }
-.afc.troop .trait-chips { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 0.6rem; font-size: 17px; }
+/* Fiche de troupe : profil de wargame sur une page (ligne de profil, échelle d'état, pastilles, étiquettes). */
+.afc.troop .profile-line { display: grid; grid-template-columns: repeat(var(--n, 6), minmax(0, 1fr)); background: var(--afc-paper-light); border: 1px solid var(--afc-border); border-radius: 5px; }
+.afc.troop .profile-cell { display: flex; flex-direction: column; align-items: center; justify-content: space-between; gap: 2px; padding: 0.3rem 0.2rem; text-align: center; min-width: 0; }
+.afc.troop .profile-cell + .profile-cell { border-left: 1px solid var(--afc-line); }
+.afc.troop .profile-cell .label { font-family: var(--afc-font-label); font-size: 14px; line-height: 1.1; color: var(--afc-ink-soft); }
+.afc.troop .profile-cell .value { font-size: 28px; font-weight: 600; line-height: 1.1; }
+.afc.troop .profile-cell a.value { cursor: pointer; }
+.afc.troop .profile-cell a.value:hover { color: var(--afc-wax); }
+.afc.troop .profile-cell input { width: 3em; text-align: center; font-size: 20px; }
+.afc.troop .state-ladder { display: flex; flex-wrap: wrap; align-items: center; gap: 0.35rem; font-family: var(--afc-font-label); font-size: 17px; }
+.afc.troop .state-ladder .label, .afc.troop .counter .label { font-size: 15px; color: var(--afc-ink-soft); margin-right: 0.2rem; }
+.afc.troop .state-ladder i { font-size: 12px; color: var(--afc-ink-soft); }
+.afc.troop .state-ladder .step { cursor: pointer; padding: 0 0.35rem; border-radius: 3px; color: var(--afc-ink-soft); }
+.afc.troop .state-ladder .step:hover { color: var(--afc-wax); }
+.afc.troop .state-ladder .step.on { background: var(--afc-wax); color: var(--afc-wax-text); }
+.afc.troop .counters { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem 1.3rem; font-size: 17px; }
+.afc.troop .counter { display: inline-flex; flex-direction: row; align-items: center; gap: 0.3rem; }
+.afc.troop .counter input { width: 4em; text-align: center; }
+.afc.troop .counter select { width: auto; }
+.afc.troop .troop-traits { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.2rem 0.6rem; margin-bottom: 0.4rem; }
+.afc.troop .trait-chips { display: flex; flex-wrap: wrap; gap: 4px; }
+.afc.troop .trait-chips:empty { display: none; }
 .afc.troop .trait-chips .chip { font-family: var(--afc-font-label); font-size: 16px; background: var(--afc-paper-light); border: 1px solid var(--afc-line); border-radius: 3px; padding: 0 0.4rem; }
-.afc.troop .grid-3 label b { display: block; font-size: 18px; }
+.afc.troop .trait-chips .chip.upgrade { border-color: var(--afc-wax); color: var(--afc-wax); }
+.afc.troop .other-abilities { margin: 0; }
+.afc.troop .troop-notes { display: flex; flex-direction: row; align-items: center; gap: 0.5rem; font-family: var(--afc-font-label); color: var(--afc-ink-soft); }
+.afc.troop .troop-notes input { flex: 1; }
 .afc .afc-battle .battle-group, .afc .afc-battle .battle-group-head strong, .afc .afc-battle .battle-group-head small { color: var(--afc-ink); }
 .afc .afc-battle .tag { background: var(--afc-paper); color: var(--afc-ink); border: 1px solid var(--afc-line); border-radius: 3px; padding: 0 0.3rem; font-size: 0.85rem; }
 .afc .afc-battle .battle-group-head strong { font-family: var(--afc-font-label); }
