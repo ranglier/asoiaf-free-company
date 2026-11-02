@@ -169,6 +169,8 @@ export function meleeMods(att, def, battle) {
   // Volée des armes de jet.
   if (A.has.javelins && charging && !breaksCharge) am.push(mod(loc("AFC.Battle.Mod.volley"), { b: 1 }));
   if (D.has.javelins && dOrder === "hold" && charging) dm.push(mod(loc("AFC.Battle.Mod.volley"), { b: 1 }));
+  // Choc : la cavalerie qui charge une troupe qui ne Tient pas a +1B, comme la volée (décision de Jules, 2026-11-02).
+  if (A.has.shock && charging && dOrder !== "hold") am.push(mod(loc("AFC.Battle.Mod.shock"), { b: 1 }));
   // Course : une troupe essoufflée combat mal ce tour-ci.
   if (aOrder === "run") am.push(mod(loc("AFC.Battle.Mod.winded"), { p: 1 }));
   if (dOrder === "run") dm.push(mod(loc("AFC.Battle.Mod.winded"), { p: 1 }));

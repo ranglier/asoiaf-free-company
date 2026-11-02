@@ -694,8 +694,8 @@
       "Trait": {
         "heavyArmor": { "name": "Heavy armor", "effect": "Loses 1 fewer state when losing a melee by 2+ degrees; shots against it +3; movement −1." },
         "shields": { "name": "Shields", "effect": "Shots against it +3; with Hold: shield wall, immune to Shock." },
-        "shock": { "name": "Shock", "effect": "Charging infantry: cancels the Hold bonus (unless pikes or shield wall)." },
-        "heavyShock": { "name": "Heavy shock", "effect": "Like Shock; if it wins, the enemy loses 1 more state." },
+        "shock": { "name": "Shock", "effect": "+1B when it Charges a troop that is not Holding." },
+        "heavyShock": { "name": "Heavy shock", "effect": "If it wins a Charge against a troop that is not Holding, the enemy loses 1 more state." },
         "pikes": { "name": "Pikes", "effect": "+1D against cavalry; cavalry charging them while they Hold gets −1D." },
         "mounted": { "name": "Mounted", "effect": "Movement 3 (2 in heavy armor); −1D in woods, marsh, villages and fords." },
         "light": { "name": "Light", "effect": "Movement +1; withdraws without losing a state; ignores the woods penalty." },
@@ -754,7 +754,7 @@
       "Mod": {
         "triangle": "Winning order", "shockCancels": "Shock: cancels the Hold bonus", "flank": "Flank ({n} in contact)", "ambush": "Ambush",
         "chargeUp": "Charging uphill", "crossing": "Crossing (ford or bridge)", "holdCrossing": "Holds the crossing",
-        "winded": "Winded", "holdBreaks": "Hold breaks the charge", "mountedTerrain": "Cavalry hindered by terrain", "pikesHold": "Charging pikes", "volley": "Volley",
+        "winded": "Winded", "holdBreaks": "Hold breaks the charge", "mountedTerrain": "Cavalry hindered by terrain", "pikesHold": "Charging pikes", "volley": "Volley", "shock": "Shock",
         "base": "Base", "cover": "Cover", "none": "No modifier"
       },
       "Warn": {

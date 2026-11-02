@@ -694,8 +694,8 @@
       "Trait": {
         "heavyArmor": { "name": "Armure lourde", "effect": "Perd 1 état de moins si elle perd une mêlée de 2 degrés ou plus ; tirs contre elle +3 ; déplacement −1." },
         "shields": { "name": "Boucliers", "effect": "Tirs contre elle +3 ; avec Tenir : mur de boucliers, insensible au Choc." },
-        "shock": { "name": "Choc", "effect": "En Charge contre de l'infanterie : annule le bonus de Tenir (sauf piques ou mur de boucliers)." },
-        "heavyShock": { "name": "Choc lourd", "effect": "Comme Choc ; si elle gagne, l'adversaire perd 1 état de plus." },
+        "shock": { "name": "Choc", "effect": "+1B quand elle Charge une troupe qui ne Tient pas." },
+        "heavyShock": { "name": "Choc lourd", "effect": "Si elle gagne une Charge contre une troupe qui ne Tient pas, l'adversaire perd 1 état de plus." },
         "pikes": { "name": "Piques", "effect": "+1D contre la cavalerie ; une cavalerie qui les charge quand elles Tiennent a −1D." },
         "mounted": { "name": "Monté", "effect": "Déplacement 3 (2 en armure lourde) ; −1D dans les bois, le marais, les villages et au gué." },
         "light": { "name": "Léger", "effect": "Déplacement +1 ; se replie sans perdre d'état ; ignore le malus des bois." },
@@ -764,6 +764,7 @@
         "holdBreaks": "Tenir brise l'élan",
         "pikesHold": "Charge sur des piques",
         "volley": "Volée",
+        "shock": "Choc",
         "base": "Base",
         "cover": "Couvert",
         "none": "Aucun modificateur"
