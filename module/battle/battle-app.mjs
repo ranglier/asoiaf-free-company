@@ -192,6 +192,11 @@ export class BattleApp extends HandlebarsApplicationMixin(ApplicationV2) {
       battle[key] = event.target.checked;
       await saveBattle(battle);
     });
+    this.element.querySelector('[name="night"]')?.addEventListener("change", async event => {
+      const battle = getBattle();
+      battle.night = event.target.checked;
+      await saveBattle(battle);
+    });
     this.element.querySelector('[name="freeMove"]')?.addEventListener("change", async event => {
       const battle = getBattle();
       battle.freeMove = event.target.checked;

@@ -576,6 +576,8 @@
 ,
     "Battle": {
       "Reloading": "{name} is reloading: no shot this turn.",
+      "Night": "Night",
+      "NightHint": "With the fog of war: at night, a troop only sees the hexes next to it (2 for scouts), a lit hex at any distance, and a troop that fought or shot this round up to 3 hexes away.",
       "Fog": { "Unknown": "Unknown troop", "Identify": "Identify for the players (Read the Field)", "Forget": "Stop identifying for the players", "Release": "Give back to the fog (hidden or shown by hand)" },
       "Split": { "Button": "Split the battalion", "Title": "Split: {name}", "Hint": "{n} units in this block. The new block may have no officer.", "Units": "Units to detach", "NoRoom": "No free adjacent space.", "TooSmall": "This block has a single unit.", "Outnumber": "Outnumbering" },
       "Options": {
@@ -617,7 +619,7 @@
       "NoBrowse": "Your role cannot browse files: ask the GM.",
       "FreeMove": "Free deployment",
       "FreeMoveHint": "Players may move their tokens by hand during orders.",
-      "Painter": { "Color": "Color", "Delete": "Delete this terrain", "DeleteConfirm": "Delete the terrain {name}?", "Hint": "Choose a terrain, then click or drag over the map's spaces. Clicking a painted space removes it. Right-click still pans the view.", "Name": "Name on the map", "New": "New terrain", "None": "No terrain on this scene.", "Open": "Paint terrain", "Secret": "Hidden from players", "Title": "Terrain", "TypeLabel": "Effect", "Type": { "bridge": "Bridge", "ford": "Ford", "hill": "Hill", "landmark": "Landmark (no effect)", "marsh": "Marsh", "obstacle": "Obstacle", "river": "River", "road": "Road", "ruins": "Ruins, fortification", "village": "Village, farm", "wood": "Woods" } },
+      "Painter": { "Color": "Color", "Delete": "Delete this terrain", "DeleteConfirm": "Delete the terrain {name}?", "Hint": "Choose a terrain, then click or drag over the map's spaces. Clicking a painted space removes it. Right-click still pans the view.", "Name": "Name on the map", "New": "New terrain", "None": "No terrain on this scene.", "Open": "Paint terrain", "Secret": "Hidden from players", "Lit": "Lit at night", "LitHint": "Campfires, village, torches: at night, these hexes are seen from afar (line of sight permitting), with the fog of war. For a single fire, create a Landmark and tick this box.", "Title": "Terrain", "TypeLabel": "Effect", "Type": { "bridge": "Bridge", "ford": "Ford", "hill": "Hill", "landmark": "Landmark (no effect)", "marsh": "Marsh", "obstacle": "Obstacle", "river": "River", "road": "Road", "ruins": "Ruins, fortification", "village": "Village, farm", "wood": "Woods" } },
       "Rules": { "hexNumbers": "Space numbers", "hexTip": "Space number", "settings": "Settings", "label": "Rules", "house": "House rules", "book": "Book rules", "switchTitle": "Change rules", "switchConfirm": "Switch to {rules}? The battle restarts at round 1 and current orders are cleared. Each ruleset keeps its own troop state.", "switched": "This battle now uses {rules}." },
       "TerrainBook": { "hill": "Move −10 yards; +1B against lower opponents.", "wood": "Cover +2 Defense (+5 if the name says dense).", "marsh": "Move −10 yards.", "river": "Impassable, except ford or bridge.", "ford": "Move −10 yards.", "bridge": "Move −10 yards.", "road": "Removes terrain slowdown.", "village": "Move −10 yards.", "obstacle": "Temporary fortification: +1 Defense.", "ruins": "Cover +2 Defense (wall: +5, impassable).", "landmark": "Landmark, no effect." },
       "BarOrders": "{given} / {total} orders given",

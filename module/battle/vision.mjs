@@ -10,6 +10,9 @@
  *   2026-11-02, 4 et 5 avant), une troupe vue reste inconnue ; le MJ l'identifie à la main (Lire le champ).
  * - Embuscade : une troupe en lisière qui n'a pas encore agi n'est repérée qu'à 2 cases, des éclaireurs
  *   seulement au contact. Une troupe au contact est toujours vue.
+ * - Nuit (décision de Jules du 2026-11-02, après banc d'essai) : en plus de la ligne de vue, on ne voit
+ *   que les cases voisines (2 cases pour des éclaireurs), une case éclairée (région « éclairée de nuit »)
+ *   à toute distance, et une troupe qui a combattu ou tiré ce tour jusqu'à 3 cases.
  * Le MJ actif cache et montre les jetons ennemis (Foundry les masque alors aux joueurs) ; chaque client
  * assombrit les cases que la Compagnie ne voit pas. Un jeton que le MJ cache ou montre lui-même sort du
  * brouillard, jusqu'à ce qu'il l'y rende (menu du jeton).
@@ -87,17 +90,22 @@ let cache = null;
 /** Terrains changés (régions) : le relevé des cases est refait au prochain calcul. */
 export function invalidateFog() { cache = null; }
 
-/** Relevé de la scène : bois, collines (et leur massif), obstacles, lisières. */
+/** Une région éclairée de nuit (feux de camp, village, torches) : réglée dans le panneau des terrains. */
+export const isLit = region => !!region.getFlag(SYSTEM_ID, "lit");
+
+/** Relevé de la scène : bois, collines (et leur massif), obstacles, lisières, cases éclairées. */
 function terrainOf(scene) {
   if (cache?.scene === scene.id) return cache;
   const regions = scene.regions.map(r => [r, regionTerrainKey(r)]).filter(([, k]) => ["wood", "hill", ...BLOCKERS].includes(k));
+  const lights = scene.regions.filter(isLit);
   const cells = sceneCells();
   const inScene = new Set(cells.map(keyOf));
-  const terrain = new Map();
+  const terrain = new Map(), lit = new Set();
   for (const cell of cells) {
     const point = { ...canvas.grid.getCenterPoint(cell), elevation: 0 };
     const keys = new Set(regions.filter(([r]) => r.testPoint(point)).map(([, k]) => (BLOCKERS.includes(k) ? "block" : k)));
     if (keys.size) terrain.set(keyOf(cell), keys);
+    if (lights.some(r => r.testPoint(point))) lit.add(keyOf(cell));
   }
   const has = (o, k) => !!terrain.get(keyOf(o))?.has(k);
   const neighbors = o => canvas.grid.getAdjacentOffsets(o).filter(n => inScene.has(keyOf(n)));
@@ -116,14 +124,31 @@ function terrainOf(scene) {
     id++;
   }
   cache = {
-    scene: scene.id, cells, has, massif: o => massif.get(keyOf(o)),
+    scene: scene.id, cells, has, massif: o => massif.get(keyOf(o)), lit: o => lit.has(keyOf(o)),
     edge: o => has(o, "wood") && neighbors(o).some(n => !has(n, "wood"))
   };
   return cache;
 }
 
-/** Une troupe en a qui voit la case b ? (scout : éclaireurs ; mist : brouillard, 2 cases) */
-function sees(a, b, { scout = false, mist = false }, t) {
+/**
+ * Conditions de la bataille pour la vue : relevé du terrain, brouillard (2 cases), nuit, et troupes qui
+ * ont combattu ou tiré ce tour (vues de nuit jusqu'à 3 cases).
+ */
+function conditions(scene) {
+  const battle = getBattle(scene);
+  return { t: terrainOf(scene), mist: battle.weather === "fog", night: !!battle.night, noisy: new Set([...(battle.engaged ?? []), ...(battle.done ?? [])]) };
+}
+
+/** Une troupe en a qui voit la case b ? De nuit, il faut aussi la proximité, une case éclairée ou du bruit. */
+function sees(a, b, { scout = false, noisy = false }, ctx) {
+  if (!inSight(a, b, scout, ctx)) return false;
+  if (!ctx.night) return true;
+  const d = dist(a, b);
+  return d <= (scout ? 2 : 1) || ctx.t.lit(b) || (noisy && d <= 3);
+}
+
+/** Ligne de vue de a vers b (scout : éclaireurs ; brouillard : 2 cases). */
+function inSight(a, b, scout, { t, mist }) {
   if (a.i === b.i && a.j === b.j) return true;
   if (mist && dist(a, b) > 2) return false;
   const W = o => t.has(o, "wood"), H = o => t.has(o, "hill"), V = o => t.has(o, "block");
@@ -178,25 +203,31 @@ export const companyView = (scene = canvas.scene) => sideView(scene, "company", 
  * Sert au brouillard (Compagnie) et aux tests, qui l'appliquent aux deux camps.
  */
 export function sideView(scene = canvas.scene, side = "company", { foes = true } = {}) {
-  const t = terrainOf(scene);
-  const mist = getBattle(scene).weather === "fog";
+  const ctx = conditions(scene);
   const eyes = observers(scene, side);
   const cells = new Set();
-  for (const o of eyes) for (const cell of t.cells) if (!cells.has(keyOf(cell)) && sees(o.cell, cell, { scout: o.scout, mist }, t)) cells.add(keyOf(cell));
+  for (const o of eyes) for (const cell of ctx.t.cells) if (!cells.has(keyOf(cell)) && sees(o.cell, cell, { scout: o.scout }, ctx)) cells.add(keyOf(cell));
   const troops = new Map();
-  if (foes) for (const token of scene.tokens.filter(x => isTroop(x) && x.actor.system.side !== side)) troops.set(token.id, enemyView(token, eyes, t, mist));
+  for (const token of scene.tokens.filter(x => isTroop(x) && x.actor.system.side !== side)) {
+    // De nuit, une troupe qui se bat se voit de plus loin : sa case est vue avec elle.
+    if (!foes && !(ctx.night && ctx.noisy.has(token.id))) continue;
+    const view = enemyView(token, eyes, ctx);
+    if (view.seen) cells.add(keyOf(cellOf(token)));
+    if (foes) troops.set(token.id, view);
+  }
   return { cells, troops };
 }
 
 /** Une troupe adverse : vue du camp qui regarde ? identifiée ? */
-function enemyView(token, eyes, t, mist) {
+function enemyView(token, eyes, ctx) {
   const cell = cellOf(token);
   const flag = fogFlag(token);
-  const ambush = !flag.acted && t.edge(cell);
+  const ambush = !flag.acted && ctx.t.edge(cell);
+  const noisy = ctx.noisy.has(token.id);
   let seen = false, known = !!flag.known;
   for (const o of eyes) {
     const d = dist(o.cell, cell);
-    let visible = d <= 1 || sees(o.cell, cell, { scout: o.scout, mist }, t);
+    let visible = d <= 1 || sees(o.cell, cell, { scout: o.scout, noisy }, ctx);
     // Embuscade en lisière : repérée à 2 cases, des éclaireurs seulement au contact.
     if (visible && d > 1 && ambush && (isScout(token.actor) || d > 2)) visible = false;
     if (!visible) continue;
@@ -222,9 +253,8 @@ export function scheduleFog() {
 export async function applyFog(scene = canvas.scene) {
   if (game.users.activeGM !== game.user || !canvas.ready || scene?.id !== canvas.scene?.id) return;
   const on = fogOn(scene);
-  const t = on ? terrainOf(scene) : null;
+  const ctx = on ? conditions(scene) : null;
   const eyes = on ? observers(scene) : [];
-  const mist = getBattle(scene).weather === "fog";
   const updates = [];
   for (const token of scene.tokens.filter(isEnemy)) {
     const flag = fogFlag(token);
@@ -235,7 +265,7 @@ export async function applyFog(scene = canvas.scene) {
     } else {
       // Jeton que le MJ avait caché avant le brouillard : il reste à sa main.
       if (!token.getFlag(SYSTEM_ID, FOG) && token.hidden) manual = true;
-      const view = enemyView(token, eyes, t, mist);
+      const view = enemyView(token, eyes, ctx);
       unknown = !view.known;
       if (!manual) { hidden = !view.seen; auto = hidden; }
     }
@@ -266,20 +296,26 @@ export const fogState = token => fogFlag(token);
 
 /* ---------- Cases non vues, sur la carte ---------- */
 
-/** Assombrit les cases que la Compagnie ne voit pas (le MJ : légèrement, pour suivre). */
+/** Assombrit les cases que la Compagnie ne voit pas (le MJ : légèrement, pour suivre) ; de nuit, un feu sur les cases éclairées. */
 export function drawFog() {
   if (!canvas.ready) return;
   canvas.tokens.children.filter(c => c.name === "afcFog").forEach(c => c.destroy({ children: true }));
   if (!fogOn() || !canvas.scene.tokens.some(isTroop)) return;
   const seen = companyView();
+  const { t, night } = conditions(canvas.scene);
   const layer = new PIXI.Graphics();
   layer.name = "afcFog";
   layer.eventMode = "none";
-  layer.beginFill(0x15100b, game.user.isGM ? 0.3 : 0.62);
-  for (const cell of terrainOf(canvas.scene).cells) {
+  layer.beginFill(0x15100b, game.user.isGM ? 0.3 : night ? 0.72 : 0.62);
+  for (const cell of t.cells) {
     if (!seen.has(keyOf(cell))) layer.drawPolygon(canvas.grid.getVertices(cell).flatMap(v => [v.x, v.y]));
   }
   layer.endFill();
+  if (night) for (const cell of t.cells) {
+    if (!t.lit(cell)) continue;
+    const c = canvas.grid.getCenterPoint(cell);
+    layer.lineStyle({ width: 2, color: 0x854f0b }).beginFill(0xef9f27, 0.95).drawCircle(c.x - canvas.grid.sizeX * 0.32, c.y - canvas.grid.sizeY * 0.1, canvas.grid.sizeX * 0.06).endFill().lineStyle(0);
+  }
   canvas.tokens.addChildAt(layer, 0);
 }
 

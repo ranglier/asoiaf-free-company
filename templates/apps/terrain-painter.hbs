@@ -28,6 +28,7 @@
     </div>
     <p class="hint">{{region.effect}}</p>
     <label class="checkbox"><input type="checkbox" name="secret" {{checked region.secret}}> {{localize "AFC.Battle.Painter.Secret"}}</label>
+    <label class="checkbox" data-tooltip="AFC.Battle.Painter.LitHint"><input type="checkbox" name="lit" {{checked region.lit}}> {{localize "AFC.Battle.Painter.Lit"}}</label>
     <button type="button" data-action="remove"><i class="fa-solid fa-trash"></i> {{localize "AFC.Battle.Painter.Delete"}}</button>
   </section>
   {{/if}}

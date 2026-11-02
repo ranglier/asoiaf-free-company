@@ -77,7 +77,11 @@ function reach(token, range, occupied, { roadOnly = false } = {}) {
   return seen;
 }
 
-/** Cases d'arrivée possibles pour cet ordre (Route : une case de plus à qui Manœuvre le long de la route). */
+/**
+ * Cases d'arrivée possibles pour cet ordre (Route : une case de plus à qui Manœuvre le long de la route).
+ * La case d'un allié peut être visée (décision de Jules, 2026-11-02) : s'il la quitte ce tour, on y entre ;
+ * sinon on s'arrête avant.
+ */
 export function destinations(token, order, occupied) {
   const range = moveRange(token, order);
   const cells = reach(token, range, occupied);
@@ -85,19 +89,23 @@ export function destinations(token, order, occupied) {
     for (const [key, value] of reach(token, range + 1, occupied, { roadOnly: true })) if (!cells.has(key)) cells.set(key, value);
   }
   const here = keyOf(cellOf(token));
-  return new Map([...cells].filter(([key]) => key !== here && !occupied.has(key)));
+  return new Map([...cells].filter(([key]) => key !== here));
 }
 
-/** Chemin d'une troupe qui rejoint sa cible : case choisie si elle convient, sinon la plus proche au contact. */
+/**
+ * Chemin d'une troupe qui rejoint sa cible : case choisie si elle convient et qu'elle est libre, sinon la
+ * case libre la plus proche au contact (une case prise par un allié entre-temps ne fait pas échouer la charge).
+ */
 function approachPath(token, unit, occupied) {
   const target = token.parent.tokens.get(unit.target);
   if (!target) return [];
   const contact = new Set(canvas.grid.getAdjacentOffsets(cellOf(target)).map(keyOf));
-  const cells = destinations(token, "charge", occupied);
+  const free = ([key]) => !occupied.has(key);
+  const list = [...destinations(token, "charge", occupied)].filter(free);
+  const cells = new Map(list);
   const chosen = unit.path?.at(-1);
   if (chosen && contact.has(chosen) && cells.has(chosen)) return cells.get(chosen).path;
   if (contact.has(keyOf(cellOf(token)))) return [];
-  const list = [...cells];
   const closest = list.filter(([key]) => contact.has(key)).sort((a, b) => a[1].cost - b[1].cost)[0];
   if (closest) return closest[1].path;
   // Cible hors d'atteinte : on s'en rapproche autant que possible.

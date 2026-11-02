@@ -8,8 +8,10 @@
       <span class="phase {{#if battle.revealed}}revealed{{/if}}">{{#if battle.revealed}}{{localize "AFC.Battle.PhaseRevealed"}}{{else}}{{localize "AFC.Battle.PhaseOrders"}}{{/if}}</span></h2>
     {{#if isGM}}
     <label class="weather">{{localize "AFC.Battle.WeatherLabel"}}<select name="weather">{{selectOptions weathers selected=battle.weather localize=true}}</select></label>
+    <label class="checkbox weather" data-tooltip="AFC.Battle.NightHint"><input type="checkbox" name="night" {{checked battle.night}}> {{localize "AFC.Battle.Night"}}</label>
     {{else}}
     <span class="tag">{{localize "AFC.Battle.WeatherLabel"}} : {{localize weatherLabel}}</span>
+    {{#if battle.night}}<span class="tag" data-tooltip="AFC.Battle.NightHint"><i class="fa-solid fa-moon"></i> {{localize "AFC.Battle.Night"}}</span>{{/if}}
     {{/if}}
   </header>
 

@@ -87,7 +87,7 @@ export class TerrainPainter extends HandlebarsApplicationMixin(ApplicationV2) {
       rows: regions.map(row), types, newType: this.newType ?? "wood",
       region: region ? {
         id: region.id, name: region.name, color: region.color?.css ?? "#888888", key,
-        secret: region.visibility !== CONST.REGION_VISIBILITY.ALWAYS,
+        secret: region.visibility !== CONST.REGION_VISIBILITY.ALWAYS, lit: !!region.getFlag(SYSTEM_ID, "lit"),
         effect: loc(`AFC.Battle.${isBook() ? "TerrainBook" : "TerrainEffect"}.${key}`)
       } : null
     };
@@ -101,6 +101,7 @@ export class TerrainPainter extends HandlebarsApplicationMixin(ApplicationV2) {
     on("color", el => this.region?.update({ color: el.value }));
     on("type", el => this.region?.setFlag(SYSTEM_ID, "terrain", el.value));
     on("secret", el => this.region?.update({ visibility: el.checked ? CONST.REGION_VISIBILITY.GAMEMASTER : CONST.REGION_VISIBILITY.ALWAYS }));
+    on("lit", el => this.region?.setFlag(SYSTEM_ID, "lit", el.checked));
     this.#listen();
   }
 
