@@ -289,7 +289,7 @@ Un tour de bataille dure **3 rounds individuels** (à l'essai, 2026-11-02). Un P
 | Combattre en première ligne | Corps à corps (ou autre arme), contre la Défense passive de la cible | +1B par degré au test de l'unité ce tour (dans le plafond). Échec : le PJ s'expose (blessure, désarmé, isolé). N'importe quel PJ, officier de l'unité ou non. |
 | Tirer avec l'unité | Tir, contre la Défense passive de la cible | +1B par degré au tir de l'unité ce tour (dans le plafond). N'importe quel PJ, officier de l'unité ou non. |
 | Lire le champ | Art militaire (Tactiques) ou Vigilance (Observation) | Voir ci-dessous. |
-| Porter un ordre | Équitation ou Athlétisme | Rejoint un groupe à 3 cases au plus : contre-ordre gratuit, ou déplacement de 3 cases. |
+| Porter un ordre | Équitation ou Athlétisme | Rejoint un groupe à 3 cases au plus : contre-ordre gratuit (le « déplacement de 3 cases » est retiré le 2026-11-03). |
 | Exploit | Selon la scène | Objectif proposé par le MJ ou le joueur (champion, étendard, pont, officier ennemi). Effets : échelle de l'action libre. |
 | Action libre | Compétence et difficulté fixées par le MJ | Idée du joueur ; effets selon l'échelle ci-dessous. |
 
