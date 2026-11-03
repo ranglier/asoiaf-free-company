@@ -327,7 +327,8 @@ Un tour de bataille dure **3 rounds individuels** (à l'essai, 2026-11-02). Un P
 - **Cohésion** : victoire +1d6 × 3, défaite −1d6 × 3 ; lourdes pertes, chef blessé ou capturé −5 à −15 (règles de la Compagnie). Aumôniers et congrégation en retirent 3 ou 6, au plus la moitié ; le Bilan le rappelle.
 - **Renommée, butin, prisonniers** : au jugement du MJ.
 - **PJ** : blessures et lésions selon les règles normales.
-- **Expérience des unités** : à définir (le catalogue a déjà une valeur d'expérience par entraînement).
+- **Aguerrissement** (décision du 2026-11-03, d'après la table 10-6 « Survivors » du livre de base, VO p. 183, côté positif seulement : les pertes passent par le Bilan) : chaque troupe de la Compagnie qui finit Fraîche ou Éprouvée lance 1d6, −1 par passage à Désorganisée ou pire, +1 avec des Maîtres d'armes. Fraîche : +1 cran d'entraînement sur 5, +2 sur 6 ; Éprouvée : +1 cran sur 6. Jamais au-delà d'Élite ; le MJ arbitre. À la main, sur la fiche de l'unité.
+- **Renforcer** (même décision) : combler au moins 30 % des hommes d'une unité la fait baisser d'un cran d'entraînement (les recrues remplacent les morts), jamais sous Bleus. À la main.
 
 ## 9. Sièges (esquisse)
 

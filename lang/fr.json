@@ -131,7 +131,7 @@
       "provost": { "name": "Prévôt et ses hommes", "effect": "+1 Autorité par mois." },
       "disciplineOfficers": { "name": "Officiers disciplinaires", "effect": "+1 Autorité par mois ; +1 aux tests de Rallier des troupes de la Compagnie." },
       "drillSergeants": { "name": "Sergents d'entraînement", "effect": "Permet de recruter des troupes entraînées." },
-      "mastersAtArms": { "name": "Maîtres d'armes", "effect": "Permet de recruter des troupes entraînées ; +20 d'expérience au recrutement." },
+      "mastersAtArms": { "name": "Maîtres d'armes", "effect": "Permet de recruter des troupes entraînées ; +1 au jet d'aguerrissement après une bataille." },
       "priest": { "name": "Prêtre", "effect": "+1 aux tests d'événements." },
       "chaplains": { "name": "Aumôniers", "effect": "+1 aux tests d'événements ; défaite ou coup dur : 3 points de Cohésion perdus en moins (au plus la moitié de la perte)." },
       "congregation": { "name": "Congrégation", "effect": "+2 aux tests d'événements ; défaite ou coup dur : 6 points de Cohésion perdus en moins (au plus la moitié de la perte)." },
