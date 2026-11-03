@@ -242,6 +242,7 @@ export class BattleApp extends HandlebarsApplicationMixin(ApplicationV2) {
   _onRender(context, options) {
     super._onRender(context, options);
     this.#enableTroopDrag();
+    this.#fitTooltips();
     this.element.querySelector('[name="weather"]')?.addEventListener("change", async event => {
       const battle = getBattle();
       battle.weather = event.target.value;
@@ -287,6 +288,20 @@ export class BattleApp extends HandlebarsApplicationMixin(ApplicationV2) {
     option("bookYards", el => ({ yards: Math.max(1, Number(el.value) || 10) }));
     option("bookAdvanced", el => ({ advanced: el.checked }));
     option("bookFormations", el => ({ formations: el.checked }));
+  }
+
+  /** La fenêtre redimensionnée : les textes coupés changent. */
+  _onPosition(position) {
+    super._onPosition?.(position);
+    this.#fitTooltips();
+  }
+
+  /** Infobulle seulement pour un texte coupé faute de place : un texte lisible en entier n'en a pas besoin. */
+  #fitTooltips() {
+    for (const el of this.element?.querySelectorAll(".battle-troop .fit") ?? []) {
+      if (el.scrollWidth > el.clientWidth + 1) el.dataset.tooltip = el.textContent.replace(/\s+/g, " ").trim();
+      else delete el.dataset.tooltip;
+    }
   }
 
   /** Glisser-déposer des fiches de troupe : chacun range les troupes de chaque camp à sa façon. */
