@@ -131,7 +131,7 @@
       "provost": { "name": "Provost and his men", "effect": "+1 Authority per month." },
       "disciplineOfficers": { "name": "Discipline officers", "effect": "+1 Authority per month; +1 to the company troops' Rally tests." },
       "drillSergeants": { "name": "Drill sergeants", "effect": "Allows recruiting trained troops." },
-      "mastersAtArms": { "name": "Masters-at-arms", "effect": "Allows recruiting trained troops; +1 to the seasoning roll after a battle." },
+      "mastersAtArms": { "name": "Masters-at-arms", "effect": "Allows recruiting trained troops; +10 experience on recruitment." },
       "priest": { "name": "Priest", "effect": "+1 to event tests." },
       "chaplains": { "name": "Chaplains", "effect": "+1 to event tests; defeat or hard blow: 3 less Cohesion lost (at most half the loss)." },
       "congregation": { "name": "Congregation", "effect": "+2 to event tests; defeat or hard blow: 6 less Cohesion lost (at most half the loss)." },

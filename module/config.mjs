@@ -219,9 +219,15 @@ export const SERVICE_SIZES = {
   large: { label: "AFC.Service.Size.large", space: 3, cost: 9, supply: 15 }
 };
 
-/** Entraînement des unités : coût en Effectif, discipline (difficulté) et expérience. */
+/**
+ * Entraînement des unités : coût en Effectif, discipline (difficulté) et expérience. L'expérience est le compteur de
+ * l'unité (décision du 2026-11-03) : elle part de la valeur de son entraînement, gagne des points après chaque
+ * bataille, et l'unité peut monter d'un cran en atteignant le seuil suivant (règle appliquée par le MJ).
+ */
 /** Fourrage : Ravitaillement par mois et par unité montée de la Compagnie (décision du 2026-11-03). */
 export const FODDER_PER_MOUNTED_UNIT = 2;
+/** Expérience donnée au recrutement par les Maîtres d'armes (décision du 2026-11-03). */
+export const MASTERS_AT_ARMS_XP = 10;
 
 export const UNIT_TRAININGS = {
   support: { label: "AFC.Unit.Training.support", manpower: 1, discipline: 12, experience: 0 },

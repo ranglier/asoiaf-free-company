@@ -327,8 +327,8 @@ Un tour de bataille dure **3 rounds individuels** (à l'essai, 2026-11-02). Un P
 - **Cohésion** : victoire +1d6 × 3, défaite −1d6 × 3 ; lourdes pertes, chef blessé ou capturé −5 à −15 (règles de la Compagnie). Aumôniers et congrégation en retirent 3 ou 6, au plus la moitié ; le Bilan le rappelle.
 - **Renommée, butin, prisonniers** : au jugement du MJ.
 - **PJ** : blessures et lésions selon les règles normales.
-- **Aguerrissement** (décision du 2026-11-03, d'après la table 10-6 « Survivors » du livre de base, VO p. 183, côté positif seulement : les pertes passent par le Bilan) : chaque troupe de la Compagnie qui finit Fraîche ou Éprouvée lance 1d6, −1 par passage à Désorganisée ou pire, +1 avec des Maîtres d'armes. Fraîche : +1 cran d'entraînement sur 5, +2 sur 6 ; Éprouvée : +1 cran sur 6. Jamais au-delà d'Élite ; le MJ arbitre. À la main, sur la fiche de l'unité.
-- **Renforcer** (même décision) : combler au moins 30 % des hommes d'une unité la fait baisser d'un cran d'entraînement (les recrues remplacent les morts), jamais sous Bleus. À la main.
+- **Expérience des unités** (décision du 2026-11-03, règle maison ; remplace le jet d'aguerrissement essayé le même jour) : chaque unité de la Compagnie a un compteur d'expérience (champ Expérience de l'unité), qui part de la valeur de son entraînement : Bleus 20, Entraînés 60, Vétérans 100, Élite 140, +10 au recrutement avec des Maîtres d'armes. Après chaque bataille où elle a combattu : +5, et +5 de plus en cas de victoire ; rien si elle finit Brisée ou Détruite. À 60, 100 et 140, le MJ peut la faire monter d'un cran (Entraînés, Vétérans, Élite) : Discipline et coût en Effectif suivent ; si l'Effectif manquant n'est pas disponible, l'unité attend. Il faut 40 points par cran : 4 victoires ou 8 batailles perdues. À la main, sur la fiche de l'unité.
+- **Renforcer** (même décision) : combler au moins 30 % des hommes d'une unité la fait baisser d'un cran d'entraînement (les recrues remplacent les morts) et ramène son compteur au seuil de ce cran (des Vétérans à 115 redeviennent Entraînés à 60), jamais sous Bleus. À la main.
 
 ## 9. Sièges (esquisse)
 

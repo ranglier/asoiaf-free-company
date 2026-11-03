@@ -1,4 +1,5 @@
-import { ABILITIES, SERVICE_SIZES, SYSTEM_ID, UNIT_TRAININGS } from "../config.mjs";
+import { ABILITIES, MASTERS_AT_ARMS_XP, SERVICE_SIZES, SYSTEM_ID, UNIT_TRAININGS } from "../config.mjs";
+import { serviceKeys } from "../company-services.mjs";
 import { bindSkillChoice, combineTypes } from "../unit-mix.mjs";
 import { COMPANY_SERVICES, COMPANY_UNIT_TYPES, UNLIMITED_SERVICE_CATEGORIES } from "../catalog-data.mjs";
 
@@ -174,7 +175,8 @@ export class CompanyCatalog extends HandlebarsApplicationMixin(ApplicationV2) {
         unitType2: u.second ? u.type2Key : "", skillKeys: u.second ? this.skillChoice.read() : [],
         classes: u.mix.classes, men: u.mix.men, count: u.count,
         keyAbilities: (u.second ? this.skillChoice.read() : u.type.abilities).map(a => loc(ABILITIES[a].label)).join(", "),
-        experience: UNIT_TRAININGS[u.training].experience,
+        // Maîtres d'armes : de l'expérience en plus au recrutement.
+        experience: UNIT_TRAININGS[u.training].experience + (serviceKeys(this.actor).includes("mastersAtArms") ? MASTERS_AT_ARMS_XP : 0),
         description: u.notes.length ? `<p>${u.notes.join("</p><p>")}</p>` : ""
       }
     }]);
