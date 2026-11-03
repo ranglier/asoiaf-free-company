@@ -34,6 +34,10 @@ export function orderVisible(token, battle) {
 let picking = null;
 
 /** Attend un clic sur une troupe visible, puis l'enregistre comme cible (Échap : annuler). */
+/** Cible possible d'une troupe : une troupe de l'autre camp, pas détruite (une troupe en déroute peut être poursuivie). */
+export const validTarget = (token, target) => target?.actor?.type === "troop" && target.actor.system.side !== token.actor?.system.side
+  && target.actor.system.state !== "destroyed";
+
 export function startTargetPick(token, onPick = null) {
   cancelTargetPick();
   cancelMovePick();
@@ -41,12 +45,15 @@ export function startTargetPick(token, onPick = null) {
   const onDown = event => {
     if (event.button !== 0) return;
     const p = canvas.canvasCoordinatesFromClient({ x: event.clientX, y: event.clientY });
-    const hit = canvas.tokens.placeables.find(t => t.document.actor?.type === "troop" && t.document.id !== token.id
+    // Seule une troupe ennemie encore sur le champ se désigne : un jeton détruit ou allié posé sur la même case est
+    // ignoré (partie d'essai du 2026-11-03 : des tirs partis sur un bloc allié détruit).
+    const under = canvas.tokens.placeables.filter(t => t.document.actor?.type === "troop" && t.document.id !== token.id
       && t.visible && t.bounds.contains(p.x, p.y));
+    const hit = under.find(t => validTarget(token, t.document));
     event.stopPropagation();
     event.preventDefault();
     cancelTargetPick();
-    if (!hit) return ui.notifications.info(loc("AFC.Battle.PickCancelled"));
+    if (!hit) return ui.notifications.info(loc(under.length ? "AFC.Battle.PickEnemyOnly" : "AFC.Battle.PickCancelled"));
     if (onPick) return onPick(hit.document);
     // L'ordre a pu changer depuis : on ne pose pas de cible sur un ordre qui n'en a pas.
     if (!isBook(token.parent) && !TARGETED_ORDERS.includes(unitOf(getBattle(), token.id).order)) return;

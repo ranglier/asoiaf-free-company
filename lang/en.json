@@ -668,7 +668,7 @@
         "withdraw": "steps back one space and limits losses; choose the space, the token moves on reveal"
       },
       "PickTarget": "{name}: click the targeted troop (Esc to cancel).",
-      "PickCancelled": "Targeting cancelled.",
+      "PickCancelled": "Targeting cancelled.", "PickEnemyOnly": "Pick an enemy troop still on the field (not an ally or a destroyed troop).",
       "PickOnMap": "Designate the target on the map",
       "ClearTarget": "Clear target",
       "NoTarget": "target to designate",

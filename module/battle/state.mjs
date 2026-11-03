@@ -114,6 +114,12 @@ async function applyUnit(scene, tokenId, changes, user) {
   if (!token?.actor) return;
   const battle = getBattle(scene);
   if (!canCommand(token, battle, user)) return;
+  // Une cible doit être une troupe de l'autre camp, encore sur le champ (quelle que soit la voie : menu, macro, socket).
+  const aim = changes.target ? scene.tokens.get(changes.target) : null;
+  if (changes.target && (!aim?.actor || aim.actor.system.side === token.actor.system.side || aim.actor.system.state === "destroyed")) {
+    if (user.id === game.user.id) ui.notifications.warn(game.i18n.localize("AFC.Battle.PickEnemyOnly"));
+    return;
+  }
   const unit = { ...unitOf(battle, tokenId) };
   // Désigner la cible juste après le nouvel ordre fait partie du même contre-ordre.
   const completing = unit.countered && !unit.target && !("order" in changes);

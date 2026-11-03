@@ -668,7 +668,7 @@
         "withdraw": "recule d'une case et limite les pertes ; choisissez la case, le jeton bouge à la révélation"
       },
       "PickTarget": "{name} : cliquez sur la troupe visée (Échap pour annuler).",
-      "PickCancelled": "Désignation annulée.",
+      "PickCancelled": "Désignation annulée.", "PickEnemyOnly": "Désignez une troupe ennemie encore sur le champ (pas une troupe alliée ni détruite).",
       "PickOnMap": "Désigner la cible sur la carte",
       "ClearTarget": "Effacer la cible",
       "NoTarget": "cible à désigner",
