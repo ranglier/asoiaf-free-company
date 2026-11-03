@@ -81,14 +81,12 @@ export function prepareBookTroop(actor, { force = false } = {}) {
 export async function switchRules(rules) {
   if (!game.user.isGM) return;
   const battle = getBattle();
-  const started = battle.round > 1 || battle.units.some(u => u.order);
-  if (started) {
-    const ok = await DialogV2.confirm({
-      window: { title: loc("AFC.Battle.Rules.switchTitle") }, classes: ["afc", "afc-dialog"],
-      content: `<p>${fmt("AFC.Battle.Rules.switchConfirm", { rules: loc(`AFC.Battle.Rules.${rules}`).toLowerCase() })}</p>`, rejectClose: false
-    });
-    if (!ok) return;
-  }
+  // Toujours une confirmation : la bataille repart au tour 1, dans les deux sens.
+  const ok = await DialogV2.confirm({
+    window: { title: loc("AFC.Battle.Rules.switchTitle") }, classes: ["afc", "afc-dialog"],
+    content: `<p>${fmt("AFC.Battle.Rules.switchConfirm", { rules: loc(`AFC.Battle.Rules.${rules}`).toLowerCase() })}</p>`, rejectClose: false
+  });
+  if (!ok) return;
   Object.assign(battle, { rules, round: 1, revealed: false, weather: "clear", engaged: [], done: [], reload: [], reloadNext: [], moved: [], command: [], defenseDice: [] });
   battle.book = newBook(battle.book);
   await saveBattle(battle);

@@ -3,6 +3,7 @@
  * (Manœuvrer, Se replier) ou la cible (Charger, Attaquer) ; le mouvement prévu est dessiné pour qui
  * commande la troupe, et les jetons ne bougent qu'à la révélation, tous en même temps.
  */
+import { initiativeFormula } from "../dice/initiative.mjs";
 import { adjacent, center, distance, regionTerrainKey, shootRange } from "./engagement.mjs";
 import { isBook } from "./rules.mjs";
 import { getBattle, gmHandlers, gmOnScene, requestGM, saveBattle, sceneOf, setUnit, unitOf } from "./state.mjs";
@@ -333,7 +334,9 @@ export function inContact(token, battle = getBattle(token.parent)) {
 export async function executeMoves(scene = canvas.scene) {
   const battle = getBattle(scene);
   const moved = new Set(battle.moved ?? []);
-  const units = troops(scene).filter(canMove).map(token => ({ token, unit: unitOf(battle, token.id) }));
+  // Un bloc découpé ce tour-ci en pleine bataille ne fait que Tenir ou Manœuvrer, même si un autre ordre lui a été donné hors de l'interface.
+  const locked = u => u.unit.splitRound === battle.round && !["hold", "maneuver"].includes(u.unit.order);
+  const units = troops(scene).filter(canMove).map(token => ({ token, unit: unitOf(battle, token.id) })).filter(u => !locked(u));
   const contact = contactIds(scene);
   battle.contact = [...contact];
   const withdrawing = units.filter(u => u.unit.order === "withdraw" && contact.has(u.token.id) && u.unit.path?.length);
@@ -348,8 +351,19 @@ export async function executeMoves(scene = canvas.scene) {
   if (settled.length) await scene.updateEmbeddedDocuments("Token", settled.map(r => tokenUpdate(r.token, r.end)));
   settled.forEach(r => moved.add(r.token.id));
 
-  // Les plus rapides d'abord. Chacun voit la carte telle que les précédents l'ont laissée.
-  const approaching = units.filter(u => APPROACH_ORDERS.includes(u.unit.order) && u.unit.target).sort((a, b) => b.token.actor.system.move - a.token.actor.system.move);
+  // Les plus rapides d'abord ; à la même allure, la meilleure initiative (test d'Agilité, décision du 2026-11-03).
+  // Chacun voit la carte telle que les précédents l'ont laissée.
+  const approaching = units.filter(u => APPROACH_ORDERS.includes(u.unit.order) && u.unit.target);
+  for (const u of approaching) {
+    u.initiative = (await new Roll(initiativeFormula(u.token.actor)).evaluate()).total;
+    u.tie = Math.random();
+  }
+  const speed = u => u.token.actor.system.move;
+  approaching.sort((a, b) => speed(b) - speed(a) || b.initiative - a.initiative || a.tie - b.tie);
+  for (const pace of new Set(approaching.map(speed))) {
+    const group = approaching.filter(u => speed(u) === pace && !u.token.hidden);
+    if (group.length > 1) notes.push(fmt("AFC.Battle.Moves.Initiative", { list: group.map(u => `${esc(publicName(u.token))} ${Math.floor(u.initiative)}`).join(", ") }));
+  }
   for (const { token, unit } of approaching) {
     const occupied = occupiedCells(scene, { all: true });
     const end = walk(token, approachPath(token, unit, occupied), occupied);
@@ -360,6 +374,14 @@ export async function executeMoves(scene = canvas.scene) {
     const target = scene.tokens.get(unit.target);
     if (target && !adjacent(token, target) && !token.hidden && !target.hidden) notes.push(fmt("AFC.Battle.Moves.NotReached", { a: esc(publicName(token)), d: esc(publicName(target)) }));
   }
+  // Repli bloqué (décision du 2026-11-03) : la case d'arrivée d'une troupe qui se replie au contact est encore
+  // occupée après les mouvements, par une troupe qui ne part pas en fin de tour. Elle reste au contact et
+  // combat sans l'avantage du repli.
+  const occupiedNow = occupiedCells(scene, { all: true });
+  const blocked = withdrawing.filter(u => { const other = occupiedNow.get(u.unit.path.at(-1)); return other && other.id !== u.token.id && !deferred.has(other.id); });
+  battle.withdrawBlocked = blocked.map(u => u.token.id);
+  battle.deferred = battle.deferred.filter(id => !battle.withdrawBlocked.includes(id));
+  for (const u of blocked) (u.token.hidden ? [] : notes).push(fmt("AFC.Battle.Moves.WithdrawBlocked", { name: esc(publicName(u.token)) }));
   // Tirs devenus impossibles : la cible est sortie de portée pendant les mouvements. Un tireur ou une cible cachés :
   // le MJ seul en est prévenu.
   const gmNotes = [];
@@ -372,7 +394,7 @@ export async function executeMoves(scene = canvas.scene) {
   }
   // Relit la bataille avant d'écrire : un point de plan ou un Commander arrivé pendant les mouvements reste.
   const fresh = getBattle(scene);
-  Object.assign(fresh, { contact: battle.contact, deferred: battle.deferred, moved: [...moved] });
+  Object.assign(fresh, { contact: battle.contact, deferred: battle.deferred, withdrawBlocked: battle.withdrawBlocked, moved: [...moved] });
   await saveBattle(fresh, scene);
   if (notes.length) await ChatMessage.create({ content: `<div class="afc-card battle"><ul class="month-lines">${notes.map(n => `<li>${n}</li>`).join("")}</ul></div>` });
   if (gmNotes.length) await ChatMessage.create({ whisper: ChatMessage.getWhisperRecipients("GM"), content: `<div class="afc-card battle"><ul class="month-lines">${gmNotes.map(n => `<li>${n}</li>`).join("")}</ul></div>` });
@@ -393,8 +415,11 @@ export async function executeDeferredMoves(scene = canvas.scene) {
   const settled = settleMoves(moves.filter(m => m.path.length), occupiedCells(scene, { all: true }));
   if (settled.length) await scene.updateEmbeddedDocuments("Token", settled.map(r => tokenUpdate(r.token, r.end)));
   for (const r of settled) notes.push(fmt("AFC.Battle.Moves.Disengaged", { name: esc(r.token.name) }));
+  // Repli resté bloqué en fin de tour (case prise entre-temps) : la carte le dit.
+  for (const m of moves) if (unitOf(battle, m.token.id).order === "withdraw" && !settled.some(r => r.token === m.token)) notes.push(fmt("AFC.Battle.Moves.WithdrawStuck", { name: esc(m.token.name) }));
   const fresh = getBattle(scene);
   fresh.deferred = [];
+  fresh.withdrawBlocked = [];
   await saveBattle(fresh, scene);
   return notes;
 }

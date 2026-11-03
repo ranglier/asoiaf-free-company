@@ -3,7 +3,7 @@
  * Compagnie (source) ou être créée directement par le MJ (ennemis).
  */
 import { UNIT_TRAININGS } from "../config.mjs";
-import { typeMight } from "../unit-mix.mjs";
+import { typeMen, typeMight } from "../unit-mix.mjs";
 import { battleCare } from "../company-services.mjs";
 import {
   DISORDER_LOSS, MAX_LOSS, MOUNTED_UNIT_STRENGTH, RANGES, RETIRED_TRAITS, STATE_ORDER, TRAINING_BATTLE, TRAITS, TROOP_STATES
@@ -73,6 +73,8 @@ export default class TroopData extends foundry.abstract.TypeDataModel {
     // Traits retirés des règles (Bleus, 2026-11-02) : ignorés, et effacés au prochain enregistrement de la fiche.
     this.traits = this.traits.filter(k => !RETIRED_TRAITS.includes(k));
     this.has = Object.fromEntries(this.traits.map(k => [k, true]));
+    // Une arme de tir remplace les armes de jet, même cochées à la main.
+    if (this.has.bows || this.has.crossbows || this.has.slings) delete this.has.javelins;
     // Compétences de l'unité (type + entraînement) : Corps à corps en mêlée, Tir ou Athlétisme (armes de jet) au tir.
     const skills = this.book.abilities;
     this.melee = skills.fighting;
@@ -85,9 +87,12 @@ export default class TroopData extends foundry.abstract.TypeDataModel {
     this.move = Math.max(1, move);
     this.range = Math.max(0, ...this.traits.map(k => RANGES[k] ?? 0));
     this.stateIndex = STATE_ORDER.indexOf(this.state);
-    // Puissance de la troupe (repère, hors des règles de bataille) et force pour le surnombre : ses hommes, ou ses unités montées.
+    // Puissance de la troupe (repère, hors des règles de bataille) et force pour le surnombre : ses hommes ; une unité
+    // montée complète compte pour 200, une unité incomplète au prorata de ses cavaliers (décision du 2026-11-03).
     this.weight = this.units * (this.mightPerUnit || typeMight(this.unitType, this.unitType2));
-    this.strength = this.has.mounted ? Math.max(this.men, this.units * MOUNTED_UNIT_STRENGTH) : this.men;
+    const perUnit = typeMen(this.unitType, this.unitType2);
+    const mounted = perUnit ? Math.round(this.men * MOUNTED_UNIT_STRENGTH / perUnit) : this.units * MOUNTED_UNIT_STRENGTH;
+    this.strength = this.has.mounted ? Math.max(this.men, mounted) : this.men;
     // Pertes en fin de bataille : état + 5 % par désorganisation, plafonnées. Les soins de la Compagnie (petit
     // hôpital, maîtres équestres pour les montées) en rendent une part.
     this.lossBase = Math.min(MAX_LOSS, (TROOP_STATES[this.state]?.loss ?? 0) + this.disorders * DISORDER_LOSS);

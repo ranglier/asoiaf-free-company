@@ -216,9 +216,10 @@ export function shootMods(shooter, target, battle) {
   // Cible cachée (brouillard ou MJ) : tir à l'aveugle, −1D, et le MJ en est prévenu.
   if (target.hidden) { mods.push(mod(loc("AFC.Battle.Mod.blind"), { p: 1 })); warnings.push(loc("AFC.Battle.Warn.blind")); }
   if (S.state === "disordered") mods.push(mod(loc("AFC.Battle.State.disordered"), { p: 1 }));
-  // Pertes non plafonnées : cible prise de flanc (au contact d'un allié du tireur), en mouvement ou désorganisée.
+  // Pertes non plafonnées (décision du 2026-11-03) : cible immobile (Tenir, Tirer), prise de flanc (au contact
+  // d'un allié du tireur) ou désorganisée. Une cible en mouvement perd 1 état au plus.
   const flanked = flankers(target, S.side, [shooter.id]) > 0;
-  const uncapped = flanked || MOVING_ORDERS.includes(tOrder) || T.state === "disordered";
+  const uncapped = flanked || !MOVING_ORDERS.includes(tOrder) || T.state === "disordered";
   if (!S.range) warnings.push(loc("AFC.Battle.Warn.noRange"));
   const range = shootRange(S, battle);
   const dist = distance(shooter, target);
@@ -319,6 +320,11 @@ async function meleeOnce(att, def) {
   const m = meleeMods(att, def, battle);
   m.warnings.push(...uncommanded([att, def], battle));
   const ra = roller(att, battle), rd = roller(def, battle);
+  // Cible en déroute (décision du 2026-11-03) : elle ne rend pas les coups. Elle n'oppose que sa Défense passive
+  // (4 × Corps à corps) ; le moindre degré la détruit, et elle n'inflige aucune perte.
+  const fleeing = def.actor.system.state === "routed";
+  const passive = 4 * def.actor.system.melee;
+  if (fleeing) m.warnings.push(fmt("AFC.Battle.Warn.fleeingTarget", { name: def.name, n: passive }));
   const opts = await DialogV2.prompt({
     window: { title: fmt("AFC.Battle.MeleeTitle", { a: att.name, d: def.name }) },
     classes: ["afc", "afc-dialog"],
@@ -334,22 +340,25 @@ async function meleeOnce(att, def) {
   markActed(att);
   const pa = pool(ra, m.am, opts.a), pd = pool(rd, m.dm, opts.d);
   const ta = await rollDice(pa);
-  const td = battle.singleDefense ? await defenseRoll(pd, def.id, scene) : await rollDice(pd);
+  const td = fleeing ? { roll: null, total: passive, dice: [], bonus: 0 }
+    : battle.singleDefense ? await defenseRoll(pd, def.id, scene) : await rollDice(pd);
   let winner = null, loser = null, degrees = 0;
   if (ta.total > td.total) { winner = att; loser = def; degrees = degreesOf(ta.total - td.total); }
-  else if (td.total > ta.total) { winner = def; loser = att; degrees = degreesOf(td.total - ta.total); }
-  let losses = degrees;
-  const notes = [];
-  if ((winner === att && m.heavyShock) || (winner === def && m.dHeavyShock)) { losses += 1; notes.push(loc("AFC.Battle.Trait.heavyShock.name")); }
-  if (loser?.actor.system.has.heavyArmor && degrees >= 2) { losses -= 1; notes.push(loc("AFC.Battle.Trait.heavyArmor.name")); }
-  // Se replier : un état de moins, au moins un ; une troupe légère peut n'en perdre aucun.
+  else if (td.total > ta.total && !fleeing) { winner = def; loser = att; degrees = degreesOf(td.total - ta.total); }
+  let losses = fleeing && winner ? 1 : degrees;
+  const notes = fleeing && winner ? [loc("AFC.Battle.Card.Pursuit")] : [];
+  if (!fleeing && ((winner === att && m.heavyShock) || (winner === def && m.dHeavyShock))) { losses += 1; notes.push(loc("AFC.Battle.Trait.heavyShock.name")); }
+  if (!fleeing && loser?.actor.system.has.heavyArmor && degrees >= 2) { losses -= 1; notes.push(loc("AFC.Battle.Trait.heavyArmor.name")); }
+  // Se replier : un état de moins, au moins un ; une troupe légère peut n'en perdre aucun. Un repli bloqué
+  // (case d'arrivée restée occupée) ne protège pas.
   const loserOrder = loser === att ? m.aOrder : m.dOrder;
-  if (loser && loserOrder === "withdraw" && losses > 0) {
+  const blocked = (battle.withdrawBlocked ?? []).includes(loser?.id);
+  if (!fleeing && loser && loserOrder === "withdraw" && !blocked && losses > 0) {
     const kept = loser.actor.system.has.light ? Math.max(0, losses - 1) : Math.max(1, losses - 1);
     if (kept < losses) { losses = kept; notes.push(loc("AFC.Battle.Order.withdraw")); }
   }
   // Deux troupes qui se visent : une seule mêlée, les deux engagements sont résolus.
-  const mutual = unitOf(battle, def.id).target === att.id && ["charge", "attack"].includes(m.dOrder);
+  const mutual = !fleeing && unitOf(battle, def.id).target === att.id && ["charge", "attack"].includes(m.dOrder);
   await markEngaged(scene, [att.id, def.id], mutual ? [att.id, def.id] : [att.id], winner ? [[winner.id, "won", 1], [loser.id, "lost", 1], [winner.id, "inflicted", losses]] : []);
   const side = (token, r, mods, p, test, order) => ({
     name: token.name, roller: r.name, order: orderLabel(order), total: test.total, dice: test.dice,
@@ -357,12 +366,13 @@ async function meleeOnce(att, def) {
   });
   const apply = loser && losses > 0 ? { token: loser.id, losses, scene: scene.id } : null;
   const sides = [side(att, ra, m.am, pa, ta, m.aOrder), side(def, rd, m.dm, pd, td, m.dOrder)];
+  if (fleeing) Object.assign(sides[1], { roller: loc("AFC.Battle.State.routed"), pool: fmt("AFC.Battle.Card.PassiveDefense", { n: passive }), tags: [] });
   // Le vainqueur d'abord : le verdict se lit d'une traite.
   if (winner === def) sides.reverse();
   const content = await renderCard("battle-melee", {
     sides, degrees,
-    verdict: winner ? fmt("AFC.Battle.Card.Wins", { w: winner.name }) : loc("AFC.Battle.Card.Tie"),
-    detail: winner ? [lossLabel(loser.name, losses), ...notes].join(" · ") : loc("AFC.Battle.Card.TieDetail"),
+    verdict: winner ? fmt("AFC.Battle.Card.Wins", { w: winner.name }) : loc(fleeing ? "AFC.Battle.Card.Escaped" : "AFC.Battle.Card.Tie"),
+    detail: winner ? [lossLabel(loser.name, losses), ...notes].join(" · ") : loc(fleeing ? "AFC.Battle.Card.EscapedDetail" : "AFC.Battle.Card.TieDetail"),
     ...cardApply(apply, opts.auto, "melee")
   });
   const message = await postResult({ content, rolls: [ta.roll, td.roll].filter(Boolean), apply, auto: opts.auto, kind: "melee", scene });
@@ -737,14 +747,17 @@ async function markEngaged(scene, ids, done = [], stats = []) {
 
 /**
  * Engagements encore à résoudre : cibles désignées, tirs d'abord, puis mêlées. Une troupe en déroute
- * ou détruite n'attaque plus, et une cible retirée de la scène annule l'engagement.
+ * ou détruite n'attaque plus, et une cible retirée de la scène annule l'engagement. Un bloc découpé ce
+ * tour-ci en pleine bataille n'engage personne (même si son ordre lui a été donné hors de l'interface).
  */
 export function plannedEngagements(battle = getBattle(), scene = canvas.scene) {
   return battle.units.filter(u => u.target && ["charge", "attack", "shoot"].includes(u.order) && !battle.done.includes(u.id)).map(u => {
     const from = scene.tokens.get(u.id), to = scene.tokens.get(u.target);
     if (!from?.actor || !to?.actor || ["routed", "destroyed"].includes(from.actor.system.state)) return null;
-    // Une cible détruite sort du combat ; une cible en déroute ne combat plus, on peut encore lui tirer dessus.
-    if (to.actor.system.state === "destroyed" || (u.order !== "shoot" && to.actor.system.state === "routed")) return null;
+    // Une cible détruite sort du combat ; une cible en déroute peut encore être visée par les tirs et
+    // poursuivie en mêlée (décision du 2026-11-03).
+    if (to.actor.system.state === "destroyed") return null;
+    if (u.splitRound === battle.round) return null;
     // Rechargement : pas de tir au tour qui suit un tir.
     if (u.order === "shoot" && (battle.reload ?? []).includes(u.id)) return null;
     // Après les mouvements, un tir demande la portée (la carte des mouvements le signale)...

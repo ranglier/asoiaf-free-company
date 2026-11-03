@@ -106,7 +106,7 @@ Chaque unité a :
 | Fraîche | Aucun. |
 | Éprouvée | Pas de malus, mais ne peut plus utiliser sa réserve d'encaissement. |
 | Désorganisée | −1D à tous ses tests ; ne peut plus Charger *(avertissement)*. |
-| En déroute | Ne fait que fuir (2 cases vers son bord) jusqu'à être ralliée. La fuite se joue *à la main* : la carte de fin de tour la rappelle. Elle sort des mêlées prévues ; on peut encore lui tirer dessus. |
+| En déroute | Ne fait que fuir (2 cases vers son bord) jusqu'à être ralliée. La fuite se joue *à la main* : la carte de fin de tour la rappelle. On peut encore lui tirer dessus et la poursuivre en mêlée : elle ne lance pas de dés, n'oppose que sa Défense passive (4 × Corps à corps), ne rend pas les coups, et le moindre degré la détruit (décision du 2026-11-03). |
 | Détruite | Retirée de la carte *(à la main)*. Retirée, elle reste comptée au Bilan (v0.27.10). |
 
 - **Ralliements** (révisé le 2026-10-31) : l'action Rallier d'un officier se teste toujours contre la **Discipline** de l'unité et chaque réussite, quel que soit l'état de départ, consomme le compteur : au plus **encaissement + 1 fois par bataille** (bleus 1, entraînés 2, vétérans 3, élite 4). Au-delà, plus de ralliement possible. La réorganisation (Tenir sans combat) ne consomme pas le compteur et ne fait jamais sortir de la déroute.
@@ -200,13 +200,13 @@ Une bataille dure en général 3 à 5 tours (ou jusqu'à l'objectif du scénario
 1. **Ordres secrets** : un ordre **par troupe** (révisé le 2026-10-29 : les groupes à ordre commun étaient peu lisibles sur la carte), avec sa cible pour Charger, Attaquer et Tirer. Chaque troupe peut avoir un **officier** (PJ ou PNJ) : la troupe lance toujours sa propre compétence, l'officier ne lui donne des dés de bonus que s'il choisit l'action **Commander** après la révélation : **+1B dès 1 degré, +2B dès 3 degrés** (révisé le 2026-11-01, section 6). Option décochée : bonus fixe de 1 dé par tranche de 2 rangs d'Art militaire, Tactiques comptant comme des rangs, au moins 1. Un officier mène au plus **1 + ses dés de bonus en Commandement** troupes *(avertissement)*. **Mouvements** : Manœuvrer et Se replier se déclarent avec leur case d'arrivée ; Charger et Attaquer rejoignent leur cible (case d'arrivée au choix). Tout est secret et les jetons ne bougent qu'à la révélation.
 2. **Révélation et mouvements** : les ordres sont montrés et les troupes bougent aussitôt (détail au point 4), puis viennent les **contre-ordres** éventuels, qui voient donc les positions finales ; une troupe qui a déjà bougé change d'ordre sans bouger de nouveau (décision du 2026-11-03 : l'ordre de Foundry fait foi).
 3. **Actions des PJ** (section 7) : chaque PJ ou officier a, par tour, **soit une action de bataille, soit une scène individuelle de 3 rounds** (voir « Durée d'un tour »). Un PJ peut se déplacer d'une case pour rejoindre une unité sans y consacrer son action. Deux PJ peuvent agir sur la même unité.
-4. **Mouvements**, détail (ils se jouent à l'étape 2, juste après la révélation, avant les contre-ordres et les actions des PJ : manœuvres et replis, sauf les replis au contact qui attendent la fin du tour, puis charges et attaques vers la position réelle de leur cible ; une case prise ou un ennemi arrête l'unité ; deux unités visent la même case : la plus rapide l'obtient, à égalité personne, et l'autre s'arrête avant). Décisions du 2026-11-02 (v0.28.3) :
+4. **Mouvements**, détail (ils se jouent à l'étape 2, juste après la révélation, avant les contre-ordres et les actions des PJ : manœuvres et replis, sauf les replis au contact qui attendent la fin du tour, puis charges et attaques vers la position réelle de leur cible ; une case prise ou un ennemi arrête l'unité ; deux unités visent la même case : la plus rapide l'obtient, à égalité personne, et l'autre s'arrête avant). Les charges et attaques se jouent une à une, les plus rapides d'abord ; **à la même allure, chacune fait un jet d'initiative** (test d'Agilité de l'unité) et la meilleure part la première (décision du 2026-11-03, v0.31.0 ; avant, l'ordre de pose des jetons avantageait la Compagnie). Décisions du 2026-11-02 (v0.28.3) :
    - on peut viser la case d'un allié : s'il la quitte ce tour, on y entre ; sinon, on s'arrête avant (une ligne peut avancer d'un bloc) ;
    - une charge ou une attaque dont la case d'arrivée choisie est prise (par un allié arrivé avant) prend la case libre la plus proche au contact de sa cible.
    - **Contact** (décisions du 2026-11-02, v0.28.7) :
      - une troupe est **au contact** si elle touche une troupe ennemie active au début du tour (au moment des ordres) ;
      - au contact, elle peut Tenir, Attaquer, Charger, Tirer ou Se replier, mais ni Manœuvrer ni Courir : elle ne rompt le contact qu'en **Se repliant** (Foundry refuse ces ordres à un joueur ; le MJ est prévenu et peut passer outre) ;
-     - **Se replier au contact** : la troupe reste sur sa case pendant les tirs et les mêlées du tour ; ceux qui l'attaquent la combattent là, avec l'avantage du repli ; elle recule d'une case à la fin du tour, si elle n'est pas en déroute. Un ennemi qui Tient ne la frappe pas ;
+     - **Se replier au contact** : la troupe reste sur sa case pendant les tirs et les mêlées du tour ; ceux qui l'attaquent la combattent là, avec l'avantage du repli ; elle recule d'une case à la fin du tour, si elle n'est pas en déroute. Un ennemi qui Tient ne la frappe pas. Elle peut viser la case d'un allié qui la quitte ce tour (il Manœuvre, ou vient la relever en échangeant leurs places) ; si, après les mouvements, cette case est encore occupée par une troupe qui ne part pas, le **repli est bloqué** : la carte des mouvements l'annonce, la troupe reste au contact et combat sans l'avantage du repli (décision du 2026-11-03, v0.31.0) ;
      - **Relève** : une troupe alliée qui n'est pas au contact peut viser en Manœuvrant la case de la troupe qui se replie ; elle y entre à la fin du tour, après les mêlées (les deux échangent leurs places si celle qui se replie recule dans sa case). Si la troupe qui se replie est détruite, la relève entre dans la case libérée ; si elle est en déroute, la relève n'a pas lieu ;
      - **Échange de cases** hors du contact : deux troupes alliées (ou plus, en cercle) qui visent chacune la case de l'autre bougent ensemble, à la révélation (v0.28.6) ;
      - Attaquer garde son mouvement (sert à aborder une ligne qui Tient sans lui offrir l'ordre gagnant).
@@ -247,14 +247,14 @@ Un tour de bataille dure **3 rounds individuels** (à l'essai, 2026-11-02). Un P
 - Il faut voir la cible (ligne de vue). Avec l'option Brouillard de guerre par case, Foundry ne laisse viser qu'une troupe visible ; sans elle, *(à la main)*. Tir à l'aveugle sur une case non vue : −1D, résolu par le MJ *(à la main)*, section 1.
 - +3 si la cible a Armure lourde ou Boucliers (sauf Perforant) ; couvert du terrain : +3 (bois, village, ruines) ou +1 (obstacles) ; pluie : −1D ; tireur Désorganisé : −1D.
 - +1B depuis une colline, contre une cible qui n'y est pas. Amélioration Armes de tir : +1B.
-- Pertes : **1 état au maximum**, sauf si la cible est prise de flanc (au contact d'un allié du tireur), en mouvement (Charger, Attaquer, Manœuvrer ou Course) ou Désorganisée : alors 1 état par degré. Mesuré sur 10 400 tirs (2026-11-02) : une touche fait perdre 1,13 état en moyenne contre une troupe qui Tient, 1,19 contre une troupe en mouvement.
+- Pertes (inversées le 2026-11-03, v0.31.0) : une cible **immobile** (Tenir, Tirer) perd **1 état par degré** ; une cible **en mouvement** (Charger, Attaquer, Manœuvrer, Course, Se replier) en perd **1 au plus**, sauf si elle est prise de flanc (au contact d'un allié du tireur) ou Désorganisée. Avant, c'était l'inverse : plus logique ainsi, une ligne qui attend est plus facile à toucher durement qu'une troupe qui bouge.
 - Rechargement : pas de tir au tour qui suit un tir.
 
 **Mêlée** : test d'opposition entre les deux camps, chacun avec la compétence de son unité, plus les dés de bonus de son officier s'il a commandé.
 - Bonus : ordre gagnant (+1B), **flanc : +1B si au moins une autre unité alliée est au contact de l'adversaire, quel que soit leur nombre** (décision du 2026-11-02, v0.28.5 ; avant, +1B par unité), embuscade (+1B), terrain, traits, PJ en première ligne (+1B par degré), points de plan.
 - Malus : état (Désorganisée −1D), terrain (gué), traits.
 - Plafond : les dés de bonus ne peuvent pas dépasser le nombre de dés de test.
-- Une unité en déroute ne combat plus et sort des mêlées prévues ; on peut encore lui tirer dessus.
+- Une unité en déroute ne combat plus ; on peut encore lui tirer dessus et la **poursuivre** : elle ne lance pas de dés, n'oppose que sa Défense passive (4 × Corps à corps) et n'inflige aucune perte ; le moindre degré la détruit (décision du 2026-11-03, v0.31.0). Une mêlée prévue contre une troupe mise en déroute par les tirs du tour a donc lieu.
 - Résultat : le perdant perd **1 état par degré d'écart** (4 degrés au plus, encaissement possible ; Choc lourd et Armure lourde ajustent d'un état) ; le vainqueur prend ou garde la case disputée *(à la main)*. Égalité : le défenseur garde la case, aucune perte.
 - Deux troupes qui se visent l'une l'autre (Charger ou Attaquer) : une seule mêlée règle les deux engagements.
 - Amélioration Armes de mêlée : +1B. Course : −1D à la troupe essoufflée.
@@ -264,7 +264,7 @@ Un tour de bataille dure **3 rounds individuels** (à l'essai, 2026-11-02). Un P
 - **Entraînement en dés de bonus** : au-delà de 3D, le rang devient des dés de bonus (vétéran 3D+1B, élite 3D+2B) ; un Bleu a 2D+1B sur ses compétences clés. Le plafond de bonus reste égal au nombre de dés de test. Les tests à la demande de la fiche de troupe lancent les mêmes dés (v0.27.3).
 - **Jet unique de la cible** : une troupe attaquée par plusieurs lance une fois par tour ; les mêmes dés servent contre chaque attaquant, avec les modificateurs propres à chacun.
 
-**Surnombre** (décision du 2026-11-01, v0.27.5) : +1B à 1,5 contre 1 et +2B à 3 contre 1, en **hommes** et non plus en Puissance. Une unité montée compte pour **200 hommes**. Le prix de la cavalerie lourde passe de 3 à 5 de Puissance, soit 10 pour les chevaliers errants à cheval.
+**Surnombre** (décision du 2026-11-01, v0.27.5) : +1B à 1,5 contre 1 et +2B à 3 contre 1, en **hommes** et non plus en Puissance. Une unité montée compte pour **200 hommes** ; une unité montée incomplète compte au prorata de ses cavaliers (10 chevaliers sur 20 : 100), décision du 2026-11-03, v0.31.0. Une unité qui commence la bataille avec des pertes est simplement moins nombreuse : le surnombre en tient compte. Le prix de la cavalerie lourde passe de 3 à 5 de Puissance, soit 10 pour les chevaliers errants à cheval.
 
 **Tenir brise l'élan** (décision du 2026-11-02, v0.27.9, option active par défaut) : une charge contre une troupe qui Tient perd Choc, Choc lourd et volée. Seuls les boucliers et les piques en tirent +1B ; les autres troupes sont à armes égales. Décochée : toute troupe qui Tient a +1B contre une charge, sauf Choc de cavalerie.
 
@@ -355,7 +355,7 @@ Un tour de bataille dure **3 rounds individuels** (à l'essai, 2026-11-02). Un P
 
 **Préparation** : reconnaissance (1 unité ou 1 secret par degré) → plan (Stratégie, 12, 1 point de plan par degré, sans plafond) → déploiement. Contre-ordre : 1 point de plan ou Porter un ordre.
 
-**Tour** : 1. ordres secrets (un par troupe) → 2. révélation et mouvements, puis contre-ordres → 3. actions des PJ (Commander avant le jet de sa troupe) → 4. tirs → 5. mêlées (simultanées) → 6. fin de tour (replis au contact et relèves ; Tenir sans combat : remonte d'un état ; déroutes fuient).
+**Tour** : 1. ordres secrets (un par troupe) → 2. révélation et mouvements, puis contre-ordres → 3. actions des PJ (Commander avant le jet de sa troupe) → 4. tirs → 5. mêlées (simultanées) → 6. fin de tour (replis au contact et relèves ; Tenir sans combat : remonte d'un état ; déroutes fuient). Charges et attaques à la même allure : jet d'initiative.
 
 **Ordres** : Charger (bouge et attaque avec élan) · Attaquer (bouge et combat sans élan, neutre) · Tenir (défend, se réorganise) · Tirer (à portée, en vue) · Manœuvrer (bouge ; cavalerie et Léger +1 case) · Course (une case de plus, −1D en mêlée ce tour) · Se replier (recule d'une case ; perd un état de moins en mêlée, au moins un, Léger sans minimum). **Au contact** d'un ennemi : ni Manœuvrer ni Course ; on ne charge ou n'attaque que l'ennemi qu'on touche (exception : test d'officier, MJ) ; Se replier recule en fin de tour, après les mêlées ; une troupe fraîche peut venir prendre sa place (relève). Hors contact, deux alliés peuvent échanger leurs cases.
 
@@ -365,7 +365,7 @@ Un tour de bataille dure **3 rounds individuels** (à l'essai, 2026-11-02). Un P
 
 **Pertes finales** : état final (0, 10, 25, 40, 70 %) + 5 % par désorganisation, maximum 70 % (unité brisée). **Ralliements depuis la déroute** : encaissement + 1 par bataille.
 
-**Tir** : contre 9 (+3 armure lourde ou boucliers, sauf Perforant ; +3 bois, village, ruines ; +1 obstacles) ; il faut voir la cible, sinon tir à l'aveugle sur une case (−1D, MJ) ; 1 état maximum sauf cible de flanc, en mouvement ou désorganisée.
+**Tir** : contre 9 (+3 armure lourde ou boucliers, sauf Perforant ; +3 bois, village, ruines ; +1 obstacles) ; il faut voir la cible, sinon tir à l'aveugle sur une case (−1D, MJ) ; cible immobile (Tenir, Tirer) : 1 état par degré ; cible en mouvement : 1 état au plus, sauf de flanc ou désorganisée.
 
 **Mêlée** : opposition ; +1B par ordre gagnant, flanc (+1B au plus, quel que soit le nombre d'alliés au contact), embuscade, PJ (par degré), terrain, traits ; perdant −1 état par degré ; égalité : le défenseur garde la case.
 
@@ -379,7 +379,7 @@ Un tour de bataille dure **3 rounds individuels** (à l'essai, 2026-11-02). Un P
 
 ## 12. À tester et questions ouvertes
 
-- Le plafond de pertes au tir (1 état) : suffisant ou trop faible ? Les tireurs battent l'infanterie 2 fois sur 3 sur un terrain ouvert (batterie de nuit, S4). Le malus de tir contre une troupe en Course a été essayé puis retiré (v0.27.15).
+- Le plafond de pertes au tir, inversé en v0.31.0 (cible en mouvement : 1 état au plus ; cible immobile : 1 par degré) : à mesurer et à juger à la table. Le malus de tir contre une troupe en Course a été essayé puis retiré (v0.27.15).
 - Plus aucun point *(non codé, à trancher)* dans ce document (2026-11-02). Suivi dans `docs/ecarts-regles-foundry.md`.
 - La taille des groupes (1 + dés de bonus en Commandement) dans une grande bataille.
 - Les pourcentages de pertes et leur effet sur la Compagnie sur plusieurs batailles.

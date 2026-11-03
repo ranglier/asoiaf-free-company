@@ -36,6 +36,12 @@ export function combineTypes(a, b) {
   };
 }
 
+/** Hommes d'une unité de ce type, ou des deux types réunis (null si le type est inconnu). */
+export function typeMen(unitType, unitType2) {
+  const a = typeData(unitType), b = unitType2 && unitType2 !== unitType ? typeData(unitType2) : null;
+  return a ? combineTypes(a, b).men : null;
+}
+
 /** Puissance d'une unité d'après ses types (troupes créées sans passer par un catalogue). */
 export function typeMight(unitType, unitType2) {
   const a = typeData(unitType), b = unitType2 && unitType2 !== unitType ? typeData(unitType2) : null;

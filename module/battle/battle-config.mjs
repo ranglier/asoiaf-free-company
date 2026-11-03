@@ -33,8 +33,8 @@ export const TRAINING_BATTLE = {
 /** Ordres. Ordres gagnants : Charger bat Tirer, Tenir bat Charger (Attaquer est neutre, Tirer n'a pas de bonus contre Tenir depuis la v0.27.5). */
 export const ORDERS = ["charge", "attack", "hold", "shoot", "maneuver", "run", "withdraw"];
 export const TRIANGLE = { charge: "shoot", hold: "charge" };
-/** Ordres « en mouvement » (pertes au tir non plafonnées). */
-export const MOVING_ORDERS = ["charge", "attack", "maneuver", "run"];
+/** Ordres « en mouvement » : pertes au tir plafonnées à 1 état (décision du 2026-11-03 : une cible immobile, qui Tient ou Tire, perd 1 état par degré). */
+export const MOVING_ORDERS = ["charge", "attack", "maneuver", "run", "withdraw"];
 
 /** Traits d'équipement et de type. Le libellé et l'effet sont dans les fichiers de langue. */
 export const TRAITS = [

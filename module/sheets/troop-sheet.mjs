@@ -121,7 +121,9 @@ export class TroopSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     if (armor !== undefined && armor !== s.upgrades.armor) foundry.utils.setProperty(data, "system.cushion", Math.max(0, s.cushion + (armor ? 1 : -1)));
     // Règles du livre : la fiche n'affiche pas les traits, on n'y touche pas.
     if (!form.elements[`trait.${ACTIVE_TRAITS[0]}`]) return data;
-    const traits = ACTIVE_TRAITS.filter(k => form.elements[`trait.${k}`]?.checked);
+    let traits = ACTIVE_TRAITS.filter(k => form.elements[`trait.${k}`]?.checked);
+    // Une arme de tir remplace les armes de jet.
+    if (["bows", "crossbows", "slings"].some(k => traits.includes(k))) traits = traits.filter(k => k !== "javelins");
     for (const k of ACTIVE_TRAITS) delete data[`trait.${k}`];
     delete data.trait;
     foundry.utils.setProperty(data, "system.traits", traits);

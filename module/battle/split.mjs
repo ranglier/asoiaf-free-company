@@ -39,19 +39,34 @@ export async function splitTroop(data) {
   const token = scene.tokens.get(id);
   const s = token?.actor?.system;
   if (!s || units < 1 || units >= s.units) return null;
+  // Mêmes contrôles que le dialogue, quelle que soit la voie (requête d'un joueur, macro) : en pleine bataille,
+  // pendant les ordres, hors contact, et seulement après le test d'officier réussi (splitRound du tour).
+  const battle = getBattle(scene);
+  const refuse = key => { ui.notifications.warn(loc(`AFC.Battle.Split.${key}`)); return null; };
+  if (["routed", "destroyed"].includes(s.state)) return refuse("NotRouted");
+  if (battle.round > 1 || battle.revealed) {
+    if (battle.revealed) return refuse("OrdersOnly");
+    if (inContact(token, battle)) return refuse("InContact");
+    if (splitRound !== battle.round) return refuse("NeedTest");
+  }
   const at = freeNeighbor(token);
   if (!at) { ui.notifications.warn(loc("AFC.Battle.Split.NoRoom")); return null; }
   const men = Math.round(s.men * units / s.units);
   // L'encaissement se partage au prorata, arrondi au profit du bloc d'origine : découper n'en crée pas.
   const cushion = Math.floor(s.cushion * units / s.units);
+  // Nom unique : un deuxième bloc de même taille prend une lettre (« (1) B »).
+  const base = name ?? `${token.name} (${units})`;
+  const names = new Set(scene.tokens.map(t => t.name));
+  let label = base;
+  for (let n = 2; names.has(label); n++) label = `${base} ${String.fromCharCode(63 + n)}`;
   const source = token.actor.toObject();
   delete source._id;
   // Ordre et officier vont sur le jeton : l'acteur copié ne garde pas ceux de la troupe d'origine.
   delete source.flags?.[SYSTEM_ID]?.unit;
   foundry.utils.mergeObject(source, {
-    name: name ?? `${token.name} (${units})`,
+    name: label,
     "system.units": units, "system.men": men, "system.cushion": cushion,
-    "prototypeToken.name": name ?? `${token.name} (${units})`
+    "prototypeToken.name": label
   });
   const actor = await Actor.create(source);
   await token.actor.update({ "system.units": s.units - units, "system.men": s.men - men, "system.cushion": s.cushion - cushion });
