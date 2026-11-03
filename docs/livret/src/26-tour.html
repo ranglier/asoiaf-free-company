@@ -14,7 +14,7 @@
   <tbody>
     <tr><td class="nom">Charger</td><td>Rejoint sa cible et frappe avec élan (Choc, volée)&nbsp;; malus de pente et d'obstacles. Interdit dans un marais et Désorganisée.</td></tr>
     <tr><td class="nom">Attaquer</td><td>Rejoint sa cible et frappe sans élan&nbsp;: ni bonus ni malus de charge.</td></tr>
-    <tr><td class="nom">Tenir</td><td>Défend sur place&nbsp;; se réorganise si personne ne l'a touchée.</td></tr>
+    <tr><td class="nom">Tenir</td><td>Défend sur place&nbsp;; se réorganise si elle n'a été ni engagée ni touchée.</td></tr>
     <tr><td class="nom">Tirer</td><td>Tire sur une cible vue, à portée (<a href="#s27">2.7</a>).</td></tr>
     <tr><td class="nom">Manœuvrer</td><td>Se déplace sans attaquer. +1 case si Monté ou Léger, +1 sur route.</td></tr>
     <tr><td class="nom">Course</td><td>Une case de plus que Manœuvrer. −1D si on l'attaque en mêlée ce tour.</td></tr>
@@ -22,8 +22,8 @@
   </tbody>
 </table>
 
-<p><b>Ordres gagnants</b> (+1B)&nbsp;: <b>Charger bat Tirer</b>. <b>Tenir bat Charger</b>&nbsp;: la charge perd Choc, Choc lourd et volée, et le défenseur gagne +1B s'il a Boucliers ou Piques. <b>Attaquer</b> est neutre&nbsp;: c'est ainsi qu'on aborde une ligne qui Tient. Charger, Attaquer, Manœuvrer ou Courir, c'est être <b>en mouvement</b> face aux tirs.</p>
-<p><b>Officiers</b>&nbsp;: une troupe lance ses propres dés&nbsp;; son officier ne l'aide que s'il prend l'action Commander (<a href="#s28">2.8</a>). Il mène au plus 1 + ses dés de bonus en Commandement troupes.</p>
+<p><b>Ordres gagnants</b> (+1B)&nbsp;: <b>Charger bat Tirer</b>. <b>Tenir bat Charger</b>&nbsp;: la charge perd Choc, Choc lourd et volée, et le défenseur gagne +1B s'il a Boucliers ou Piques. <b>Attaquer</b> est neutre&nbsp;: c'est ainsi qu'on aborde une ligne qui Tient. Charger, Attaquer, Manœuvrer, Courir ou Se replier, c'est être <b>en mouvement</b> face aux tirs.</p>
+<p><b>Officiers</b>&nbsp;: une troupe lance ses propres dés&nbsp;; son officier ne l'aide que s'il prend l'action Commander (<a href="#s28">2.8</a>). Il mène au plus une troupe, plus une par dé de bonus en Commandement, mais n'en commande qu'une par tour.</p>
 
 <h2>2. Révélation et mouvements</h2>
 <p>Les ordres sont montrés ensemble et les troupes bougent aussitôt&nbsp;: d'abord manœuvres, courses et replis, puis charges et attaques vers la <b>position réelle</b> de leur cible&nbsp;:</p>
@@ -35,11 +35,11 @@
   <li>une charge dont la case est prise se rabat sur la case libre la plus proche au contact&nbsp;;</li>
   <li>hors contact, deux alliés peuvent <b>échanger</b> leurs cases.</li>
 </ul>
-<p>Viennent ensuite les <b>contre-ordres</b>, qui voient donc les positions finales&nbsp;: nouvel ordre ou nouvelle cible, pour un point de plan ou l'action Porter un ordre&nbsp;; un par troupe et par tour, jamais en réponse à un autre. Une troupe qui a déjà bougé change d'ordre sans bouger de nouveau.</p>
+<p>Viennent ensuite les <b>contre-ordres</b>, qui voient donc les positions finales&nbsp;: nouvel ordre ou nouvelle cible, pour un point de plan ou l'action Porter un ordre&nbsp;; un par troupe et par tour, jamais en réponse à un autre. Une troupe qui a déjà bougé change d'ordre sans bouger de nouveau&nbsp;; les autres font aussitôt le mouvement du nouvel ordre.</p>
 
 <h2>Le contact</h2>
 <p>Une troupe qui touche un ennemi au moment des ordres est <b>au contact</b>&nbsp;: ni Manœuvrer ni Course&nbsp;; elle ne charge ou n'attaque que l'ennemi qu'elle touche&nbsp;; elle ne rompt le contact qu'en <b>Se repliant</b>.</p>
-<p><b>Repli au contact</b>&nbsp;: la troupe reste sur sa case pendant tirs et mêlées, avec l'avantage du repli, puis recule à la fin du tour. Un ennemi qui Tient la laisse partir. Si la case visée, celle d'un allié, est encore occupée après les mouvements, le <b>repli est bloqué</b>&nbsp;: la troupe reste et combat sans l'avantage du repli.</p>
+<p><b>Repli au contact</b>&nbsp;: la troupe reste sur sa case pendant tirs et mêlées, avec l'avantage du repli, puis recule à la fin du tour, sauf en déroute. Un ennemi qui Tient ne la frappe pas. Si la case visée, celle d'un allié, est encore occupée après les mouvements, le <b>repli est bloqué</b>&nbsp;: la troupe reste et combat sans l'avantage du repli.</p>
 <p><b>Relève</b>&nbsp;: une troupe hors contact Manœuvre vers la case de celle qui se replie et y entre à la fin du tour. Pas de relève si celle-ci est en déroute.</p>
 
 <p><b>Rompre pour charger ailleurs</b> <span class="mj">Arbitré par le MJ</span>&nbsp;: l'officier y consacre son action, test d'Art militaire (Tactiques) contre la difficulté de Commander. Réussite&nbsp;: la troupe rompt et charge. Échec&nbsp;: elle Tient.</p>
@@ -55,7 +55,7 @@
 </aside>
 
 <h2>3 à 6. Actions, tirs, mêlées, fin du tour</h2>
-<p>Chaque personnage joue son action (<a href="#s28">2.8</a>), Commander avant le jet de sa troupe. Puis les <b>tirs</b>, tous ensemble, et les <b>mêlées</b>, simultanées elles aussi&nbsp;: chacune se joue avec l'état des troupes au début de la phase, et toutes les pertes tombent après la dernière (<a href="#s27">2.7</a>). À la fin du tour, les replis au contact reculent, les relèves entrent, une troupe qui a Tenu sans être touchée <b>remonte d'un état</b> (sauf En déroute), et les déroutes fuient <span class="mj">Arbitré par le MJ</span>.</p>
+<p>Chaque personnage joue son action (<a href="#s28">2.8</a>), Commander avant le jet de sa troupe. Puis les <b>tirs</b>, tous ensemble, et les <b>mêlées</b>, simultanées elles aussi&nbsp;: chacune se joue avec l'état des troupes au début de la phase, et toutes les pertes tombent après la dernière (<a href="#s27">2.7</a>). À la fin du tour, les replis au contact reculent, les relèves entrent, une troupe qui a Tenu sans être engagée ni touchée <b>remonte d'un état</b> (sauf En déroute), et les déroutes fuient <span class="mj">Arbitré par le MJ</span>.</p>
 <p>Un personnage peut jouer à la place une <b>scène individuelle</b> de trois rounds (duel, escalade, étendard) pendant que la bataille avance d'un tour.</p>
 
 <aside class="foundry">
