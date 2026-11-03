@@ -334,6 +334,8 @@ export class BattleApp extends HandlebarsApplicationMixin(ApplicationV2) {
     const old = getBattle();
     const kept = Object.fromEntries(BATTLE_OPTIONS.map(k => [k, old[k]]));
     if (old.rules) kept.rules = old.rules;
+    // Même champ de bataille : la nuit et la météo restent.
+    for (const k of ["night", "weather"]) if (old[k] !== undefined) kept[k] = old[k];
     await clearBattle();
     await canvas.scene.setFlag(SYSTEM_ID, "battle", kept);
   }
