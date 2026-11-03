@@ -14,7 +14,7 @@ import { MANUAL_ACTIONS, mayAct, officerBusy, pcLines, recordAction, SCENE_ROUND
 import { changePlan, PLAN_USES, planPoints } from "./plan-points.mjs";
 import { BATTLE_OPTIONS, canCommand, clearBattle, getBattle, saveBattle, setUnit, unitOf } from "./state.mjs";
 import { createEnemyTroop, troopPool } from "./troops.mjs";
-import { fogName, unknownToMe } from "./vision.mjs";
+import { fogName, fogOn, setVeilAll, unknownToMe } from "./vision.mjs";
 
 const { ApplicationV2, HandlebarsApplicationMixin, DialogV2 } = foundry.applications.api;
 const UNKNOWN_IMG = "icons/svg/mystery-man.svg";
@@ -69,6 +69,7 @@ export class BattleApp extends HandlebarsApplicationMixin(ApplicationV2) {
       terrainPainter: BattleApp.#onTerrainPainter,
       bookFree: BattleApp.#onBookFree,
       resolveNext: BattleApp.#onResolveNext,
+      veilAll: BattleApp.#onVeilAll,
       filter: BattleApp.#onFilter,
       drawer: BattleApp.#onDrawer,
       pcAct: BattleApp.#onPcAct,
@@ -232,6 +233,7 @@ export class BattleApp extends HandlebarsApplicationMixin(ApplicationV2) {
     const drawer = drawers.some(d => d.key === this.drawer) ? this.drawer : null;
     for (const d of drawers) d.active = d.key === drawer;
     return {
+      fogAuto: fogOn(scene),
       steps, status, given, total: orderable.length, filters, groups, drawers, drawer, free,
       // Après la révélation, le MJ voit la file des engagements en tête de liste (le prochain en bouton principal).
       queue: isGM && battle.revealed ? plans.map((p, i) => ({ ...p, first: i === 0 })) : null,
@@ -351,6 +353,7 @@ export class BattleApp extends HandlebarsApplicationMixin(ApplicationV2) {
   }
 
   static #onReveal() { return revealOrders(); }
+  static #onVeilAll(event, target) { target.closest("details")?.removeAttribute("open"); return setVeilAll(canvas.scene, target.dataset.veil); }
   static #onResolveNext() { const next = plannedEngagements()[0]; if (next) return resolvePlanned(next); }
   static #onFilter(event, target) { this.filter = target.dataset.filter; this.render(); }
   static #onDrawer(event, target) { this.drawer = this.drawer === target.dataset.drawer ? null : target.dataset.drawer; this.render(); }

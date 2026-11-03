@@ -15,7 +15,7 @@ import { chooseSplit, SPLIT_ORDERS } from "./split.mjs";
 import { isAutoIcon } from "./troops.mjs";
 import { isBook } from "./rules.mjs";
 import { canCommand, getBattle, setUnit, unitOf } from "./state.mjs";
-import { drawUnknownMask, fogName, fogOn, fogState, releaseToFog, toggleKnown, unknownToMe } from "./vision.mjs";
+import { drawUnknownMask, fogName, fogOn, fogState, nextVeil, setVeil, toggleKnown, unknownToMe, veilState } from "./vision.mjs";
 
 const { DialogV2 } = foundry.applications.api;
 const loc = key => game.i18n.localize(key);
@@ -192,11 +192,15 @@ export function onRenderTokenHUD(hud, html) {
   if (!book && mayCommand(token, battle)) button("fa-bullhorn", loc("AFC.Battle.Options.commandHint"), () => { hud.close(); commandTroop(token.id); });
   if (!book && commander && token.actor.system.state !== "fresh") button("fa-flag-checkered", `${loc("AFC.Battle.Rally")} (${token.actor.system.rallies}/${token.actor.system.ralliesMax})`, () => rallyTroop(token.id));
   if (!book && battle.outnumber && commander && token.actor.system.units > 1) button("fa-code-branch", loc("AFC.Battle.Split.Button"), () => { hud.close(); chooseSplit(token); });
-  // Brouillard (MJ, troupe ennemie) : identifier pour les joueurs (Lire le champ), rendre au brouillard un jeton caché ou montré à la main.
-  if (game.user.isGM && token.actor.system.side === "enemy" && fogOn(token.parent)) {
-    const fog = fogState(token);
-    button("fa-magnifying-glass", loc(fog.known ? "AFC.Battle.Fog.Forget" : "AFC.Battle.Fog.Identify"), () => { hud.close(); toggleKnown(token); }, { active: !!fog.known });
-    if (fog.manual) button("fa-cloud", loc("AFC.Battle.Fog.Release"), () => { hud.close(); releaseToFog(token); });
+  // Visibilité d'une troupe ennemie pour les joueurs (MJ) : un clic passe à l'état suivant. En brouillard automatique,
+  // « Identifier » garde la vue calculée et ne fait que donner le nom (Lire le champ).
+  if (game.user.isGM && token.actor.system.side === "enemy") {
+    const state = veilState(token), next = nextVeil(token);
+    button(VEIL_ICONS[state], fmt("AFC.Battle.Veil.Button", { state: loc(`AFC.Battle.Veil.${state}`), next: loc(`AFC.Battle.Veil.${next}`) }), () => { hud.close(); setVeil(token, next); }, { active: state !== "auto" });
+    if (state === "auto") {
+      const fog = fogState(token);
+      button("fa-magnifying-glass", loc(fog.known ? "AFC.Battle.Fog.Forget" : "AFC.Battle.Fog.Identify"), () => { hud.close(); toggleKnown(token); }, { active: !!fog.known });
+    }
   }
   // Colonne de droite, avec cacher/révéler : fiche de la troupe et fenêtre Bataille.
   const right = html.querySelector(".col.right");
@@ -205,6 +209,9 @@ export function onRenderTokenHUD(hud, html) {
   }
   right?.append(button("fa-chess-rook", loc("AFC.Battle.Title"), () => game.afc.openBattle()));
 }
+
+/** Icônes des états de visibilité d'une troupe ennemie. */
+const VEIL_ICONS = { auto: "fa-cloud", hidden: "fa-eye-slash", unknown: "fa-question", known: "fa-eye" };
 
 /* ---------- Noms des terrains sur la carte ---------- */
 

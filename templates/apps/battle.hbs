@@ -21,6 +21,10 @@
           <button type="button" data-action="newEnemy"><i class="fa-solid fa-skull"></i> {{localize "AFC.Battle.NewEnemy"}}</button>
           <button type="button" data-action="report"><i class="fa-solid fa-scroll"></i> {{localize "AFC.Battle.Report"}}</button>
           <button type="button" data-action="reset"><i class="fa-solid fa-trash"></i> {{localize "AFC.Battle.Reset"}}</button>
+          <hr>
+          <button type="button" data-action="veilAll" data-veil="unknown"><i class="fa-solid fa-question"></i> {{localize "AFC.Battle.Veil.AllUnknown"}}</button>
+          <button type="button" data-action="veilAll" data-veil="known"><i class="fa-solid fa-eye"></i> {{localize "AFC.Battle.Veil.AllKnown"}}</button>
+          {{#if fogAuto}}<button type="button" data-action="veilAll" data-veil="auto"><i class="fa-solid fa-cloud"></i> {{localize "AFC.Battle.Veil.AllAuto"}}</button>{{/if}}
         </div>
       </details>
       {{/if}}

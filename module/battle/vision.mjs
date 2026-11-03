@@ -35,13 +35,41 @@ const isTroop = token => token.actor?.type === "troop";
 const isEnemy = token => isTroop(token) && token.actor.system.side === "enemy";
 const isScout = actor => actor.system.traits?.includes("scouts") || [actor.system.unitType, actor.system.unitType2].includes("scouts");
 
+/**
+ * Visibilité choisie par le MJ pour une troupe ennemie (décision du 2026-11-03), avec ou sans brouillard :
+ * « hidden » (cachée), « unknown » (vue, mais un « ? » sans nom ni image), « known » (identifiée). Vide : le
+ * brouillard décide, ou, sans brouillard, l'œil de Foundry.
+ */
+export const VEILS = ["hidden", "unknown", "known"];
+const veilOf = token => fogFlag(token).veil ?? "";
+/** Troupe ennemie vue mais pas identifiée : par le choix du MJ, sinon par le brouillard. */
+const isUnknown = token => isEnemy(token) && (veilOf(token) ? veilOf(token) === "unknown" : !!fogFlag(token).unknown && fogOn(token.parent));
 /** Troupe ennemie que ce joueur voit sans l'avoir identifiée (le MJ voit tout). */
-export const unknownToMe = token => !game.user.isGM && isEnemy(token) && !!fogFlag(token).unknown && fogOn(token.parent);
+export const unknownToMe = token => !game.user.isGM && isUnknown(token);
 /** Nom affiché d'une troupe : « Troupe inconnue » tant qu'elle n'est pas identifiée. */
-export const fogName = (token, { forAll = false } = {}) =>
-  ((forAll ? isEnemy(token) && fogFlag(token).unknown && fogOn(token.parent) : unknownToMe(token)) ? loc("AFC.Battle.Fog.Unknown") : token.name);
+export const fogName = (token, { forAll = false } = {}) => ((forAll ? isUnknown(token) : unknownToMe(token)) ? loc("AFC.Battle.Fog.Unknown") : token.name);
 /** Troupe dont l'identité reste secrète pour les joueurs : cachée, ou vue sans être identifiée. */
-export const secretTroop = token => !!token.hidden || (isEnemy(token) && !!fogFlag(token).unknown && fogOn(token.parent));
+export const secretTroop = token => !!token.hidden || isUnknown(token);
+
+/** État de visibilité affiché au MJ : son choix, sinon « auto » (brouillard) ou ce que fait l'œil de Foundry. */
+export const veilState = token => veilOf(token) || (fogOn(token.parent) ? "auto" : token.hidden ? "hidden" : "known");
+/** État suivant, au clic du MJ : avec le brouillard, Auto → Cachée → Inconnue → Identifiée → Auto ; sans : Identifiée → Inconnue → Cachée. */
+export function nextVeil(token) {
+  const cycle = fogOn(token.parent) ? ["auto", "hidden", "unknown", "known"] : ["known", "unknown", "hidden"];
+  return cycle[(cycle.indexOf(veilState(token)) + 1) % cycle.length];
+}
+/** Pose un état de visibilité (« auto » rend la troupe au brouillard, ou la montre sans brouillard). */
+export function veilUpdate(token, state) {
+  const veil = state === "auto" ? "" : state;
+  const hidden = veil ? veil === "hidden" : fogOn(token.parent) ? token.hidden : false;
+  return { _id: token.id, hidden, [`flags.${SYSTEM_ID}.${FOG}.veil`]: veil, [`flags.${SYSTEM_ID}.${FOG}.manual`]: !!veil, [`flags.${SYSTEM_ID}.${FOG}.auto`]: false };
+}
+export const setVeil = (token, state) => token.parent.updateEmbeddedDocuments("Token", [veilUpdate(token, state)], { afcVeil: true });
+/** Toutes les troupes ennemies de la scène à la fois (menu de la fenêtre Bataille). */
+export function setVeilAll(scene, state) {
+  const updates = scene.tokens.filter(isEnemy).map(t => veilUpdate(t, state));
+  return updates.length ? scene.updateEmbeddedDocuments("Token", updates, { afcVeil: true }) : null;
+}
 /** Nom à écrire dans un message que tout le monde lit. */
 export const publicName = token => (secretTroop(token) ? loc("AFC.Battle.Fog.Unknown") : token.name);
 
@@ -263,6 +291,8 @@ export async function applyFog(scene = canvas.scene) {
   const updates = [];
   for (const token of scene.tokens.filter(isEnemy)) {
     const flag = fogFlag(token);
+    // Visibilité choisie par le MJ : le brouillard n'y touche pas.
+    if (veilOf(token)) continue;
     let hidden = token.hidden, auto = !!flag.auto, unknown = false, manual = !!flag.manual;
     if (!on) {
       if (auto) hidden = false;
@@ -283,7 +313,10 @@ export async function applyFog(scene = canvas.scene) {
 
 /** Le MJ cache ou montre un jeton ennemi lui-même : le brouillard ne le touche plus. */
 export function onPreUpdateToken(doc, changes, options) {
-  if (options.afcFog || !game.user.isGM || !("hidden" in changes) || !isEnemy(doc) || !fogOn(doc.parent)) return;
+  if (options.afcFog || options.afcVeil || !game.user.isGM || !("hidden" in changes) || !isEnemy(doc)) return;
+  // L'œil de Foundry sur une troupe dont le MJ a choisi la visibilité : cachée, ou montrée et identifiée.
+  if (veilOf(doc)) return foundry.utils.setProperty(changes, `flags.${SYSTEM_ID}.${FOG}.veil`, changes.hidden ? "hidden" : "known");
+  if (!fogOn(doc.parent)) return;
   foundry.utils.setProperty(changes, `flags.${SYSTEM_ID}.${FOG}.manual`, true);
   foundry.utils.setProperty(changes, `flags.${SYSTEM_ID}.${FOG}.auto`, false);
 }
@@ -294,7 +327,7 @@ export function markActed(token) {
 }
 
 /** Rend le jeton au brouillard (après l'avoir caché ou montré à la main). */
-export const releaseToFog = token => token.setFlag(SYSTEM_ID, FOG, { manual: false });
+export const releaseToFog = token => token.setFlag(SYSTEM_ID, FOG, { manual: false, veil: "" });
 /** Identifie la troupe pour les joueurs (Lire le champ), ou annule. */
 export const toggleKnown = token => token.setFlag(SYSTEM_ID, FOG, { known: !fogFlag(token).known });
 export const fogState = token => fogFlag(token);
@@ -327,6 +360,8 @@ export function drawFog() {
 /** Masque « ? » sur une troupe inconnue (joueurs) : ni image, ni nom, ni état. */
 export function drawUnknownMask(token) {
   token.children.filter(c => c.name === "afcUnknown").forEach(c => c.destroy({ children: true }));
+  // Le nom ne s'affiche pas non plus au survol.
+  if (token.nameplate) token.nameplate.renderable = !unknownToMe(token.document);
   if (!unknownToMe(token.document)) return;
   const doc = token.document;
   const points = canvas.grid.getVertices(canvas.grid.getOffset(center(doc))).flatMap(v => [v.x - doc._source.x, v.y - doc._source.y]);
