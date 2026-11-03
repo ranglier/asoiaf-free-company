@@ -128,7 +128,7 @@
       "sutlers": { "name": "Cantiniers", "effect": "Pertes d'Autorité des événements du mois −1 (minimum 1) ; solde impayée : −5 % de Cohésion au lieu de −10 %." },
       "fieldCook": { "name": "Cuisinier de campagne et ses aides", "effect": "+2 Organisation ; pertes d'Autorité des événements du mois −1 (minimum 1) ; solde impayée : −5 % de Cohésion au lieu de −10 %." },
       "provost": { "name": "Prévôt et ses hommes", "effect": "+1 Autorité par mois." },
-      "disciplineOfficers": { "name": "Officiers disciplinaires", "effect": "+1 Autorité par mois." },
+      "disciplineOfficers": { "name": "Officiers disciplinaires", "effect": "+1 Autorité par mois ; +1 aux tests de Rallier des troupes de la Compagnie." },
       "drillSergeants": { "name": "Sergents d'entraînement", "effect": "Permet de recruter des troupes entraînées." },
       "mastersAtArms": { "name": "Maîtres d'armes", "effect": "Permet de recruter des troupes entraînées ; +20 d'expérience au recrutement." },
       "priest": { "name": "Prêtre", "effect": "+1 aux tests d'événements." },
@@ -583,7 +583,7 @@
       "Night": "Nuit",
       "NightHint": "Avec le brouillard de guerre : de nuit, une troupe ne voit que les cases qui la touchent (2 cases pour des éclaireurs), une case éclairée à toute distance, et une troupe qui a combattu ou tiré ce tour jusqu'à 3 cases.",
       "Fog": { "Unknown": "Troupe inconnue", "Identify": "Identifier pour les joueurs (Lire le champ)", "Forget": "Ne plus identifier pour les joueurs", "Release": "Rendre au brouillard (caché ou montré à la main)" },
-      "Split": { "Button": "Découper le bataillon", "Title": "Découper : {name}", "Hint": "{n} unités dans ce bloc. Le nouveau bloc peut rester sans officier.", "Units": "Unités à détacher", "NoRoom": "Aucune case voisine libre.", "TooSmall": "Ce bloc n'a qu'une unité.", "Outnumber": "Surnombre" },
+      "Split": { "Button": "Découper le bataillon", "NotRouted": "Une troupe en déroute ou détruite ne se découpe pas.", "OrdersOnly": "En pleine bataille, on découpe pendant les ordres, avant la révélation.", "InContact": "Une troupe au contact de l'ennemi ne se découpe pas.", "NeedOfficer": "En pleine bataille, le découpage demande un officier (Art militaire) : donne un officier à la troupe ou au nouveau bloc.", "TestOk": "{who} découpe {name} : {n} contre {d}, réussi. Les deux blocs ne peuvent que Tenir ou Manœuvrer ce tour.", "TestFail": "{who} tente de découper {name} : {n} contre {d}, échec. La troupe reste entière.", "Locked": "Bloc découpé ce tour : Tenir ou Manœuvrer seulement.", "Title": "Découper : {name}", "Hint": "{n} unités dans ce bloc. Le nouveau bloc peut rester sans officier.", "Units": "Unités à détacher", "NoRoom": "Aucune case voisine libre.", "TooSmall": "Ce bloc n'a qu'une unité.", "Outnumber": "Surnombre" },
       "Options": {
         "outnumber": "Surnombre et découpage",
         "outnumberHint": "+1B à 1,5 contre 1 et +2B à 3 contre 1 en hommes ; une unité montée compte pour 200 hommes. Un bataillon peut se découper librement.",
@@ -708,7 +708,7 @@
         "piercing": { "name": "Perforant", "effect": "Ignore le +3 de l'armure lourde et des boucliers." },
         "reload": { "name": "Rechargement", "effect": "Après un tir, ne peut pas Tirer au tour suivant." },
         "javelins": { "name": "Armes de jet", "effect": "+1B en Charge, et en Tenant face à une charge ; peut Tirer à portée 2." },
-        "slings": { "name": "Frondes", "effect": "Peut Tirer, portée 3 ; sans effet sur l'armure lourde." },
+        "slings": { "name": "Frondes", "effect": "Peut Tirer, portée 3 ; +6 contre l'Armure lourde (au lieu de +3) ; la pluie ne la gêne pas." },
         "green": { "name": "Bleus", "effect": "À la première perte d'état : test de ralliement ou déroute." },
         "steadfast": { "name": "Indéfectible", "effect": "Annule sa première déroute de la bataille." },
         "scouts": { "name": "Éclaireurs", "effect": "+1B pour Lire le champ et pour la reconnaissance." },
@@ -847,7 +847,7 @@
         "Busy": "{name} a déjà agi ce tour : {what}.",
         "BusyConfirm": "{name} a déjà agi ce tour : {what}. Agir quand même ?",
         "Action": {
-          "command": "Commander", "rally": "Rallier", "readField": "Lire le champ", "carryOrder": "Porter un ordre",
+          "command": "Commander", "rally": "Rallier", "split": "Découper", "readField": "Lire le champ", "carryOrder": "Porter un ordre",
           "frontLine": "Combattre en première ligne", "shootWith": "Tirer avec l'unité", "feat": "Exploit", "free": "Action libre"
         }
       },

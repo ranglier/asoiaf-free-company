@@ -128,7 +128,7 @@
       "sutlers": { "name": "Sutlers", "effect": "Authority losses from monthly events −1 (minimum 1); unpaid wages: −5% Cohesion instead of −10%." },
       "fieldCook": { "name": "Field cook and helpers", "effect": "+2 Organization; Authority losses from monthly events −1 (minimum 1); unpaid wages: −5% Cohesion instead of −10%." },
       "provost": { "name": "Provost and his men", "effect": "+1 Authority per month." },
-      "disciplineOfficers": { "name": "Discipline officers", "effect": "+1 Authority per month." },
+      "disciplineOfficers": { "name": "Discipline officers", "effect": "+1 Authority per month; +1 to the company troops' Rally tests." },
       "drillSergeants": { "name": "Drill sergeants", "effect": "Allows recruiting trained troops." },
       "mastersAtArms": { "name": "Masters-at-arms", "effect": "Allows recruiting trained troops; +20 experience on recruitment." },
       "priest": { "name": "Priest", "effect": "+1 to event tests." },
@@ -583,7 +583,7 @@
       "Night": "Night",
       "NightHint": "With the fog of war: at night, a troop only sees the hexes next to it (2 for scouts), a lit hex at any distance, and a troop that fought or shot this round up to 3 hexes away.",
       "Fog": { "Unknown": "Unknown troop", "Identify": "Identify for the players (Read the Field)", "Forget": "Stop identifying for the players", "Release": "Give back to the fog (hidden or shown by hand)" },
-      "Split": { "Button": "Split the battalion", "Title": "Split: {name}", "Hint": "{n} units in this block. The new block may have no officer.", "Units": "Units to detach", "NoRoom": "No free adjacent space.", "TooSmall": "This block has a single unit.", "Outnumber": "Outnumbering" },
+      "Split": { "Button": "Split the battalion", "NotRouted": "A routed or destroyed troop cannot split.", "OrdersOnly": "During a battle, split during orders, before the reveal.", "InContact": "A troop in contact with the enemy cannot split.", "NeedOfficer": "During a battle, splitting needs an officer (Warfare): give the troop or the new block an officer.", "TestOk": "{who} splits {name}: {n} against {d}, success. Both blocks may only Hold or Maneuver this round.", "TestFail": "{who} tries to split {name}: {n} against {d}, failure. The troop stays whole.", "Locked": "Block split this round: Hold or Maneuver only.", "Title": "Split: {name}", "Hint": "{n} units in this block. The new block may have no officer.", "Units": "Units to detach", "NoRoom": "No free adjacent space.", "TooSmall": "This block has a single unit.", "Outnumber": "Outnumbering" },
       "Options": {
         "outnumber": "Outnumbering and splitting",
         "outnumberHint": "+1B at 1.5 to 1 and +2B at 3 to 1 in men; a mounted unit counts as 200 men. A battalion may split freely.",
@@ -708,7 +708,7 @@
         "piercing": { "name": "Piercing", "effect": "Ignores the +3 from heavy armor and shields." },
         "reload": { "name": "Reload", "effect": "After shooting, cannot Shoot next round." },
         "javelins": { "name": "Thrown weapons", "effect": "+1B when Charging, and when Holding against a charge; can Shoot at range 2." },
-        "slings": { "name": "Slings", "effect": "Can Shoot, range 3; no effect on heavy armor." },
+        "slings": { "name": "Slings", "effect": "Can Shoot, range 3; +6 against heavy armor (instead of +3); rain does not hinder it." },
         "green": { "name": "Green", "effect": "On its first state loss: rally test or rout." },
         "steadfast": { "name": "Steadfast", "effect": "Cancels its first rout of the battle." },
         "scouts": { "name": "Scouts", "effect": "+1B to Read the field and to reconnaissance." },
@@ -835,7 +835,7 @@
         "Busy": "{name} has already acted this round: {what}.",
         "BusyConfirm": "{name} has already acted this round: {what}. Act anyway?",
         "Action": {
-          "command": "Command", "rally": "Rally", "readField": "Read the field", "carryOrder": "Carry an order",
+          "command": "Command", "rally": "Rally", "split": "Split", "readField": "Read the field", "carryOrder": "Carry an order",
           "frontLine": "Fight in the front line", "shootWith": "Shoot with the unit", "feat": "Feat", "free": "Free action"
         }
       },

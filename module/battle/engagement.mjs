@@ -3,7 +3,7 @@
  * traits et les flancs), pertes d'états avec encaissement, ralliement, fin de tour et bilan.
  */
 import { ABILITIES, SYSTEM_ID } from "../config.mjs";
-import { cohesionLossReduction } from "../company-services.mjs";
+import { cohesionLossReduction, serviceKeys } from "../company-services.mjs";
 import { specialtyBonus } from "../data/actor-character.mjs";
 import { autoPenalties, evaluateTest, rollDice } from "../dice/test-roll.mjs";
 import {
@@ -204,13 +204,15 @@ export function shootMods(shooter, target, battle) {
   const sTerrain = terrainAt(shooter), tTerrain = terrainAt(target);
   const weather = WEATHER[battle.weather] ?? {};
   const mods = [], diff = [{ label: loc("AFC.Battle.Mod.base"), value: 9 }], warnings = [];
-  if ((T.has.heavyArmor || T.has.shields) && !S.has.piercing) diff.push({ label: loc(T.has.heavyArmor ? "AFC.Battle.Trait.heavyArmor.name" : "AFC.Battle.Trait.shields.name"), value: 3 });
+  // Frondes (décision du 2026-11-03) : +6 contre l'Armure lourde au lieu de +3, mais la pluie ne les gêne pas.
+  const slings = S.has.slings && !S.has.bows && !S.has.crossbows;
+  if ((T.has.heavyArmor || T.has.shields) && !S.has.piercing) diff.push({ label: loc(T.has.heavyArmor ? "AFC.Battle.Trait.heavyArmor.name" : "AFC.Battle.Trait.shields.name"), value: slings && T.has.heavyArmor ? 6 : 3 });
   const cover = terrainValue(tTerrain, "cover");
   if (cover) diff.push({ label: loc("AFC.Battle.Mod.cover"), value: cover });
   if (terrainValue(sTerrain, "defense") && !terrainValue(tTerrain, "defense")) mods.push(mod(loc("AFC.Battle.Terrain.hill"), { b: 1 }));
   if (S.upgrades.shoot) mods.push(mod(loc("AFC.Unit.Upgrade.shoot"), { b: 1 }));
   if (ambushing(battle, shooter)) mods.push(mod(loc("AFC.Battle.Mod.ambush"), { b: 1 }));
-  if (weather.shoot) mods.push(mod(loc("AFC.Battle.Weather.rain"), { p: 1 }));
+  if (weather.shoot && !slings) mods.push(mod(loc("AFC.Battle.Weather.rain"), { p: 1 }));
   if (S.state === "disordered") mods.push(mod(loc("AFC.Battle.State.disordered"), { p: 1 }));
   // Pertes non plafonnées : cible prise de flanc (au contact d'un allié du tireur), en mouvement ou désorganisée.
   const flanked = flankers(target, S.side, [shooter.id]) > 0;
@@ -567,7 +569,10 @@ export async function rallyTroop(tokenId) {
   if (!pick || !(await mayAct(pick.id))) return;
   const rallier = game.actors.get(pick.id);
   const warfare = rallier.system.abilities.warfare;
-  const p = { rank: warfare.rank, bonus: specialtyBonus(warfare, COMMAND) + pick.b };
+  // Officiers disciplinaires de la Compagnie (décision du 2026-11-03) : +1 aux tests de Rallier de ses troupes.
+  const company = s.side === "company" ? game.actors.get(s.source.actor) : null;
+  const modifier = serviceKeys(company).includes("disciplineOfficers") ? 1 : 0;
+  const p = { rank: warfare.rank, bonus: specialtyBonus(warfare, COMMAND) + pick.b, modifier };
   const test = await rollDice({ ...p, difficulty: discipline });
   // Rallier est l'action de bataille du personnage ce tour-ci, réussie ou non.
   await recordAction(pick.id, { action: "rally", troop: tokenId });

@@ -134,7 +134,7 @@ Déduits du type d'unité (deux types au plus, section 3 bis). Améliorations d'
 | Perforant | Ignore le +3 donné par Armure lourde et Boucliers. |
 | Rechargement | Après avoir tiré, ne peut pas Tirer au tour suivant (imposé par le système). |
 | Armes de jet | Volée : +1B quand l'unité Charge, et +1B quand elle Tient et se fait charger. Peut Tirer à portée 1-2. Pas Perforant. |
-| Frondes (variante) | Tir portée 3, sans effet sur l'Armure lourde. |
+| Frondes (variante) | Tir portée 3 ; +6 contre l'Armure lourde au lieu de +3 ; la pluie ne les gêne pas (décision du 2026-11-03, v0.30.2). |
 | Indéfectible | Annule sa première déroute de la bataille. |
 | Éclaireurs | +1B pour Lire le champ et pour la reconnaissance. Vue : 1 case de plus dans un bois (2 depuis l'extérieur, 3 depuis l'intérieur), identifient à 4 cases au lieu de 3 ; postés en lisière sans avoir agi, ils ne sont repérés qu'au contact (section 1). |
 | Défenseurs | +1B pour Tenir dans une fortification. |
@@ -268,7 +268,7 @@ Un tour de bataille dure **3 rounds individuels** (à l'essai, 2026-11-02). Un P
 
 **Tenir brise l'élan** (décision du 2026-11-02, v0.27.9, option active par défaut) : une charge contre une troupe qui Tient perd Choc, Choc lourd et volée. Seuls les boucliers et les piques en tirent +1B ; les autres troupes sont à armes égales. Décochée : toute troupe qui Tient a +1B contre une charge, sauf Choc de cavalerie.
 
-**Découpage** (v0.27.7) : l'encaissement se partage au prorata des unités, arrondi au profit du bloc d'origine. **Flanc** : limité à +1B, ce n'est plus une option (décision du 2026-11-02, v0.28.5).
+**Découpage** (v0.27.7) : **en pleine bataille** (décision du 2026-11-03, v0.30.2), seulement pendant les ordres, hors contact, ni en déroute ni détruite, et c'est l'action d'un officier : test d'Art militaire (Commandement) contre la difficulté de Commander ; réussi, les deux blocs ne peuvent que Tenir ou Manœuvrer ce tour ; raté, l'action est perdue. Au déploiement, il reste libre. Chaque bloc garde les ralliements, l'Indéfectible et les désorganisations déjà consommés. l'encaissement se partage au prorata des unités, arrondi au profit du bloc d'origine. **Flanc** : limité à +1B, ce n'est plus une option (décision du 2026-11-02, v0.28.5).
 
 **Village et infanterie lourde** (décisions du 2026-11-02, après les batteries) : une troupe qui Tient dans un village est très dure à déloger, et c'est voulu : un bâtiment est une position solide. Les joueurs ont d'autres moyens que les règles écrites (incendier le village, action libre, exploit). L'infanterie lourde est lente : c'est un vrai choix entre une troupe lourde et une troupe mobile ; rien à changer.
 

@@ -11,7 +11,7 @@ import { BOOK_STATUS_CHIP, isBookTargeted } from "./book-config.mjs";
 import { drawBookHealth, fillBookHUD } from "./book.mjs";
 import { center, commandTroop, distance, mayCommand, plannedEngagements, rallyTroop, resolvePlanned, shootRange } from "./engagement.mjs";
 import { afterPlan, APPROACH_ORDERS, cancelMovePick, cellCenter, CONTACT_FORBIDDEN, hasMoved, inContact, PATH_ORDERS, plannedPath, startMovePick } from "./moves.mjs";
-import { chooseSplit } from "./split.mjs";
+import { chooseSplit, SPLIT_ORDERS } from "./split.mjs";
 import { isAutoIcon } from "./troops.mjs";
 import { isBook } from "./rules.mjs";
 import { canCommand, getBattle, setUnit, unitOf } from "./state.mjs";
@@ -110,6 +110,8 @@ export async function giveOrder(token, order) {
   cancelTargetPick();
   cancelMovePick();
   if (order === "shoot" && !token.actor.system.range) return ui.notifications.warn(loc("AFC.Battle.Warn.noRange"));
+  // Bloc découpé ce tour-ci en pleine bataille : Tenir ou Manœuvrer seulement.
+  if (unitOf(getBattle(), token.id).splitRound === getBattle().round && !SPLIT_ORDERS.includes(order)) return ui.notifications.warn(loc("AFC.Battle.Split.Locked"));
   // Non combattant : ni Charger, ni Attaquer, ni Tirer.
   if (["charge", "attack", "shoot"].includes(order) && token.actor.system.has.noncombat) return ui.notifications.warn(loc("AFC.Battle.Warn.noncombat"));
   if (order === "shoot" && (getBattle().reload ?? []).includes(token.id)) return ui.notifications.warn(fmt("AFC.Battle.Reloading", { name: token.name }));
