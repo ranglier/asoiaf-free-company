@@ -4,7 +4,8 @@
 # (pages.ps1 lit les signets), la seconde les écrit dans le sommaire.
 # Usage : bash docs/livret/build.sh [édition]
 #   global (par défaut) : le livret entier ;
-#   compagnie, batailles : un chapitre seul, avec couverture, sommaire et index de ses tables ;
+#   compagnie, batailles : un chapitre seul, avec couverture, sommaire et index de ses tables (sans 2.10 Mener une
+#     bataille, réservée au livret entier) ;
 #   aide-compagnie, aide-batailles, fiche-troupe : les aides de jeu, sans couverture (dossier aides/) ;
 #   tout : toutes les éditions.
 # Les éditions partielles reprennent les mêmes fichiers de src/ : aucun texte n'est dupliqué.
@@ -18,7 +19,7 @@ fi
 case "$ED" in
   global)         FILES=(src/*.html); OUT=asoiaf-free-company-regles; LABEL="" ;;
   compagnie)      FILES=(src/00-*.html src/1*.html src/2c-*.html); OUT=asoiaf-free-company-regles-1-compagnie; LABEL="Chapitre 1 : La Compagnie" ;;
-  batailles)      FILES=(src/00-*.html src/2[1-9ab]-*.html src/2c-*.html); OUT=asoiaf-free-company-regles-2-batailles; LABEL="Chapitre 2 : Batailles" ;;
+  batailles)      FILES=(src/00-*.html src/2[1-9b]-*.html src/2c-*.html); OUT=asoiaf-free-company-regles-2-batailles; LABEL="Chapitre 2 : Batailles" ;;
   aide-compagnie) FILES=(src/19-annexe.html); OUT=aides/aide-de-jeu-compagnie; LABEL="" ;;
   aide-batailles) FILES=(src/2b-memo.html); OUT=aides/aide-de-jeu-batailles; LABEL="" ;;
   fiche-troupe)   FILES=(src/2b-fiche.html); OUT=aides/fiche-de-troupe; LABEL="" ;;
