@@ -128,7 +128,7 @@
       "sutlers": { "name": "Sutlers", "effect": "Authority losses from monthly events −1 (minimum 1); unpaid wages: −5% Cohesion instead of −10%." },
       "fieldCook": { "name": "Field cook and helpers", "effect": "+2 Organization; Authority losses from monthly events −1 (minimum 1); unpaid wages: −5% Cohesion instead of −10%." },
       "provost": { "name": "Provost and his men", "effect": "+1 Authority per month." },
-      "disciplineOfficers": { "name": "Discipline officers", "effect": "+2 Authority per month." },
+      "disciplineOfficers": { "name": "Discipline officers", "effect": "+1 Authority per month." },
       "drillSergeants": { "name": "Drill sergeants", "effect": "Allows recruiting trained troops." },
       "mastersAtArms": { "name": "Masters-at-arms", "effect": "Allows recruiting trained troops; +20 experience on recruitment." },
       "priest": { "name": "Priest", "effect": "+1 to event tests." },

@@ -128,7 +128,7 @@
       "sutlers": { "name": "Cantiniers", "effect": "Pertes d'Autorité des événements du mois −1 (minimum 1) ; solde impayée : −5 % de Cohésion au lieu de −10 %." },
       "fieldCook": { "name": "Cuisinier de campagne et ses aides", "effect": "+2 Organisation ; pertes d'Autorité des événements du mois −1 (minimum 1) ; solde impayée : −5 % de Cohésion au lieu de −10 %." },
       "provost": { "name": "Prévôt et ses hommes", "effect": "+1 Autorité par mois." },
-      "disciplineOfficers": { "name": "Officiers disciplinaires", "effect": "+2 Autorité par mois." },
+      "disciplineOfficers": { "name": "Officiers disciplinaires", "effect": "+1 Autorité par mois." },
       "drillSergeants": { "name": "Sergents d'entraînement", "effect": "Permet de recruter des troupes entraînées." },
       "mastersAtArms": { "name": "Maîtres d'armes", "effect": "Permet de recruter des troupes entraînées ; +20 d'expérience au recrutement." },
       "priest": { "name": "Prêtre", "effect": "+1 aux tests d'événements." },

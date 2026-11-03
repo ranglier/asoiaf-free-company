@@ -267,7 +267,7 @@ export const COMPANY_MONTH_EVENTS = [
 /** Effets mensuels automatiques des services (clé de catalogue) et bonus aux tests d'événements. */
 export const SERVICE_MONTHLY = {
   blacksmith: { might: 1 }, masterSmith: { might: 1 }, armorersGuild: { might: 2 },
-  provost: { authority: 1 }, disciplineOfficers: { authority: 2 }
+  provost: { authority: 1 }, disciplineOfficers: { authority: 1 }
 };
 export const SERVICE_EVENT_BONUS = { foreman: 1, aidesDeCamp: 2, stewards: 3, priest: 1, chaplains: 1, congregation: 2 };
 
