@@ -63,8 +63,17 @@ function formatDeltas(tables, deltas) {
     .map(([k, v]) => `${resLabel(tables, k)} ${v > 0 ? "+" : "−"}${Math.abs(v)}`).join(" · ");
 }
 
+/** Fiches dont la création est ouverte (un double clic n'en ouvre qu'une). */
+const running = new Set();
+
 /** Lance la création complète pour une Maison ou une Compagnie. */
 export async function runCreation(actor) {
+  if (running.has(actor.id)) return ui.notifications.warn(game.i18n.localize("AFC.Month.AlreadyOpen"));
+  running.add(actor.id);
+  try { return await creation(actor); } finally { running.delete(actor.id); }
+}
+
+async function creation(actor) {
   const tables = creationTables(actor.type);
 
   // Étape 1 : origine / royaume et fondation.
@@ -351,7 +360,7 @@ async function chooseEvents(tables, count) {
         if (!el) return;
         const i = Number(el.dataset.row);
         if (event.target.matches("[data-event]")) return setEvent(i, event.target.value);
-        if (event.target.dataset.key) rows[i].deltas[event.target.dataset.key] = Number(event.target.value) || 0;
+        if (event.target.dataset.key) rows[i].deltas[event.target.dataset.key] = Math.round(Number(event.target.value) || 0);
       });
       container.addEventListener("click", async event => {
         const button = event.target.closest("[data-roll-row]");
@@ -389,7 +398,7 @@ async function chooseBaseValues(tables, base) {
       <tbody>${rows}</tbody></table></div>`,
     ok: {
       label: loc("AFC.Creation.Confirm"),
-      callback: (ev, button) => Object.fromEntries(tables.resources.map(k => [k, Math.max(0, Number(button.form.elements[k].value) || 0)]))
+      callback: (ev, button) => Object.fromEntries(tables.resources.map(k => [k, Math.max(0, Math.round(Number(button.form.elements[k].value) || 0))]))
     },
     rejectClose: false
   });

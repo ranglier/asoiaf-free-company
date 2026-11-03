@@ -89,6 +89,8 @@ export class CompanyCatalog extends HandlebarsApplicationMixin(ApplicationV2) {
   _onRender(context, options) {
     super._onRender(context, options);
     const root = this.element;
+    // Après un ajout, le formulaire d'unité garde les choix précédents.
+    for (const [name, value] of Object.entries(this.unitForm ?? {})) { const el = root.querySelector(`.builder [name="${name}"]`); if (el) el.value = value; }
     this.skillChoice = bindSkillChoice(root, COMPANY_UNIT_TYPES);
     const refresh = () => {
       this.skillChoice.update();
@@ -173,6 +175,7 @@ export class CompanyCatalog extends HandlebarsApplicationMixin(ApplicationV2) {
       }
     }]);
     ui.notifications.info(game.i18n.format("AFC.Catalog.Added", { name, actor: this.actor.name }));
+    this.unitForm = Object.fromEntries(["training", "unitType", "unitType2", "count"].map(n => [n, this.element.querySelector(`.builder [name="${n}"]`)?.value]).filter(([, v]) => v !== undefined));
     return this.render();
   }
 }

@@ -189,7 +189,7 @@ async function applyDamage(message) {
     ok: {
       label: game.i18n.localize("AFC.Damage.Apply"),
       callback: (event, button) => ({
-        injuries: Math.min(injuriesLeft, Number(button.form.elements.injuries?.value) || 0),
+        injuries: Math.max(0, Math.min(injuriesLeft, Math.floor(Number(button.form.elements.injuries?.value) || 0))),
         wound: !!button.form.elements.wound?.checked && woundsLeft > 0
       })
     },

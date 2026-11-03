@@ -762,7 +762,7 @@
         "flank": "Flanc ({n} au contact)",
         "ambush": "Embuscade",
         "chargeUp": "Charge vers le haut",
-        "crossing": "Dans le gué ou sur le pont",
+        "blind": "À l'aveugle", "crossing": "Dans le gué ou sur le pont",
         "holdCrossing": "Depuis la rive",
         "mountedTerrain": "Cavalerie gênée par le terrain",
         "winded": "Essoufflée",
@@ -779,7 +779,7 @@
         "chargeDisordered": "Une troupe désorganisée ne peut pas charger.",
         "noCharge": "Charge impossible ici (marais ou pluie).",
         "notAdjacent": "Les deux troupes ne sont pas au contact.",
-        "noRange": "Cette troupe ne peut pas tirer.", "noncombat": "Une troupe non combattante ne charge, n'attaque ni ne tire.",
+        "noRange": "Cette troupe ne peut pas tirer.", "blind": "Cible cachée : tir à l'aveugle (−1D).", "noncombat": "Une troupe non combattante ne charge, n'attaque ni ne tire.",
         "outOfRange": "Hors de portée : {d} cases pour une portée de {r}.",
         "notShooting": "Le tireur n'a pas l'ordre Tirer.",
         "reload": "Rechargement : cette troupe a tiré au tour précédent."

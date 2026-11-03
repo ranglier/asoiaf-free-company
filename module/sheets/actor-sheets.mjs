@@ -118,20 +118,24 @@ class AFCActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
 
   /** Clic : test rapide ; Maj + clic : dialogue complet. */
   static async #onRollAbility(event, target) {
+    if (!this.document.isOwner) return; // Seul le propriétaire lance les dés du personnage.
     return rollAbilityTest(this.document, target.dataset.ability, { quick: !event.shiftKey });
   }
 
   static async #onRollSpecialty(event, target) {
+    if (!this.document.isOwner) return; // Seul le propriétaire lance les dés du personnage.
     return rollAbilityTest(this.document, target.dataset.ability, { quick: !event.shiftKey, specialty: Number(target.dataset.index) });
   }
 
   static async #onAddSpecialty(event, target) {
+    if (!this.isEditable) return; // Fiche en lecture seule : rien ne change.
     const key = target.dataset.ability;
     const list = [...this.document.system.toObject().abilities[key].specialties, { name: "", bonus: 1 }];
     return this.document.update({ [`system.abilities.${key}.specialties`]: list });
   }
 
   static async #onRemoveSpecialty(event, target) {
+    if (!this.isEditable) return; // Fiche en lecture seule : rien ne change.
     const key = target.dataset.ability;
     const list = this.document.system.toObject().abilities[key].specialties;
     list.splice(Number(target.dataset.index), 1);
@@ -139,6 +143,7 @@ class AFCActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   }
 
   static async #onCreateItem(event, target) {
+    if (!this.isEditable) return; // Fiche en lecture seule : rien ne change.
     const type = target.dataset.type;
     const name = game.i18n.format("AFC.Item.New", { type: game.i18n.localize(`TYPES.Item.${type}`) });
     const [item] = await this.document.createEmbeddedDocuments("Item", [{ name, type }]);
@@ -150,11 +155,13 @@ class AFCActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   }
 
   static async #onDeleteItem(event, target) {
+    if (!this.isEditable) return; // Fiche en lecture seule : rien ne change.
     const item = this.document.items.get(target.closest("[data-item-id]").dataset.itemId);
     return item?.deleteDialog();
   }
 
   static async #onToggleEquipped(event, target) {
+    if (!this.isEditable) return; // Fiche en lecture seule : rien ne change.
     const item = this.document.items.get(target.closest("[data-item-id]").dataset.itemId);
     return item?.update({ "system.equipped": !item.system.equipped });
   }
@@ -166,6 +173,7 @@ class AFCActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
 
   /** Clic sur une pastille : fixe la valeur (re-clic sur la dernière pastille = la retire). */
   static async #onSetPip(event, target) {
+    if (!this.isEditable) return; // Fiche en lecture seule : rien ne change.
     const path = target.dataset.path;
     const n = Number(target.dataset.n);
     const current = foundry.utils.getProperty(this.document, path);
@@ -173,6 +181,7 @@ class AFCActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   }
 
   static async #onAttack(event, target) {
+    if (!this.document.isOwner) return; // Seul le propriétaire lance les dés du personnage.
     const item = this.document.items.get(target.closest("[data-item-id]").dataset.itemId);
     return item && rollAttack(this.document, item, { quick: !event.shiftKey });
   }
@@ -194,12 +203,14 @@ class AFCActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   }
 
   static async #onAddRow(event, target) {
+    if (!this.isEditable) return; // Fiche en lecture seule : rien ne change.
     const key = target.dataset.list;
     const list = [...this.document.system.toObject()[key], { ...AFCActorSheet.ROW_DEFAULTS[key] }];
     return this.document.update({ [`system.${key}`]: list });
   }
 
   static async #onRemoveRow(event, target) {
+    if (!this.isEditable) return; // Fiche en lecture seule : rien ne change.
     const key = target.dataset.list;
     const list = this.document.system.toObject()[key];
     list.splice(Number(target.dataset.index), 1);
@@ -217,6 +228,7 @@ class AFCActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   }
 
   static async #onSetGrip(event, target) {
+    if (!this.isEditable) return; // Fiche en lecture seule : rien ne change.
     const item = this.document.items.get(target.closest("[data-item-id]").dataset.itemId);
     return item?.update({ "system.grip": target.dataset.grip });
   }

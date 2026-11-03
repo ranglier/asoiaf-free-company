@@ -10,7 +10,8 @@ const { DialogV2 } = foundry.applications.api;
 const loc = key => game.i18n.localize(key);
 
 /** Moral de la Compagnie sur la Discipline (une difficulté) : bon moral −2, solide −1, grogne +1, crise +2. Sans Compagnie : 0. */
-export const moraleMod = s => 0 - (game.actors.get(s.source.actor)?.system.cohesionState?.discipline ?? 0);
+// Le moral de la Compagnie ne vaut que pour ses troupes (une troupe passée à l'ennemi ne le prend plus).
+export const moraleMod = s => (s.side === "company" ? 0 - (game.actors.get(s.source.actor)?.system.cohesionState?.discipline ?? 0) : 0);
 
 /** Dés d'une compétence. Option : 3D au plus, le reste en dés de bonus ; un Bleu a 2D+1B sur ses compétences clés. */
 export function troopPool(s, ability, battle) {

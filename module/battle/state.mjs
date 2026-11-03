@@ -130,6 +130,11 @@ async function applyUnit(scene, tokenId, changes, user) {
   if ("order" in changes && !["charge", "attack", "shoot"].includes(unit.order)) unit.target = "";
   const { id, ...data } = unit;
   await writeUnit(token, data);
+  // Une relève qui change d'ordre ne relève plus : elle sort de la liste des mouvements de fin de tour.
+  if (counter && (battle.deferred ?? []).includes(token.id)) {
+    battle.deferred = battle.deferred.filter(x => x !== token.id);
+    await saveBattle(battle, scene);
+  }
   if (counter) {
     // Une troupe cachée ou non identifiée change d'ordre en secret : la carte ne va qu'au MJ.
     const secret = token.hidden || (token.actor?.system.side === "enemy" && !!token.getFlag(SYSTEM_ID, "fog")?.unknown && !!battle.fog);

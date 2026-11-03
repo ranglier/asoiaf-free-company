@@ -46,7 +46,7 @@ export async function runConversion(actor) {
       callback: (event, button) => {
         const f = button.form.elements;
         return [1, 2].map(i => ({
-          from: f[`from${i}`].value, to: f[`to${i}`].value, amount: Math.max(0, Number(f[`amount${i}`].value) || 0), hasty: i === 2
+          from: f[`from${i}`].value, to: f[`to${i}`].value, amount: Math.max(0, Math.floor(Number(f[`amount${i}`].value) || 0)), hasty: i === 2
         })).filter(c => c.from && c.to && c.amount);
       }
     },
@@ -81,10 +81,13 @@ export async function runConversion(actor) {
       ui.notifications.warn(game.i18n.format("AFC.Convert.Invalid", { from: resLabel(actor, c.from) }));
       continue;
     }
-    values[c.from] -= c.amount;
+    // Seule la quantité vraiment convertie est retirée : le reste d'un taux (3 pour 1, par exemple) reste en caisse.
+    let spent = c.amount;
+    while (spent > 1 && converted(table, c.from, c.to, spent - 1, c.hasty) === gain) spent -= 1;
+    values[c.from] -= spent;
     if (c.to === "supply") supply += gain; else values[c.to] += gain;
     lines.push(game.i18n.format(c.hasty ? "AFC.Convert.LineHasty" : "AFC.Convert.Line", {
-      n: c.amount, from: resLabel(actor, c.from), gain, to: resLabel(actor, c.to)
+      n: spent, from: resLabel(actor, c.from), gain, to: resLabel(actor, c.to)
     }));
   }
   if (!lines.length) return;

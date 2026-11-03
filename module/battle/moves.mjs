@@ -360,18 +360,22 @@ export async function executeMoves(scene = canvas.scene) {
     const target = scene.tokens.get(unit.target);
     if (target && !adjacent(token, target) && !token.hidden && !target.hidden) notes.push(fmt("AFC.Battle.Moves.NotReached", { a: esc(publicName(token)), d: esc(publicName(target)) }));
   }
-  // Tirs devenus impossibles : la cible est sortie de portée pendant les mouvements.
+  // Tirs devenus impossibles : la cible est sortie de portée pendant les mouvements. Un tireur ou une cible cachés :
+  // le MJ seul en est prévenu.
+  const gmNotes = [];
   for (const token of troops(scene)) {
     const s = token.actor.system, unit = unitOf(battle, token.id), target = unit.target ? scene.tokens.get(unit.target) : null;
-    if (unit.order !== "shoot" || !target || token.hidden || target.hidden || ["routed", "destroyed"].includes(s.state)) continue;
+    if (unit.order !== "shoot" || !target || ["routed", "destroyed"].includes(s.state)) continue;
     const dist = distance(token, target), range = shootRange(s, battle);
-    if (dist > range) notes.push(fmt("AFC.Battle.Moves.ShotOutOfRange", { a: esc(publicName(token)), d: esc(publicName(target)), n: dist, r: range }));
+    if (dist > range && (token.hidden || target.hidden)) gmNotes.push(fmt("AFC.Battle.Moves.ShotOutOfRange", { a: esc(token.name), d: esc(target.name), n: dist, r: range }));
+    else if (dist > range) notes.push(fmt("AFC.Battle.Moves.ShotOutOfRange", { a: esc(publicName(token)), d: esc(publicName(target)), n: dist, r: range }));
   }
   // Relit la bataille avant d'écrire : un point de plan ou un Commander arrivé pendant les mouvements reste.
   const fresh = getBattle(scene);
   Object.assign(fresh, { contact: battle.contact, deferred: battle.deferred, moved: [...moved] });
   await saveBattle(fresh, scene);
   if (notes.length) await ChatMessage.create({ content: `<div class="afc-card battle"><ul class="month-lines">${notes.map(n => `<li>${n}</li>`).join("")}</ul></div>` });
+  if (gmNotes.length) await ChatMessage.create({ whisper: ChatMessage.getWhisperRecipients("GM"), content: `<div class="afc-card battle"><ul class="month-lines">${gmNotes.map(n => `<li>${n}</li>`).join("")}</ul></div>` });
 }
 
 /**

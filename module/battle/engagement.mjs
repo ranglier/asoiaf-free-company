@@ -213,6 +213,8 @@ export function shootMods(shooter, target, battle) {
   if (S.upgrades.shoot) mods.push(mod(loc("AFC.Unit.Upgrade.shoot"), { b: 1 }));
   if (ambushing(battle, shooter)) mods.push(mod(loc("AFC.Battle.Mod.ambush"), { b: 1 }));
   if (weather.shoot && !slings) mods.push(mod(loc("AFC.Battle.Weather.rain"), { p: 1 }));
+  // Cible cachée (brouillard ou MJ) : tir à l'aveugle, −1D, et le MJ en est prévenu.
+  if (target.hidden) { mods.push(mod(loc("AFC.Battle.Mod.blind"), { p: 1 })); warnings.push(loc("AFC.Battle.Warn.blind")); }
   if (S.state === "disordered") mods.push(mod(loc("AFC.Battle.State.disordered"), { p: 1 }));
   // Pertes non plafonnées : cible prise de flanc (au contact d'un allié du tireur), en mouvement ou désorganisée.
   const flanked = flankers(target, S.side, [shooter.id]) > 0;
@@ -515,14 +517,14 @@ async function lossesOnce(tokenId, losses, message, sceneId) {
   let spend = 0;
   if (s.canCushion) {
     spend = await askCushion(token, losses);
-    // Annulé par le MJ : la carte le dit, les pertes ne sont pas appliquées.
-    if (spend === null) return message && fillOutcome(message, `<small>${loc("AFC.Battle.Card.Cancelled")}</small>`);
+    // Fenêtre fermée : aucun encaissement, les pertes s'appliquent quand même (sinon elles seraient perdues).
+    if (spend === null) spend = 0;
   }
   const notes = [];
   const before = s.stateIndex;
   let index = Math.min(STATE_ORDER.length - 1, before + losses - spend);
   // Indéfectible : la première déroute est annulée.
-  if (index === 3 && s.has.steadfast && !actor.getFlag(SYSTEM_ID, "steadfastUsed")) {
+  if (index >= 3 && before < 3 && s.has.steadfast && !actor.getFlag(SYSTEM_ID, "steadfastUsed")) {
     index = 2;
     await actor.setFlag(SYSTEM_ID, "steadfastUsed", true);
     notes.push(loc("AFC.Battle.Trait.steadfast.name"));
