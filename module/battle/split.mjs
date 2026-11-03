@@ -58,7 +58,7 @@ export async function splitTroop(data) {
   const base = name ?? `${token.name} (${units})`;
   const names = new Set(scene.tokens.map(t => t.name));
   let label = base;
-  for (let n = 2; names.has(label); n++) label = `${base} ${String.fromCharCode(63 + n)}`;
+  for (let n = 2; names.has(label); n++) label = `${base} ${String.fromCharCode(64 + n)}`;
   const source = token.actor.toObject();
   delete source._id;
   // Ordre et officier vont sur le jeton : l'acteur copié ne garde pas ceux de la troupe d'origine.
