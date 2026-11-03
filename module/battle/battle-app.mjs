@@ -9,7 +9,7 @@ import { battleRules, isBook, RULES } from "./rules.mjs";
 import { TerrainPainter } from "./terrain.mjs";
 import { battleReport, commandTroop, endTurn, mayCommand, officerBonus, orderLabel, plannedEngagements, rallyTroop, resolveMelee, resolvePlanned, resolveShoot, revealOrders, shootRange } from "./engagement.mjs";
 import { chooseOfficer, giveOrder, hexNumber, hexNumbersOn, ORDER_ICONS, orderVisible, startMoveChoice, startTargetPick, TARGETED_ORDERS } from "./map.mjs";
-import { APPROACH_ORDERS, hasMoved, PATH_ORDERS } from "./moves.mjs";
+import { APPROACH_ORDERS, CONTACT_FORBIDDEN, hasMoved, inContact, PATH_ORDERS } from "./moves.mjs";
 import { MANUAL_ACTIONS, mayAct, officerBusy, pcLines, recordAction, SCENE_ROUNDS } from "./pc-actions.mjs";
 import { changePlan, PLAN_USES, planPoints } from "./plan-points.mjs";
 import { BATTLE_OPTIONS, canCommand, clearBattle, getBattle, saveBattle, setUnit, unitOf } from "./state.mjs";
@@ -118,11 +118,13 @@ export class BattleApp extends HandlebarsApplicationMixin(ApplicationV2) {
       const known = isGM || s.side === "company";
       // Brouillard : une troupe vue mais pas identifiée n'a ni nom ni image pour un joueur.
       const unknown = unknownToMe(token);
+      // Au contact : Tenir, Attaquer ou Se replier ; le joueur ne voit pas les autres ordres (le MJ peut passer outre).
+      const engaged = !isGM && mine && inContact(token, battle);
       return {
         id: token.id, name: fogName(token), img: unknown ? UNKNOWN_IMG : token.texture.src, hex: hexNumber(token), hidden: token.hidden, side: s.side, unknown,
         state: unknown ? "fresh" : s.state, stateLabel: TROOP_STATES[s.state].label, known, mine,
         order: unit.order, orderText: orderLabel(unit.order),
-        orderOptions: ORDERS.map(k => ({ key: k, label: loc(`AFC.Battle.Order.${k}`), selected: k === unit.order, disabled: k === "shoot" && (!s.range || (battle.reload ?? []).includes(token.id)) })), orderIcon: ORDER_ICONS[unit.order] ?? "fa-flag",
+        orderOptions: ORDERS.map(k => ({ key: k, label: loc(`AFC.Battle.Order.${k}`), selected: k === unit.order, disabled: (k === "shoot" && (!s.range || (battle.reload ?? []).includes(token.id))) || (engaged && CONTACT_FORBIDDEN.includes(k)) })), orderIcon: ORDER_ICONS[unit.order] ?? "fa-flag",
         // Avant la révélation, un joueur ne sait même pas si l'ennemi a reçu un ordre.
         showOrder: visible && !!unit.order, secret: !visible && !!unit.order && (isGM || s.side === "company"),
         canSet: mine && !(battle.revealed && unit.countered && !isGM),

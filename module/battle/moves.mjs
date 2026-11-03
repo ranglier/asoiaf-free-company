@@ -307,8 +307,11 @@ const canMove = token => !["routed", "destroyed"].includes(token.actor.system.st
 
 /* ---------- Contact (décision du 2026-11-02) ---------- */
 
-/** Ordres qu'une troupe au contact d'un ennemi ne peut pas recevoir : elle ne rompt le contact qu'en Se repliant. */
-export const CONTACT_FORBIDDEN = ["maneuver", "run"];
+/**
+ * Ordres qu'une troupe au contact d'un ennemi ne peut pas recevoir : elle ne rompt le contact qu'en Se repliant, et
+ * n'a plus ni l'élan d'une charge ni le recul pour tirer (décision du 2026-11-03) : Tenir, Attaquer ou Se replier.
+ */
+export const CONTACT_FORBIDDEN = ["maneuver", "run", "charge", "shoot"];
 
 /** Troupes qui touchent une troupe ennemie active (positions du moment). */
 function contactIds(scene) {
