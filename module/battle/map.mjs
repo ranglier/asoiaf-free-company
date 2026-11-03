@@ -121,6 +121,9 @@ export async function giveOrder(token, order) {
     if (!game.user.isGM) return;
   }
   await setUnit(token.id, { order });
+  // Ordre refusé (contre-ordre déjà utilisé) : ni désignation ni confirmation. Une troupe commandée par son officier
+  // sans être possédée passe par le MJ : on ne peut pas encore lire le résultat.
+  if (token.isOwner && unitOf(getBattle(), token.id).order !== order) return;
   if (TARGETED_ORDERS.includes(order)) return startTargetPick(token);
   if (PATH_ORDERS.includes(order) && !hasMoved(token)) return startMoveChoice(token);
   ui.notifications.info(`${token.name} : ${loc(`AFC.Battle.Order.${order}`)}`);
