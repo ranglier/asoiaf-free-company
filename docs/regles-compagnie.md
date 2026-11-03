@@ -26,7 +26,8 @@ Complément au document de règles maison de la Compagnie (document privé, qui 
 - **Sang des Asshaïs** : les Sangs sont du texte libre ; aucune donnée dans le système.
 
 - **Contrats** : mélange « le MJ fixe » et « négociation ». Le MJ fixe l'employeur, la durée et la paie de base ; un test de Persuasion (Marchandage) du négociateur améliore (degrés de réussite) ou dégrade (échec : clause défavorable) les conditions. Négociateur et Porte-parole s'y appliquent. Grille indicative de paie à prévoir (Renommée, danger).
-- **Butin et pillage** : rapportent en plus du contrat. Pillage : −1 disposition des habitants de la région (règle existante). **Rupture de contrat ou trahison d'un employeur : −1d6 Renommée.** Exactions : au jugement du MJ, avec le modèle de l'événement « Cruauté » (+1d6 Renommée, −1d6 Autorité).
+- **Butin et pillage** : rapportent en plus du contrat. Pillage : −1 disposition des habitants de la région (règle existante). Ce qu'il rapporte reste volontairement au jugement du MJ (décision du 2026-11-03 ; les anciens repères chiffrés sont retirés). **Rupture de contrat ou trahison d'un employeur : −1d6 Renommée.** Exactions : au jugement du MJ, avec le modèle de l'événement « Cruauté » (+1d6 Renommée, −1d6 Autorité).
+- **Négociateur et Porte-parole** (décision du 2026-11-03) : leur +1 Renommée ne compte qu'en négociation de contrat et en intrigue ; ce n'est pas un gain de la ressource.
 - **Solde** : comprise dans le Ravitaillement (vivres et solde). Si le Ravitaillement ne couvre pas l'entretien du mois, solde impayée : **Cohésion −10 % de son maximum** (−5 % avec cantiniers ou cuisinier de campagne, v0.29.0) ; au deuxième mois impayé consécutif, **désertions (−1d6 Effectif)** puis risque de **Mutinerie**, joué au récit.
 - **Partage du butin** : le capitaine choisit la part distribuée aux hommes (de 0 à tout le butin ; chaque point distribué = +1 Cohésion), le reste va en caisse (Richesse). Révisé le 2026-10-29 (au lieu du tout ou rien), à rééquilibrer après quelques mois de jeu si besoin.
 - **Cohésion** : moral au quotidien, plafonné par l'Autorité (maximum = 3 × Autorité) ; valeur de départ = maximum.
@@ -37,7 +38,7 @@ Complément au document de règles maison de la Compagnie (document privé, qui 
 - **Affichage des hommes** : hommes en unités (somme des unités) + réserve (Effectif non investi) × 40 personnes, ex. « ≈ 1 260 personnes, dont 1 020 en armes ».
 - **Nombre d'unités** : l'objet Unité reçoit un multiplicateur (bataillon de N unités) qui multiplie hommes et coûts.
 - **Mois de la Compagnie** : boucle en 4 temps validée (revenus, entretien et effets mensuels des services, événement, une action de compagnie). **Le test d'événement de compagnie est facultatif, à l'appréciation du MJ** (désactivé par défaut).
-- **Actions de compagnie** (recruter, entraîner, acheter un service, convertir, se reposer, chercher un contrat) : validées, **optionnelles**.
+- **Actions de compagnie** (recruter, entraîner, acheter un service, convertir, se reposer, chercher un contrat) : validées, **optionnelles**. **Entraîner** (décision du 2026-11-03) : +2 d'expérience à chaque unité dont un commandant se consacre à l'entraînement ce mois-là.
 - **Services État-major et Culte** : réorientés vers les tests de la Compagnie (négociation et recherche de contrat pour l'état-major ; discours du chef et Cohésion pour le culte) **et** conservent leur bonus aux tests d'événements.
 - **Table d'événements de compagnie** : à réadapter à partir de la table 6-18 du livre (en discussion).
 - **Test d'événement de compagnie** : test de Statut (Intendance) de l'intendant ou du trésorier, + modificateurs d'Organisation effective, de Cohésion et des services.
