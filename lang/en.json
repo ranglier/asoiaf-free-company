@@ -580,6 +580,7 @@
     }
 ,
     "Battle": {
+      "Ui": { "Step": { "orders": "Orders", "reveal": "Reveal", "shots": "Actions and shots", "melees": "Melees", "end": "End of round" }, "Filter": { "all": "All", "missing": "No order", "mine": "My troops", "company": "Company", "enemy": "Enemies" }, "Drawer": { "plan": "Plan points", "pcs": "Characters", "engage": "Free engagement", "help": "Reminder", "settings": "Settings" }, "More": "Enemy troop, Report, New battle", "Queue": "To resolve, in order", "ResolveNext": "Resolve: {a} → {d}", "FreePcs": "{n} character(s) still free", "Spaces": "{n} hexes" },
       "Reloading": "{name} is reloading: no shot this turn.",
       "Night": "Night",
       "NightHint": "With the fog of war: at night, a troop only sees the hexes next to it (2 for scouts), a lit hex at any distance, and a troop that fought or shot this round up to 3 hexes away.",

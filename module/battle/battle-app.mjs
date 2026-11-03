@@ -20,6 +20,9 @@ const { ApplicationV2, HandlebarsApplicationMixin, DialogV2 } = foundry.applicat
 const UNKNOWN_IMG = "icons/svg/mystery-man.svg";
 const loc = key => game.i18n.localize(key);
 const COMMAND = ["commandement", "command"];
+const fmt = (key, data) => game.i18n.format(key, data);
+/** Étapes du tour affichées en tête de la fenêtre (règles maison). */
+const STEPS = ["orders", "reveal", "shots", "melees", "end"];
 const poolText = p => `${p.rank}D${p.bonus ? `+${p.bonus}B` : ""}`;
 
 /** Bonus de l'officier sur la fiche : bonus fixe, ou résultat de son test une fois lancé. */
@@ -65,6 +68,9 @@ export class BattleApp extends HandlebarsApplicationMixin(ApplicationV2) {
       bookCommanders: BattleApp.#onBookCommanders,
       terrainPainter: BattleApp.#onTerrainPainter,
       bookFree: BattleApp.#onBookFree,
+      resolveNext: BattleApp.#onResolveNext,
+      filter: BattleApp.#onFilter,
+      drawer: BattleApp.#onDrawer,
       pcAct: BattleApp.#onPcAct,
       pcRound: BattleApp.#onPcRound,
       pcClear: BattleApp.#onPcClear,
@@ -136,7 +142,18 @@ export class BattleApp extends HandlebarsApplicationMixin(ApplicationV2) {
           ...s.traits.map(k => ({ name: loc(`AFC.Battle.Trait.${k}.name`), effect: loc(`AFC.Battle.Trait.${k}.effect`) })),
           ...["armor", "melee", "shoot"].filter(k => s.upgrades[k]).map(k => ({ name: loc(`AFC.Unit.Upgrade.${k}`), effect: loc(`AFC.Unit.Upgrade.${k}Effect`) }))
         ],
-        canRally: mine && !["fresh", "destroyed"].includes(s.state)
+        canRally: mine && !["fresh", "destroyed"].includes(s.state),
+        // Ligne compacte : une troupe hors de combat tient sur une ligne ; une troupe à qui il manque un ordre est signalée.
+        inactive: !unknown && ["routed", "destroyed"].includes(s.state),
+        missing: !battle.revealed && mine && !unit.order && !["routed", "destroyed"].includes(s.state),
+        stats: [
+          `${loc("AFC.Ability.fighting")} ${poolText(troopPool(s, "fighting", battle))}`,
+          ...(s.range ? [`${loc(`AFC.Ability.${s.shootSkill}`)} ${poolText(troopPool(s, s.shootSkill, battle))}, ${fmt("AFC.Battle.Ui.Spaces", { n: shootRange(s, battle) })}`] : []),
+          `${loc("AFC.Battle.Move")} ${s.move}`,
+          `${loc("AFC.Battle.Cushion")} ${s.cushion}/${s.cushionMax}`,
+          `${loc("AFC.Battle.Rallies")} ${s.rallies}/${s.ralliesMax}`,
+          ...(s.disorders ? [`${loc("AFC.Battle.Disorders")} ${s.disorders}`] : [])
+        ].join(" · ")
       };
     };
     const book = !!scene && isBook(scene);
@@ -168,7 +185,58 @@ export class BattleApp extends HandlebarsApplicationMixin(ApplicationV2) {
     };
     context.company = sortTroops(context.company, "company", scene);
     context.enemy = sortTroops(context.enemy, "enemy", scene);
+    if (!book) Object.assign(context, this.#layout(context, battle, scene));
     return context;
+  }
+
+  /**
+   * Mise en page (règles maison) : étapes du tour et action suivante en tête, filtres, file des engagements après la
+   * révélation, volets repliés en pied de fenêtre (points de plan, personnages, aide-mémoire, réglages).
+   */
+  #layout(context, battle, scene) {
+    const { isGM } = context;
+    const all = [...context.company, ...context.enemy];
+    // Un joueur ne compte pas les engagements d'une troupe cachée : l'étape trahirait un tir embusqué.
+    const plans = (scene ? plannedEngagements(battle, scene) : []).filter(p => isGM || !scene.tokens.get(p.from)?.hidden);
+    const step = !battle.revealed ? "orders" : plans.some(p => p.shoot) ? "shots" : plans.length ? "melees" : "end";
+    const steps = STEPS.map((key, i) => ({ key, label: loc(`AFC.Battle.Ui.Step.${key}`), state: i < STEPS.indexOf(step) ? "done" : key === step ? "on" : "" }));
+    const orderable = all.filter(t => !t.inactive && !t.unknown && (isGM || t.mine));
+    const given = orderable.filter(t => t.order).length;
+    const missing = all.filter(t => t.missing).length;
+    const next = plans[0];
+    let status = "";
+    if (!isGM) status = !battle.revealed ? (orderable.length ? fmt("AFC.Battle.BarOrdersPlayer", { given, total: orderable.length }) : loc("AFC.Battle.BarWaitingPlayer"))
+      : loc(orderable.length ? "AFC.Battle.BarCounterPlayer" : "AFC.Battle.BarRevealedPlayer");
+    // Filtre : « Sans ordre » n'a de sens qu'avant la révélation ; s'il est vide, on revient à toutes les troupes.
+    const filters = [
+      { key: "all", n: all.length },
+      ...(battle.revealed ? [] : [{ key: "missing", n: missing, warn: missing > 0 }]),
+      ...(isGM ? [] : [{ key: "mine", n: all.filter(t => t.mine).length }]),
+      { key: "company", n: context.company.length },
+      { key: "enemy", n: context.enemy.length }
+    ];
+    let filter = this.filter ?? "all";
+    if (!filters.some(f => f.key === filter) || (filter === "missing" && !missing)) filter = "all";
+    for (const f of filters) Object.assign(f, { label: loc(`AFC.Battle.Ui.Filter.${f.key}`), active: f.key === filter });
+    const keep = t => filter === "all" || (filter === "missing" ? t.missing : filter === "mine" ? t.mine : t.side === filter);
+    const groups = ["company", "enemy"].map(key => ({ key, label: loc(`AFC.Battle.Side.${key}`), troops: context[key].filter(keep) }))
+      .filter(g => g.troops.length || filter === "all");
+    const free = context.pcs.filter(p => p.canAct).length;
+    const drawers = [
+      { key: "plan", icon: "fa-scroll", label: loc("AFC.Battle.Ui.Drawer.plan"), badge: context.planPoints },
+      { key: "pcs", icon: "fa-user-shield", label: loc("AFC.Battle.Ui.Drawer.pcs"), badge: context.pcs.length ? `${free}/${context.pcs.length}` : "" },
+      ...(isGM ? [{ key: "engage", icon: "fa-swords", label: loc("AFC.Battle.Ui.Drawer.engage"), badge: plans.length || "" }] : []),
+      { key: "help", icon: "fa-circle-question", label: loc("AFC.Battle.Ui.Drawer.help") },
+      ...(isGM ? [{ key: "settings", icon: "fa-gear", label: loc("AFC.Battle.Ui.Drawer.settings") }] : [])
+    ];
+    const drawer = drawers.some(d => d.key === this.drawer) ? this.drawer : null;
+    for (const d of drawers) d.active = d.key === drawer;
+    return {
+      steps, status, given, total: orderable.length, filters, groups, drawers, drawer, free,
+      // Après la révélation, le MJ voit la file des engagements en tête de liste (le prochain en bouton principal).
+      queue: isGM && battle.revealed ? plans.map((p, i) => ({ ...p, first: i === 0 })) : null,
+      next: next ? { ...next, label: fmt("AFC.Battle.Ui.ResolveNext", { a: next.fromName, d: next.toName }) } : null
+    };
   }
 
   _onRender(context, options) {
@@ -268,6 +336,9 @@ export class BattleApp extends HandlebarsApplicationMixin(ApplicationV2) {
   }
 
   static #onReveal() { return revealOrders(); }
+  static #onResolveNext() { const next = plannedEngagements()[0]; if (next) return resolvePlanned(next); }
+  static #onFilter(event, target) { this.filter = target.dataset.filter; this.render(); }
+  static #onDrawer(event, target) { this.drawer = this.drawer === target.dataset.drawer ? null : target.dataset.drawer; this.render(); }
   static #onEndTurn() { return endTurn(); }
   static #onReport() { return isBook() ? bookReport() : battleReport(); }
   static #onNewEnemy() { return createEnemyTroop(); }

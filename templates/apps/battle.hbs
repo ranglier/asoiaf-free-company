@@ -2,53 +2,62 @@
 {{#if book}}
   {{> "systems/asoiaf-free-company/templates/apps/battle-book.hbs"}}
 {{else}}
-  <header class="battle-head">
-    <h2>{{localize "AFC.Battle.Round"}} {{battle.round}}
-      <span class="rules-tag">{{localize rulesLabel}}</span>
-      <span class="phase {{#if battle.revealed}}revealed{{/if}}">{{#if battle.revealed}}{{localize "AFC.Battle.PhaseRevealed"}}{{else}}{{localize "AFC.Battle.PhaseOrders"}}{{/if}}</span></h2>
-    {{#if isGM}}
-    <label class="weather">{{localize "AFC.Battle.WeatherLabel"}}<select name="weather">{{selectOptions weathers selected=battle.weather localize=true}}</select></label>
-    <label class="checkbox weather" data-tooltip="AFC.Battle.NightHint"><input type="checkbox" name="night" {{checked battle.night}}> {{localize "AFC.Battle.Night"}}</label>
-    {{else}}
-    <span class="tag">{{localize "AFC.Battle.WeatherLabel"}} : {{localize weatherLabel}}</span>
-    {{#if battle.night}}<span class="tag" data-tooltip="AFC.Battle.NightHint"><i class="fa-solid fa-moon"></i> {{localize "AFC.Battle.Night"}}</span>{{/if}}
-    {{/if}}
+  <header class="battle-top">
+    <div class="battle-head">
+      <h2>{{localize "AFC.Battle.Round"}} {{battle.round}} <span class="rules-tag">{{localize rulesLabel}}</span></h2>
+      <span class="battle-weather">
+        {{#if isGM}}
+        <select name="weather" data-tooltip="AFC.Battle.WeatherLabel">{{selectOptions weathers selected=battle.weather localize=true}}</select>
+        <label class="checkbox" data-tooltip="AFC.Battle.NightHint"><input type="checkbox" name="night" {{checked battle.night}}> {{localize "AFC.Battle.Night"}}</label>
+        {{else}}
+        <span class="tag">{{localize weatherLabel}}</span>
+        {{#if battle.night}}<span class="tag" data-tooltip="AFC.Battle.NightHint"><i class="fa-solid fa-moon"></i> {{localize "AFC.Battle.Night"}}</span>{{/if}}
+        {{/if}}
+      </span>
+      {{#if isGM}}
+      <details class="battle-more">
+        <summary data-tooltip="AFC.Battle.Ui.More"><i class="fa-solid fa-ellipsis"></i></summary>
+        <div class="menu">
+          <button type="button" data-action="newEnemy"><i class="fa-solid fa-skull"></i> {{localize "AFC.Battle.NewEnemy"}}</button>
+          <button type="button" data-action="report"><i class="fa-solid fa-scroll"></i> {{localize "AFC.Battle.Report"}}</button>
+          <button type="button" data-action="reset"><i class="fa-solid fa-trash"></i> {{localize "AFC.Battle.Reset"}}</button>
+        </div>
+      </details>
+      {{/if}}
+    </div>
+
+    <ol class="battle-steps">{{#each steps as |s|}}<li class="{{s.state}}">{{s.label}}</li>{{/each}}</ol>
+
+    <div class="battle-next">
+      {{#if isGM}}
+        {{#unless battle.revealed}}
+        <button type="button" class="primary" data-action="reveal"><i class="fa-solid fa-eye"></i> {{localize "AFC.Battle.Reveal"}} ({{given}}/{{total}})</button>
+        {{else}}
+        {{#if next}}<button type="button" class="primary" data-action="resolveNext"><i class="fa-solid {{#if next.shoot}}fa-bullseye{{else}}fa-swords{{/if}}"></i> {{next.label}}</button>{{/if}}
+        <button type="button" class="{{#unless next}}primary{{/unless}}" data-action="endTurn"><i class="fa-solid fa-forward-step"></i> {{localize "AFC.Battle.EndTurn"}}</button>
+        {{/unless}}
+      {{else}}
+        <span class="hint">{{status}}</span>
+      {{/if}}
+    </div>
   </header>
 
-  {{#if isGM}}
-  <div class="battle-toolbar">
-    <button type="button" data-action="reveal" {{#if battle.revealed}}disabled{{/if}}><i class="fa-solid fa-eye"></i> {{localize "AFC.Battle.Reveal"}}</button>
-    <button type="button" data-action="endTurn"><i class="fa-solid fa-forward-step"></i> {{localize "AFC.Battle.EndTurn"}}</button>
-    <button type="button" data-action="newEnemy"><i class="fa-solid fa-skull"></i> {{localize "AFC.Battle.NewEnemy"}}</button>
-    <button type="button" data-action="report"><i class="fa-solid fa-scroll"></i> {{localize "AFC.Battle.Report"}}</button>
-    <button type="button" data-action="reset"><i class="fa-solid fa-trash"></i> {{localize "AFC.Battle.Reset"}}</button>
-  </div>
-  {{> "systems/asoiaf-free-company/templates/apps/battle-settings.hbs"}}
-  {{/if}}
-
-  <div class="battle-scroll">
-    <details class="battle-help">
-      <summary><i class="fa-solid fa-circle-question"></i> {{localize "AFC.Battle.HelpTitle"}}</summary>
-      <p>{{localize "AFC.Battle.HelpHowTo"}}</p>
-      <ul class="battle-orders-help">
-        {{#each orders as |o|}}<li><i class="fa-solid {{o.icon}}"></i> <b>{{o.label}}</b> : {{o.help}}</li>{{/each}}
-      </ul>
-      <p><b>{{localize "AFC.Battle.TriangleLabel"}}</b> : {{#each triangle as |t|}}{{t.a}} &gt; {{t.b}}{{#unless @last}} · {{/unless}}{{/each}} ({{localize "AFC.Battle.TriangleHint"}})</p>
-      <p>{{localize "AFC.Battle.HelpTurn"}}</p>
-    </details>
-
-    <section class="battle-plan">
-      <h3>{{localize "AFC.Battle.Plan.Title"}} <b class="plan-count">{{planPoints}}</b> <small class="hint">{{localize "AFC.Battle.Plan.Hint"}}</small></h3>
+  {{#if drawer}}
+  <section class="battle-drawer">
+    {{#if (eq drawer "plan")}}
+    <div class="battle-plan">
+      <p class="hint">{{localize "AFC.Battle.Plan.Hint"}}</p>
       <div class="plan-line">
+        <b class="plan-count">{{planPoints}}</b>
         {{#if isGM}}<button type="button" class="small icon" data-action="planAdd" data-tooltip="AFC.Battle.Plan.Add"><i class="fa-solid fa-plus"></i></button>
         <button type="button" class="small icon" data-action="planRemove" data-tooltip="AFC.Battle.Plan.Remove"><i class="fa-solid fa-minus"></i></button>{{/if}}
         <select data-plan-use>{{selectOptions planUses}}</select>
         <button type="button" class="small" data-action="planSpend" {{#unless planPoints}}disabled{{/unless}}><i class="fa-solid fa-scroll"></i> {{localize "AFC.Battle.Plan.Spend"}}</button>
       </div>
-    </section>
-
-    <section class="battle-pcs">
-      <h3>{{localize "AFC.Battle.PcActions.Title"}} <small class="hint">{{localize "AFC.Battle.PcActions.Hint" n=sceneRounds}}</small></h3>
+    </div>
+    {{else if (eq drawer "pcs")}}
+    <div class="battle-pcs">
+      <p class="hint">{{localize "AFC.Battle.PcActions.Hint" n=sceneRounds}}</p>
       {{#each pcs as |p|}}
       <div class="pc-line {{#if p.done}}done{{/if}}" data-pc="{{p.id}}">
         <img src="{{p.img}}" alt=""><b>{{p.name}}</b><span class="pc-status">{{p.status}}</span>
@@ -60,36 +69,57 @@
         </span>
       </div>
       {{else}}<p class="hint">{{localize "AFC.Battle.PcActions.None"}}</p>{{/each}}
-    </section>
-
-    {{#if isGM}}
-    <section class="battle-engage">
-      <h3>{{localize "AFC.Battle.Planned"}}</h3>
-      {{#if plans.length}}
-      <ul class="battle-plans">
-        {{#each plans as |p|}}
-        <li><b>{{p.fromName}}</b> <small>({{p.order}})</small> → <b>{{p.toName}}</b>
-          <button type="button" data-action="resolvePlan" data-from="{{p.from}}" data-to="{{p.to}}" data-shoot="{{p.shoot}}">
-            <i class="fa-solid {{#if p.shoot}}fa-bullseye{{else}}fa-swords{{/if}}"></i> {{localize "AFC.Battle.Resolve"}}</button></li>
-        {{/each}}
+    </div>
+    {{else if (eq drawer "engage")}}
+    <p class="hint">{{localize "AFC.Battle.FreeEngage"}} <b>{{#if controlled}}{{controlled}}{{else}}—{{/if}}</b> → <b>{{#if target}}{{target}}{{else}}—{{/if}}</b>
+      <button type="button" class="small" data-action="shoot"><i class="fa-solid fa-bullseye"></i> {{localize "AFC.Battle.Shoot"}}</button>
+      <button type="button" class="small" data-action="melee"><i class="fa-solid fa-swords"></i> {{localize "AFC.Battle.Melee"}}</button></p>
+    {{else if (eq drawer "help")}}
+    <div class="battle-help-body">
+      <p>{{localize "AFC.Battle.HelpHowTo"}}</p>
+      <ul class="battle-orders-help">
+        {{#each orders as |o|}}<li><i class="fa-solid {{o.icon}}"></i> <b>{{o.label}}</b> : {{o.help}}</li>{{/each}}
       </ul>
-      {{else}}<p class="hint">{{localize "AFC.Battle.NoPlan"}}</p>{{/if}}
-      <p class="hint">{{localize "AFC.Battle.FreeEngage"}} <b>{{#if controlled}}{{controlled}}{{else}}—{{/if}}</b> → <b>{{#if target}}{{target}}{{else}}—{{/if}}</b>
-        <button type="button" class="small" data-action="shoot"><i class="fa-solid fa-bullseye"></i> {{localize "AFC.Battle.Shoot"}}</button>
-        <button type="button" class="small" data-action="melee"><i class="fa-solid fa-swords"></i> {{localize "AFC.Battle.Melee"}}</button></p>
+      <p><b>{{localize "AFC.Battle.TriangleLabel"}}</b> : {{#each triangle as |t|}}{{t.a}} &gt; {{t.b}}{{#unless @last}} · {{/unless}}{{/each}} ({{localize "AFC.Battle.TriangleHint"}})</p>
+      <p>{{localize "AFC.Battle.HelpTurn"}}</p>
+    </div>
+    {{else if (eq drawer "settings")}}
+    {{> "systems/asoiaf-free-company/templates/apps/battle-settings.hbs" settingsOpen=true}}
+    {{/if}}
+  </section>
+  {{/if}}
+
+  <div class="battle-scroll">
+    {{#if queue}}
+    <section class="battle-queue">
+      <h3>{{localize "AFC.Battle.Ui.Queue"}}</h3>
+      {{#each queue as |p|}}
+      <div class="queue-line {{#if p.first}}first{{/if}}">
+        <i class="fa-solid {{#if p.shoot}}fa-bullseye{{else}}fa-swords{{/if}}"></i>
+        <b>{{p.fromName}}</b> <small>({{p.order}})</small> → <b>{{p.toName}}</b>
+        <button type="button" class="small" data-action="resolvePlan" data-from="{{p.from}}" data-to="{{p.to}}" data-shoot="{{p.shoot}}">{{localize "AFC.Battle.Resolve"}}</button>
+      </div>
+      {{else}}<p class="hint">{{localize "AFC.Battle.BarNoneLeft"}}</p>{{/each}}
+      {{#if free}}<p class="hint"><a data-action="drawer" data-drawer="pcs"><i class="fa-solid fa-user-shield"></i> {{localize "AFC.Battle.Ui.FreePcs" n=free}}</a></p>{{/if}}
     </section>
     {{/if}}
 
-    <div class="battle-columns">
-      <section>
-        <h3 class="side company">{{localize "AFC.Battle.Side.company"}}</h3>
-        {{#each company as |t|}}{{> "systems/asoiaf-free-company/templates/apps/battle-troop.hbs" t=t orders=@root.orders isGM=@root.isGM}}{{else}}<p class="hint">{{localize "AFC.Battle.NoTroop"}}</p>{{/each}}
-      </section>
-      <section>
-        <h3 class="side enemy">{{localize "AFC.Battle.Side.enemy"}}</h3>
-        {{#each enemy as |t|}}{{> "systems/asoiaf-free-company/templates/apps/battle-troop.hbs" t=t orders=@root.orders isGM=@root.isGM}}{{else}}<p class="hint">{{localize "AFC.Battle.NoTroop"}}</p>{{/each}}
-      </section>
-    </div>
+    <nav class="battle-filters">
+      {{#each filters as |f|}}<a class="chip {{#if f.active}}active{{/if}} {{#if f.warn}}warn{{/if}}" data-action="filter" data-filter="{{f.key}}">{{f.label}} <b>{{f.n}}</b></a>{{/each}}
+    </nav>
+
+    {{#each groups as |g|}}
+    <section class="battle-group-list">
+      <h3 class="side {{g.key}}">{{g.label}}</h3>
+      <div class="troop-list">
+        {{#each g.troops as |t|}}{{> "systems/asoiaf-free-company/templates/apps/battle-troop.hbs" t=t isGM=@root.isGM}}{{else}}<p class="hint">{{localize "AFC.Battle.NoTroop"}}</p>{{/each}}
+      </div>
+    </section>
+    {{/each}}
   </div>
+
+  <footer class="battle-foot">
+    {{#each drawers as |d|}}<button type="button" class="small {{#if d.active}}active{{/if}}" data-action="drawer" data-drawer="{{d.key}}"><i class="fa-solid {{d.icon}}"></i> {{d.label}}{{#if d.badge}} <b class="badge">{{d.badge}}</b>{{/if}}</button>{{/each}}
+  </footer>
 {{/if}}
 </div>

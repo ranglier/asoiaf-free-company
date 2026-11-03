@@ -580,6 +580,7 @@
     }
 ,
     "Battle": {
+      "Ui": { "Step": { "orders": "Ordres", "reveal": "Révélation", "shots": "Actions et tirs", "melees": "Mêlées", "end": "Fin du tour" }, "Filter": { "all": "Toutes", "missing": "Sans ordre", "mine": "Mes troupes", "company": "Compagnie", "enemy": "Ennemis" }, "Drawer": { "plan": "Points de plan", "pcs": "Personnages", "engage": "Engagement libre", "help": "Aide-mémoire", "settings": "Réglages" }, "More": "Troupe ennemie, Bilan, Nouvelle bataille", "Queue": "À résoudre, dans l'ordre", "ResolveNext": "Résoudre : {a} → {d}", "FreePcs": "{n} personnage(s) encore libre(s)", "Spaces": "{n} cases" },
       "Reloading": "{name} recharge : pas de tir ce tour.",
       "Night": "Nuit",
       "NightHint": "Avec le brouillard de guerre : de nuit, une troupe ne voit que les cases qui la touchent (2 cases pour des éclaireurs), une case éclairée à toute distance, et une troupe qui a combattu ou tiré ce tour jusqu'à 3 cases.",
