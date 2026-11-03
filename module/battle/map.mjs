@@ -110,6 +110,8 @@ export async function giveOrder(token, order) {
   cancelTargetPick();
   cancelMovePick();
   if (order === "shoot" && !token.actor.system.range) return ui.notifications.warn(loc("AFC.Battle.Warn.noRange"));
+  // Non combattant : ni Charger, ni Attaquer, ni Tirer.
+  if (["charge", "attack", "shoot"].includes(order) && token.actor.system.has.noncombat) return ui.notifications.warn(loc("AFC.Battle.Warn.noncombat"));
   if (order === "shoot" && (getBattle().reload ?? []).includes(token.id)) return ui.notifications.warn(fmt("AFC.Battle.Reloading", { name: token.name }));
   // Au contact d'un ennemi, on ne rompt le contact qu'en Se repliant (le MJ peut passer outre).
   if (CONTACT_FORBIDDEN.includes(order) && !isBook(token.parent) && inContact(token)) {

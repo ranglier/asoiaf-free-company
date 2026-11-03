@@ -18,7 +18,7 @@
     <tr><td class="nom">Tirer</td><td>Tire sur une cible vue, à portée (<a href="#s27">2.7</a>).</td></tr>
     <tr><td class="nom">Manœuvrer</td><td>Se déplace sans attaquer. +1 case si Monté ou Léger, +1 sur route.</td></tr>
     <tr><td class="nom">Course</td><td>Une case de plus que Manœuvrer. −1D si on l'attaque en mêlée ce tour.</td></tr>
-    <tr><td class="nom">Se replier</td><td>Recule d'une case. Perd un état de moins en mêlée (au moins un&nbsp;; Léger&nbsp;: aucun). Seul ordre qui rompt le contact.</td></tr>
+    <tr><td class="nom">Se replier</td><td>Recule d'une case, au choix du joueur, vers une case qui ne touche plus l'ennemi. Perd un état de moins en mêlée (au moins un&nbsp;; Léger&nbsp;: aucun). Seul ordre qui rompt le contact.</td></tr>
   </tbody>
 </table>
 
@@ -26,8 +26,7 @@
 <p><b>Officiers</b>&nbsp;: une troupe lance ses propres dés&nbsp;; son officier ne l'aide que s'il prend l'action Commander (<a href="#s28">2.8</a>). Il mène au plus 1 + ses dés de bonus en Commandement troupes.</p>
 
 <h2>2. Révélation et mouvements</h2>
-<p>Les ordres sont montrés ensemble. Un <b>contre-ordre</b> (nouvel ordre ou nouvelle cible) coûte un point de plan ou l'action Porter un ordre&nbsp;; un par troupe et par tour, jamais en réponse à un autre.</p>
-<p>On joue d'abord manœuvres, courses et replis, puis charges et attaques vers la <b>position réelle</b> de leur cible&nbsp;:</p>
+<p>Les ordres sont montrés ensemble et les troupes bougent aussitôt&nbsp;: d'abord manœuvres, courses et replis, puis charges et attaques vers la <b>position réelle</b> de leur cible&nbsp;:</p>
 <ul>
   <li>une case prise ou un ennemi arrête la troupe&nbsp;;</li>
   <li>deux troupes visent la même case&nbsp;: la plus rapide l'obtient, à égalité aucune&nbsp;;</li>
@@ -35,6 +34,7 @@
   <li>une charge dont la case est prise se rabat sur la case libre la plus proche au contact&nbsp;;</li>
   <li>hors contact, deux alliés peuvent <b>échanger</b> leurs cases.</li>
 </ul>
+<p>Viennent ensuite les <b>contre-ordres</b>, qui voient donc les positions finales&nbsp;: nouvel ordre ou nouvelle cible, pour un point de plan ou l'action Porter un ordre&nbsp;; un par troupe et par tour, jamais en réponse à un autre. Une troupe qui a déjà bougé change d'ordre sans bouger de nouveau.</p>
 
 <h2>Le contact</h2>
 <p>Une troupe qui touche un ennemi au moment des ordres est <b>au contact</b>&nbsp;: ni Manœuvrer ni Course&nbsp;; elle ne charge ou n'attaque que l'ennemi qu'elle touche&nbsp;; elle ne rompt le contact qu'en <b>Se repliant</b>.</p>
@@ -54,7 +54,7 @@
 </aside>
 
 <h2>3 à 6. Actions, tirs, mêlées, fin du tour</h2>
-<p>Chaque personnage joue son action (<a href="#s28">2.8</a>), Commander avant le jet de sa troupe. Puis les <b>tirs</b>, tous ensemble, et les <b>mêlées</b>, une par une (<a href="#s27">2.7</a>). À la fin du tour, les replis au contact reculent, les relèves entrent, une troupe qui a Tenu sans être touchée <b>remonte d'un état</b> (sauf En déroute), et les déroutes fuient <span class="mj">Arbitré par le MJ</span>.</p>
+<p>Chaque personnage joue son action (<a href="#s28">2.8</a>), Commander avant le jet de sa troupe. Puis les <b>tirs</b>, tous ensemble, et les <b>mêlées</b>, simultanées elles aussi&nbsp;: chacune se joue avec l'état des troupes au début de la phase, et toutes les pertes tombent après la dernière (<a href="#s27">2.7</a>). À la fin du tour, les replis au contact reculent, les relèves entrent, une troupe qui a Tenu sans être touchée <b>remonte d'un état</b> (sauf En déroute), et les déroutes fuient <span class="mj">Arbitré par le MJ</span>.</p>
 <p>Un personnage peut jouer à la place une <b>scène individuelle</b> de trois rounds (duel, escalade, étendard) pendant que la bataille avance d'un tour.</p>
 
 <aside class="foundry">

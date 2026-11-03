@@ -90,7 +90,17 @@ export function destinations(token, order, occupied) {
     for (const [key, value] of reach(token, range + 1, occupied, { roadOnly: true })) if (!cells.has(key)) cells.set(key, value);
   }
   const here = keyOf(cellOf(token));
-  return new Map([...cells].filter(([key]) => key !== here));
+  // Se replier (décision du 2026-11-03) : vers une case qui ne touche plus les ennemis au contact.
+  const away = order === "withdraw" ? withdrawFilter(token) : () => true;
+  return new Map([...cells].filter(([key]) => key !== here && away(key)));
+}
+
+/** Cases voisines des ennemis qui touchent la troupe (un joueur ignore les troupes cachées). */
+function withdrawFilter(token) {
+  const side = token.actor.system.side;
+  const foes = troops(token.parent).filter(t => canMove(t) && t.actor.system.side !== side && (game.user.isGM || !t.hidden) && adjacent(t, token));
+  const near = new Set(foes.flatMap(f => canvas.grid.getAdjacentOffsets(cellOf(f)).map(keyOf)));
+  return key => !near.has(key);
 }
 
 /**

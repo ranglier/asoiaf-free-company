@@ -220,6 +220,9 @@ export const SERVICE_SIZES = {
 };
 
 /** Entraînement des unités : coût en Effectif, discipline (difficulté) et expérience. */
+/** Fourrage : Ravitaillement par mois et par unité montée de la Compagnie (décision du 2026-11-03). */
+export const FODDER_PER_MOUNTED_UNIT = 2;
+
 export const UNIT_TRAININGS = {
   support: { label: "AFC.Unit.Training.support", manpower: 1, discipline: 12, experience: 0 },
   green: { label: "AFC.Unit.Training.green", manpower: 1, discipline: 9, experience: 20 },

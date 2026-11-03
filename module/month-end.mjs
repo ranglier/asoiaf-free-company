@@ -232,6 +232,8 @@ async function monthEnd(company) {
     add(contract.months ? "contractLeft" : "contractEnd", { employer: contract.employer || "—", n: contract.months });
   }
 
+  // La Cohésion suit l'Autorité (décision du 2026-11-03) : 3 par point gagné ou perdu ce mois (Prévôt, officiers…).
+  cohesion += (r.authority - s.resources.authority.value) * 3;
   // Cohésion bornée par son maximum (3 × Autorité, après les effets du mois).
   const cohesionMax = r.authority * 3;
   cohesion = Math.max(0, Math.min(cohesionMax, cohesion));

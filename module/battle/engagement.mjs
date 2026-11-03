@@ -67,7 +67,7 @@ const alive = token => token.actor && !["routed", "destroyed"].includes(token.ac
 /** Troupes d'un camp au contact d'un jeton, sauf celles exclues. */
 function flankers(target, side, exclude) {
   return target.parent.tokens.filter(t => t.actor?.type === "troop" && t.actor.system.side === side
-    && !exclude.includes(t.id) && alive(t) && adjacent(t, target)).length;
+    && !exclude.includes(t.id) && alive(t) && !t.actor.system.has.noncombat && adjacent(t, target)).length;
 }
 
 /* ---------- Qui lance le dé ---------- */
@@ -89,6 +89,8 @@ function roller(token, battle, kind = "melee") {
   const officerId = unitOf(battle, token.id).officer;
   const officer = officerId ? game.actors.get(officerId) : null;
   const warfare = officer?.system.abilities?.warfare;
+  // Non combattant (Soutien, décision du 2026-11-03) : se défend à 1D, sans officier.
+  if (s.has.noncombat) return { name: loc("AFC.Battle.Trait.noncombat.name"), rank: 1, bonus: 0, officer: false };
   const base = troopPool(s, ability, battle);
   return {
     // L'officier d'une troupe secrète n'est pas nommé : il la trahirait.
@@ -151,11 +153,13 @@ export function meleeMods(att, def, battle) {
   const sameHeight = terrainValue(aTerrain, "defense") > 0;
   if (terrainValue(dTerrain, "defense") && !sameHeight) dm.push(mod(loc("AFC.Battle.Terrain.hill"), { b: 1 }));
   if (charging && terrainHas(dTerrain, "chargeUp") && !sameHeight) am.push(mod(loc("AFC.Battle.Mod.chargeUp"), { p: 1 }));
-  // Traverser un gué ou un pont : l'attaquant y est engagé, ou le défenseur l'y attend.
-  if (terrainHas(dTerrain, "attackerPenalty") || terrainHas(aTerrain, "attackerPenalty")) {
-    am.push(mod(loc("AFC.Battle.Mod.crossing"), { p: 1 }));
-    dm.push(mod(loc("AFC.Battle.Mod.holdCrossing"), { b: 1 }));
-  }
+  // Gué ou pont (décision du 2026-11-03) : qui s'y trouve combat à −1D, qu'il attaque ou qu'il défende ;
+  // celui qui le reçoit depuis la rive a +1B. Deux troupes dans l'eau : −1D chacune.
+  const aWet = terrainHas(aTerrain, "attackerPenalty"), dWet = terrainHas(dTerrain, "attackerPenalty");
+  if (aWet) am.push(mod(loc("AFC.Battle.Mod.crossing"), { p: 1 }));
+  if (dWet) dm.push(mod(loc("AFC.Battle.Mod.crossing"), { p: 1 }));
+  if (aWet && !dWet) dm.push(mod(loc("AFC.Battle.Mod.holdCrossing"), { b: 1 }));
+  if (dWet && !aWet) am.push(mod(loc("AFC.Battle.Mod.holdCrossing"), { b: 1 }));
   if (charging && terrainValue(dTerrain, "charge")) am.push(mod(loc("AFC.Battle.Terrain.obstacle"), { p: 1 }));
   if (dOrder === "hold" && terrainValue(dTerrain, "hold")) dm.push(mod(loc("AFC.Battle.Terrain.village"), { b: 1 }));
   if (dOrder === "hold" && D.has.defenders && terrainHas(dTerrain, "fortified")) dm.push(mod(loc("AFC.Battle.Trait.defenders.name"), { b: 1 }));
@@ -301,8 +305,8 @@ export function resolveMelee(att, def) {
 
 async function meleeOnce(att, def) {
   const scene = att.parent;
-  // Les tirs se résolvent avant les mêlées : leurs pertes en attente s'appliquent d'abord.
-  await flushShots(scene);
+  // Les tirs se résolvent avant les mêlées : leurs pertes en attente s'appliquent d'abord (pas celles des mêlées).
+  await flushShots(scene, ["shot"]);
   // Une volée en attente a pu mettre l'attaquant hors de combat ou détruire le défenseur : plus de mêlée.
   if (["routed", "destroyed"].includes(att.actor.system.state) || def.actor.system.state === "destroyed") {
     return ui.notifications.warn(fmt("AFC.Battle.MeleeCancelled", { a: att.name, d: def.name }));
@@ -355,9 +359,12 @@ async function meleeOnce(att, def) {
     sides, degrees,
     verdict: winner ? fmt("AFC.Battle.Card.Wins", { w: winner.name }) : loc("AFC.Battle.Card.Tie"),
     detail: winner ? [lossLabel(loser.name, losses), ...notes].join(" · ") : loc("AFC.Battle.Card.TieDetail"),
-    ...cardApply(apply, opts.auto)
+    ...cardApply(apply, opts.auto, "melee")
   });
-  return postResult({ content, rolls: [ta.roll, td.roll].filter(Boolean), apply, auto: opts.auto });
+  const message = await postResult({ content, rolls: [ta.roll, td.roll].filter(Boolean), apply, auto: opts.auto, kind: "melee", scene });
+  // Mêlées simultanées (décision du 2026-11-03) : les pertes s'appliquent toutes après la dernière mêlée du tour.
+  if (!plannedEngagements(getBattle(scene), scene).length) await flushShots(scene);
+  return message;
 }
 
 /** Tir (tireur : jeton contrôlé ; cible : jeton ciblé). */
@@ -404,36 +411,40 @@ async function shootOnce(shooter, target) {
     pool: poolLabel(p, test), tags: [r.name, ...modTags(m.mods)],
     ...cardApply(apply, opts.auto, volley)
   });
-  const message = await postResult({ content, rolls: [test.roll], apply, auto: opts.auto, volley, scene });
+  const message = await postResult({ content, rolls: [test.roll], apply, auto: opts.auto, kind: volley ? "shot" : null, scene });
   // Dernier tir du tour : toutes les pertes des tirs s'appliquent ensemble.
-  if (volley && !plannedEngagements(getBattle(scene), scene).some(e => e.shoot)) await flushShots(scene);
+  if (volley && !plannedEngagements(getBattle(scene), scene).some(e => e.shoot)) await flushShots(scene, ["shot"]);
   return message;
 }
 
 /** Pertes de la carte : appliquées tout de suite (en attendant l'encaissement), après le dernier tir, ou bouton pour le MJ. */
-const cardApply = (apply, auto, volley = false) => ({
+const cardApply = (apply, auto, kind = null) => ({
   apply: auto ? null : apply,
-  pending: apply && auto ? loc(volley ? "AFC.Battle.Card.ShotPending" : "AFC.Battle.Card.Pending") : null
+  pending: apply && auto ? loc(kind === "melee" ? "AFC.Battle.Card.MeleePending" : kind ? "AFC.Battle.Card.ShotPending" : "AFC.Battle.Card.Pending") : null
 });
-const PENDING_KEYS = ["AFC.Battle.Card.Pending", "AFC.Battle.Card.ShotPending"];
+const PENDING_KEYS = ["AFC.Battle.Card.Pending", "AFC.Battle.Card.ShotPending", "AFC.Battle.Card.MeleePending"];
 
 /** Publie la carte du résultat, puis applique les pertes si la case était cochée (ou les met en attente du dernier tir) : la carte se complète. */
-async function postResult({ content, rolls, apply, auto, volley = false, scene = null }) {
+async function postResult({ content, rolls, apply, auto, kind = null, scene = null }) {
   const message = await ChatMessage.create({ rolls, content });
-  if (apply && auto && volley) {
+  if (apply && auto && kind) {
     const battle = getBattle(scene);
-    battle.pendingShots = [...(battle.pendingShots ?? []), { ...apply, message: message.id }];
+    battle.pendingShots = [...(battle.pendingShots ?? []), { ...apply, kind, message: message.id }];
     await saveBattle(battle, scene);
   } else if (apply && auto) await applyLosses(apply.token, apply.losses, message, apply.scene);
   return message;
 }
 
-/** Applique les pertes des tirs mises en attente : après le dernier tir, avant une mêlée, ou à la fin du tour (MJ). */
-export async function flushShots(scene = canvas.scene) {
+/**
+ * Applique les pertes en attente : celles des tirs après le dernier tir ou avant une mêlée (kinds = ["shot"]),
+ * toutes après la dernière mêlée, à la fin du tour ou au Bilan (MJ).
+ */
+export async function flushShots(scene = canvas.scene, kinds = null) {
   const battle = getBattle(scene);
-  const list = battle.pendingShots ?? [];
+  const all = battle.pendingShots ?? [];
+  const list = kinds ? all.filter(p => kinds.includes(p.kind ?? "shot")) : all;
   if (!list.length) return;
-  battle.pendingShots = [];
+  battle.pendingShots = all.filter(p => !list.includes(p));
   await saveBattle(battle, scene);
   for (const shot of list) await applyLosses(shot.token, shot.losses, game.messages.get(shot.message) ?? null, scene.id);
 }
@@ -766,9 +777,15 @@ async function revealOnce() {
   if (battle.revealed) return;
   battle.revealed = true;
   battle.moved = [];
-  // Embuscades du tour : relevées avant les mouvements, qui peuvent révéler les troupes.
-  battle.ambush = canvas.scene.tokens.filter(t => t.actor?.type === "troop" && t.hidden && alive(t) && !t.getFlag(SYSTEM_ID, "fog")?.acted
+  // Embuscades du tour : relevées avant les mouvements, qui peuvent révéler les troupes. Seule une troupe cachée
+  // en position frappe en embuscade (décision du 2026-11-03) : elle n'a pas bougé depuis la révélation précédente.
+  const cellKey = t => { const o = canvas.grid.getOffset(center(t)); return `${o.i},${o.j}`; };
+  const before = battle.positions ?? {};
+  const inPlace = t => !(t.id in before) || before[t.id] === cellKey(t);
+  const onMap = canvas.scene.tokens.filter(t => t.actor?.type === "troop");
+  battle.ambush = onMap.filter(t => t.hidden && alive(t) && !t.getFlag(SYSTEM_ID, "fog")?.acted && inPlace(t)
     && OFFENSIVE.includes(unitOf(battle, t.id).order)).map(t => t.id);
+  battle.positions = Object.fromEntries(onMap.map(t => [t.id, cellKey(t)]));
   await saveBattle(battle);
   // Les troupes cachées n'apparaissent pas dans la carte publique.
   const line = t => {

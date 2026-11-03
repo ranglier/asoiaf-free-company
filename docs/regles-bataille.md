@@ -26,7 +26,7 @@ Règles maison de combat de masse. Issues du brainstorming et du premier test su
 | Bois | −1D à la cavalerie ; couvert contre les tirs (+3). |
 | Marais | Déplacement −1 (une case de marais coûte 2), pas de Charge *(avertissement)*, −1D à la cavalerie. |
 | Rivière | Infranchissable, sauf gué ou pont. |
-| Gué | L'attaquant qui traverse a −1D ; le défenseur a +1B. Cavalerie : −1D. |
+| Gué | Qui est dans le gué combat à −1D, qu'il attaque ou défende ; qui le reçoit depuis la rive a +1B ; deux troupes dans l'eau : −1D chacune (décision du 2026-11-03, v0.30.0 ; avant, le défenseur avait +1B même dans l'eau). Cavalerie : −1D. |
 | Pont | Comme un gué, mais une seule unité peut le traverser par tour *(à la main)*. |
 | Route | Déplacement +1 si l'unité Manœuvre le long de la route. |
 | Village, ferme | Couvert (+3), +1B pour Tenir, −1D à la cavalerie. |
@@ -64,7 +64,7 @@ Règles revues le 2026-11-02 sur un banc d'essai interactif, puis codées telles
 Trois façons d'être en embuscade, qui se cumulent :
 - **Point de plan « Embuscade »** (avant le déploiement, section 4) : une unité est déployée cachée, n'importe où, et reste invisible jusqu'à sa première action, même dans une case que l'ennemi voit. Dans Foundry, le MJ cache le jeton à la main (il sort alors du brouillard) et le montre quand l'unité agit.
 - **En lisière d'un bois** : une unité postée en lisière qui n'a pas encore agi (ni combattu, ni tiré, ni bougé depuis la révélation) n'est repérée qu'à 2 cases ou moins ; des éclaireurs, seulement au contact. Calculé par Foundry avec le brouillard de guerre.
-- **Frapper en premier** : une unité cachée à sa cible qui agit en premier (Charger, Attaquer ou Tirer) gagne +1B à cette action (codé en v0.28.5 : troupe cachée au moment de la révélation, par le brouillard de guerre ou par le MJ, qui n'a encore jamais agi et qui Charge, Attaque ou Tire).
+- **Frapper en premier** : une unité cachée à sa cible qui agit en premier (Charger, Attaquer ou Tirer) gagne +1B à cette action (codé en v0.28.5 : troupe cachée au moment de la révélation, par le brouillard de guerre ou par le MJ, qui n'a encore jamais agi et qui Charge, Attaque ou Tire). **En position seulement** (décision du 2026-11-03, v0.30.0) : la troupe n'a pas bougé depuis la révélation précédente, ou elle a été placée par un point de plan ; une troupe qui marche dans la nuit et tombe sur l'ennemi n'a pas le +1B.
 
 Dans tous les cas, une unité au contact est vue, et une unité qui a agi n'est plus en embuscade.
 
@@ -157,7 +157,7 @@ Correspondance avec le catalogue (première version) :
 | Cavalerie légère | Monté, Léger, Choc |
 | Cavalerie lourde | Monté, Armure lourde, Choc lourd |
 | Volontaires | Léger |
-| Soutien | Non combattant |
+| Soutien | Non combattant : ne charge, n'attaque ni ne tire ; ne donne pas de flanc ; attaqué, se défend à 1D ; sur la carte seulement si le MJ le décide ; détruit, il laisse piller les bagages *(à la main)* (décision du 2026-11-03, v0.30.0) |
 | Combattants spécialisés, navires, Spéciale | Aucun |
 
 Types du catalogue de la Maison : Cavalerie (Monté, Armure lourde, Choc lourd) ; Infanterie (Boucliers) ; Croisés (Indéfectible) ; Guérilleros (Léger, Armes de jet) ; Criminels (Léger) ; Paysans conscrits, Ingénieurs, Mercenaires, Navires de guerre (aucun). Armure lourde exclut Léger ; une arme de tir remplace Armes de jet.
@@ -198,9 +198,9 @@ Les tests se font sur les fiches et la narration reste *à la main*. Foundry tie
 Une bataille dure en général 3 à 5 tours (ou jusqu'à l'objectif du scénario).
 
 1. **Ordres secrets** : un ordre **par troupe** (révisé le 2026-10-29 : les groupes à ordre commun étaient peu lisibles sur la carte), avec sa cible pour Charger, Attaquer et Tirer. Chaque troupe peut avoir un **officier** (PJ ou PNJ) : la troupe lance toujours sa propre compétence, l'officier ne lui donne des dés de bonus que s'il choisit l'action **Commander** après la révélation : **+1B dès 1 degré, +2B dès 3 degrés** (révisé le 2026-11-01, section 6). Option décochée : bonus fixe de 1 dé par tranche de 2 rangs d'Art militaire, Tactiques comptant comme des rangs, au moins 1. Un officier mène au plus **1 + ses dés de bonus en Commandement** troupes *(avertissement)*. **Mouvements** : Manœuvrer et Se replier se déclarent avec leur case d'arrivée ; Charger et Attaquer rejoignent leur cible (case d'arrivée au choix). Tout est secret et les jetons ne bougent qu'à la révélation.
-2. **Révélation** simultanée, puis **contre-ordres** éventuels (voir plus bas).
+2. **Révélation et mouvements** : les ordres sont montrés et les troupes bougent aussitôt (détail au point 4), puis viennent les **contre-ordres** éventuels, qui voient donc les positions finales ; une troupe qui a déjà bougé change d'ordre sans bouger de nouveau (décision du 2026-11-03 : l'ordre de Foundry fait foi).
 3. **Actions des PJ** (section 7) : chaque PJ ou officier a, par tour, **soit une action de bataille, soit une scène individuelle de 3 rounds** (voir « Durée d'un tour »). Un PJ peut se déplacer d'une case pour rejoindre une unité sans y consacrer son action. Deux PJ peuvent agir sur la même unité.
-4. **Mouvements** (joués à la révélation dans Foundry : manœuvres et replis, sauf les replis au contact qui attendent la fin du tour, puis charges et attaques vers la position réelle de leur cible ; une case prise ou un ennemi arrête l'unité ; deux unités visent la même case : la plus rapide l'obtient, à égalité personne, et l'autre s'arrête avant). Décisions du 2026-11-02 (v0.28.3) :
+4. **Mouvements**, détail (ils se jouent à l'étape 2, juste après la révélation, avant les contre-ordres et les actions des PJ : manœuvres et replis, sauf les replis au contact qui attendent la fin du tour, puis charges et attaques vers la position réelle de leur cible ; une case prise ou un ennemi arrête l'unité ; deux unités visent la même case : la plus rapide l'obtient, à égalité personne, et l'autre s'arrête avant). Décisions du 2026-11-02 (v0.28.3) :
    - on peut viser la case d'un allié : s'il la quitte ce tour, on y entre ; sinon, on s'arrête avant (une ligne peut avancer d'un bloc) ;
    - une charge ou une attaque dont la case d'arrivée choisie est prise (par un allié arrivé avant) prend la case libre la plus proche au contact de sa cible.
    - **Contact** (décisions du 2026-11-02, v0.28.7) :
@@ -212,7 +212,7 @@ Une bataille dure en général 3 à 5 tours (ou jusqu'à l'objectif du scénario
      - Attaquer garde son mouvement (sert à aborder une ligne qui Tient sans lui offrir l'ordre gagnant).
      - **Au contact, on ne charge ou n'attaque que l'ennemi qu'on touche** (décision du 2026-11-02 ; Foundry ne le bloque pas). **Exception, arbitrée par le MJ** *(à la main)* : l'officier de la troupe peut tenter de la faire rompre le contact pour charger un autre ennemi. C'est son action de bataille du tour (pas de Commander en plus) : test d'Art militaire (Tactiques) contre la difficulté de Commander (Discipline + 3 + effectif + moral). Réussite : la troupe rompt le contact et charge. Échec : elle reste au contact et Tient (pas d'attaque gratuite sur un échec). Le MJ peut refuser si la fiction ne s'y prête pas (troupe encerclée, ennemi trop loin, terrain).
 5. **Tirs** (simultanés) : chacun tire avec son état d'avant la volée. Dans Foundry (v0.27.12), les tirs se résolvent un par un mais leurs pertes attendent le dernier tir du tour, puis s'appliquent ensemble (encaissement compris). Elles s'appliquent aussi avant la première mêlée ou à la fin du tour si le MJ a sauté un tir. Décocher « Appliquer les pertes tout de suite » donne un bouton à cliquer, sans attente.
-6. **Mêlées**.
+6. **Mêlées**, simultanées (décision du 2026-11-03, v0.30.0) : chacune se joue avec l'état des troupes au début de la phase ; toutes les pertes s'appliquent après la dernière mêlée, encaissement compris. L'ordre dans lequel le MJ les résout ne change plus rien.
 7. **Fin de tour** : les troupes qui se repliaient au contact reculent et les relèves prennent leur place (Foundry le fait seul, carte « rompt le contact ») ; une unité qui a Tenu sans être engagée ni touchée **se réorganise** (remonte d'un état, sauf En déroute) ; les unités en déroute fuient *(à la main)*.
 
 **Contre-ordre** : après la révélation, une troupe remplace son ordre (ou sa cible) avant la résolution. Coûte 1 point de plan (« Signal convenu ») ou l'action Porter un ordre d'un PJ. Un seul contre-ordre par troupe et par tour ; pas de contre-ordre en réponse à un contre-ordre. Dans Foundry : un contre-ordre par troupe et par tour (le MJ n'a pas de limite) ; le coût se paie *à la main*, en dépensant le point dans la fenêtre Bataille ou en cochant l'action du PJ. Le mouvement du nouvel ordre se joue aussitôt.
@@ -239,7 +239,7 @@ Un tour de bataille dure **3 rounds individuels** (à l'essai, 2026-11-02). Un P
 | Tirer | Unités avec Tir ou Armes de jet : tire sur une cible à portée. |
 | Manœuvrer | Se déplace sans attaquer. Cavalerie et Léger : +1 case. Le long d'une route : +1 case. (Le +1B de flanc au tour suivant est retiré : le flanc est déjà assez fort, décision du 2026-11-02.) |
 | Course | Va sur une case, une de plus que Manœuvrer, sans combattre. Essoufflée : −1D si on l'attaque en mêlée ce tour. |
-| Se replier | Recule d'une case (au contact d'un ennemi : en fin de tour, après les tirs et les mêlées ; c'est le seul ordre qui rompt le contact, section 5). Si elle perd une mêlée : un état de moins, au moins un ; Léger : un état de moins, sans minimum (elle échappe aux défaites d'un degré). Après l'Armure lourde. Décision du 2026-11-02, codé en v0.27.12. Les tirs ne sont pas concernés. |
+| Se replier | Recule d'une case, au choix du joueur parmi les cases qui ne touchent plus l'ennemi (décision du 2026-11-03, v0.30.0) (au contact d'un ennemi : en fin de tour, après les tirs et les mêlées ; c'est le seul ordre qui rompt le contact, section 5). Si elle perd une mêlée : un état de moins, au moins un ; Léger : un état de moins, sans minimum (elle échappe aux défaites d'un degré). Après l'Armure lourde. Décision du 2026-11-02, codé en v0.27.12. Les tirs ne sont pas concernés. |
 
 **Ordres gagnants** (révisé le 2026-11-01, v0.27.5, à l'essai : Tirer n'a plus de bonus contre Tenir) : Charger bat Tirer, Tenir bat Charger. L'ordre gagnant donne +1B. Attaquer est neutre (ni bonus ni malus) ; une unité qui Charge ou Attaque est « en mouvement » face aux tirs.
 
@@ -354,7 +354,7 @@ Un tour de bataille dure **3 rounds individuels** (à l'essai, 2026-11-02). Un P
 
 **Préparation** : reconnaissance (1 unité ou 1 secret par degré) → plan (Stratégie, 12, 1 point de plan par degré, sans plafond) → déploiement. Contre-ordre : 1 point de plan ou Porter un ordre.
 
-**Tour** : 1. ordres secrets (un par troupe) → 2. révélation, contre-ordres, mouvements → 3. actions des PJ (Commander avant le jet de sa troupe) → 4. tirs → 5. mêlées → 6. fin de tour (replis au contact et relèves ; Tenir sans combat : remonte d'un état ; déroutes fuient).
+**Tour** : 1. ordres secrets (un par troupe) → 2. révélation et mouvements, puis contre-ordres → 3. actions des PJ (Commander avant le jet de sa troupe) → 4. tirs → 5. mêlées (simultanées) → 6. fin de tour (replis au contact et relèves ; Tenir sans combat : remonte d'un état ; déroutes fuient).
 
 **Ordres** : Charger (bouge et attaque avec élan) · Attaquer (bouge et combat sans élan, neutre) · Tenir (défend, se réorganise) · Tirer (à portée, en vue) · Manœuvrer (bouge ; cavalerie et Léger +1 case) · Course (une case de plus, −1D en mêlée ce tour) · Se replier (recule d'une case ; perd un état de moins en mêlée, au moins un, Léger sans minimum). **Au contact** d'un ennemi : ni Manœuvrer ni Course ; on ne charge ou n'attaque que l'ennemi qu'on touche (exception : test d'officier, MJ) ; Se replier recule en fin de tour, après les mêlées ; une troupe fraîche peut venir prendre sa place (relève). Hors contact, deux alliés peuvent échanger leurs cases.
 

@@ -29,7 +29,7 @@ function monthlyNeeds(s) {
   // Un contrat sans mois restant est terminé : il ne couvre plus rien.
   const pay = s.contract.months > 0 ? s.contract.pay ?? 0 : 0;
   return {
-    upkeep, manpower: Math.floor(s.resources.manpower.value / 2), services: s.services.supply,
+    upkeep, manpower: Math.floor(s.resources.manpower.value / 2), services: s.services.supply, fodder: s.fodder ?? 0,
     organization: Math.floor(s.organization.effective / 10) * SUPPLY_PER_WEALTH,
     wealth, dragons: fmt(wealth * DRAGONS_PER_WEALTH),
     supply: s.supply, autonomy: upkeep ? Math.floor(s.supply / upkeep) : null,

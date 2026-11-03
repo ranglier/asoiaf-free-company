@@ -200,6 +200,14 @@ Hooks.on("renderTokenHUD", onRenderTokenHUD);
 Hooks.on("preCreateActor", (actor, data) => {
   if (actor.type === "character" && foundry.utils.getProperty(data, "prototypeToken.actorLink") === undefined) actor.updateSource({ "prototypeToken.actorLink": true });
 });
+// Compagnie : la Cohésion suit l'Autorité changée à la main (3 par point), sauf si la Cohésion change aussi.
+Hooks.on("preUpdateActor", (actor, changes) => {
+  if (actor.type !== "company" || foundry.utils.hasProperty(changes, "system.cohesion")) return;
+  const value = foundry.utils.getProperty(changes, "system.resources.authority.value");
+  if (value === undefined) return;
+  const delta = Number(value) - actor.system.resources.authority.value;
+  if (delta) foundry.utils.setProperty(changes, "system.cohesion", Math.max(0, Math.min(Number(value) * 3, actor.system.cohesion + delta * 3)));
+});
 // Endurance changée : la Santé gagne (ou perd) la différence de maximum, les dégâts déjà subis restent.
 Hooks.on("preUpdateActor", (actor, changes) => {
   const rank = foundry.utils.getProperty(changes, "system.abilities.endurance.rank");

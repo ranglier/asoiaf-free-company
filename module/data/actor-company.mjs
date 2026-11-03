@@ -1,4 +1,4 @@
-import { COHESION_TIERS, COMPANY_ORIGINS, COMPANY_RESOURCES, SERVICE_SIZES } from "../config.mjs";
+import { COHESION_TIERS, COMPANY_ORIGINS, COMPANY_RESOURCES, FODDER_PER_MOUNTED_UNIT, SERVICE_SIZES } from "../config.mjs";
 import { bestServiceItems } from "../company-services.mjs";
 
 /** Personnes représentées par un point d'Effectif de réserve (non-combattants, recrues, suiveurs). */
@@ -82,8 +82,10 @@ export default class CompanyData extends foundry.abstract.TypeDataModel {
     const reserve = Math.max(0, r.manpower.available) * PEOPLE_PER_RESERVE_POINT;
     this.people = { inArms, reserve, total: inArms + reserve };
 
-    // Entretien mensuel du ravitaillement : Effectif / 2 + entretien des services − 5 par tranche de 10 d'Organisation effective.
-    this.monthlySupply = Math.max(0, Math.floor(r.manpower.value / 2) + this.services.supply - Math.floor(this.organization.effective / 10) * 5);
+    // Entretien mensuel du ravitaillement : Effectif / 2 + entretien des services + fourrage des unités montées
+    // (2 par unité, décision du 2026-11-03) − 5 par tranche de 10 d'Organisation effective.
+    this.fodder = units.filter(i => i.system.classList.includes("C")).reduce((s, i) => s + i.system.count, 0) * FODDER_PER_MOUNTED_UNIT;
+    this.monthlySupply = Math.max(0, Math.floor(r.manpower.value / 2) + this.services.supply + this.fodder - Math.floor(this.organization.effective / 10) * 5);
 
     const cohesionMax = r.authority.value * 3;
     const pct = cohesionMax ? Math.round((this.cohesion / cohesionMax) * 100) : 0;

@@ -394,7 +394,7 @@
     "ContractHelp": {
       "NeedsTitle": "Besoins mensuels de la Compagnie",
       "Upkeep": "Entretien",
-      "UpkeepDetail": "(Effectif / 2 : {manpower} ; services : +{services} ; Organisation : −{organization})",
+      "UpkeepDetail": "(Effectif / 2 : {manpower} ; services : +{services} ; fourrage : +{fodder} ; Organisation : −{organization})",
       "Breakeven": "Équivalent en Richesse",
       "Month": "mois",
       "Dragons": "≈ {n} dragons d'or",
@@ -713,7 +713,7 @@
         "steadfast": { "name": "Indéfectible", "effect": "Annule sa première déroute de la bataille." },
         "scouts": { "name": "Éclaireurs", "effect": "+1B pour Lire le champ et pour la reconnaissance." },
         "defenders": { "name": "Défenseurs", "effect": "+1B pour Tenir dans une fortification." },
-        "noncombat": { "name": "Non combattant", "effect": "Ne combat pas." }
+        "noncombat": { "name": "Non combattant", "effect": "Ne charge, n'attaque ni ne tire ; ne donne pas de flanc ; attaqué, se défend à 1D. Sur la carte seulement si le MJ le décide." }
       },
       "Legend": "Légende des terrains",
       "LegendEmpty": "Aucun terrain nommé sur cette carte.",
@@ -735,6 +735,7 @@
         "Melee": "Mêlée",
         "Pending": "Encaissement en attente…",
         "ShotPending": "Pertes appliquées après le dernier tir du tour…",
+        "MeleePending": "Pertes appliquées après la dernière mêlée du tour…",
         "Cancelled": "Pertes non appliquées.",
         "Shoot": "Tir",
         "VsOrders": "{a} contre {d}",
@@ -761,8 +762,8 @@
         "flank": "Flanc ({n} au contact)",
         "ambush": "Embuscade",
         "chargeUp": "Charge vers le haut",
-        "crossing": "Traversée (gué ou pont)",
-        "holdCrossing": "Tient le passage",
+        "crossing": "Dans le gué ou sur le pont",
+        "holdCrossing": "Depuis la rive",
         "mountedTerrain": "Cavalerie gênée par le terrain",
         "winded": "Essoufflée",
         "holdBreaks": "Tenir brise l'élan",
@@ -778,7 +779,7 @@
         "chargeDisordered": "Une troupe désorganisée ne peut pas charger.",
         "noCharge": "Charge impossible ici (marais ou pluie).",
         "notAdjacent": "Les deux troupes ne sont pas au contact.",
-        "noRange": "Cette troupe ne peut pas tirer.",
+        "noRange": "Cette troupe ne peut pas tirer.", "noncombat": "Une troupe non combattante ne charge, n'attaque ni ne tire.",
         "outOfRange": "Hors de portée : {d} cases pour une portée de {r}.",
         "notShooting": "Le tireur n'a pas l'ordre Tirer.",
         "reload": "Rechargement : cette troupe a tiré au tour précédent."

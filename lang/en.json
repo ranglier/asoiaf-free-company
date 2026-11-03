@@ -394,7 +394,7 @@
     "ContractHelp": {
       "NeedsTitle": "Company monthly needs",
       "Upkeep": "Upkeep",
-      "UpkeepDetail": "(Manpower / 2: {manpower}; services: +{services}; Organization: −{organization})",
+      "UpkeepDetail": "(Manpower / 2: {manpower}; services: +{services}; fodder: +{fodder}; Organization: −{organization})",
       "Breakeven": "Wealth equivalent",
       "Month": "month",
       "Dragons": "≈ {n} gold dragons",
@@ -713,7 +713,7 @@
         "steadfast": { "name": "Steadfast", "effect": "Cancels its first rout of the battle." },
         "scouts": { "name": "Scouts", "effect": "+1B to Read the field and to reconnaissance." },
         "defenders": { "name": "Defenders", "effect": "+1B to Hold in a fortification." },
-        "noncombat": { "name": "Non-combatant", "effect": "Does not fight." }
+        "noncombat": { "name": "Non-combatant", "effect": "Does not charge, attack or shoot; gives no flank; defends with 1D when attacked. On the map only if the GM decides." }
       },
       "Legend": "Terrain legend",
       "LegendEmpty": "No named terrain on this map.",
@@ -735,6 +735,7 @@
         "Melee": "Melee",
         "Pending": "Waiting for the absorb choice…",
         "ShotPending": "Losses applied after the last shot of the round…",
+        "MeleePending": "Losses applied after the last melee of the round…",
         "Cancelled": "Losses not applied.",
         "Shoot": "Shooting",
         "VsOrders": "{a} against {d}",
@@ -757,7 +758,7 @@
       "Terrain": { "hill": "Hill", "obstacle": "Obstacles", "village": "Village" },
       "Mod": {
         "triangle": "Winning order", "shockCancels": "Shock: cancels the Hold bonus", "flank": "Flank ({n} in contact)", "ambush": "Ambush",
-        "chargeUp": "Charging uphill", "crossing": "Crossing (ford or bridge)", "holdCrossing": "Holds the crossing",
+        "chargeUp": "Charging uphill", "crossing": "In the ford or on the bridge", "holdCrossing": "From the bank",
         "winded": "Winded", "holdBreaks": "Hold breaks the charge", "mountedTerrain": "Cavalry hindered by terrain", "pikesHold": "Charging pikes", "volley": "Volley", "shock": "Shock",
         "base": "Base", "cover": "Cover", "none": "No modifier"
       },
@@ -766,7 +767,7 @@
         "chargeDisordered": "A disordered troop cannot charge.",
         "noCharge": "No charge possible here (marsh or rain).",
         "notAdjacent": "The two troops are not in contact.",
-        "noRange": "This troop cannot shoot.",
+        "noRange": "This troop cannot shoot.", "noncombat": "A non-combatant troop does not charge, attack or shoot.",
         "outOfRange": "Out of range: {d} hexes for a range of {r}.",
         "notShooting": "The shooter does not have the Shoot order.",
         "reload": "Reload: this troop shot last round."
