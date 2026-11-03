@@ -29,7 +29,7 @@
       <p class="hint">{{localize "AFC.CompanyCatalog.UnitHint"}}</p>
       <div class="grid-3">
         <label>{{localize "AFC.Unit.training"}}
-          <select name="training">{{#each trainings as |t|}}<option value="{{t.key}}">{{t.label}} ({{localize "AFC.Table.manpowerShort"}} {{t.manpower}})</option>{{/each}}</select>
+          <select name="training">{{#each trainings as |t|}}<option value="{{t.key}}"{{#if t.disabled}} disabled{{/if}}>{{t.label}} ({{localize "AFC.Table.manpowerShort"}} {{t.manpower}})</option>{{/each}}</select>
         </label>
         <label>{{localize "AFC.Catalog.UnitTypeLabel"}}
           <select name="unitType">{{#each unitTypes as |t|}}<option value="{{t.key}}">{{t.label}} ({{localize "AFC.Table.mightShort"}} {{t.cost}})</option>{{/each}}</select>

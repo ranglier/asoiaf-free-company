@@ -8,6 +8,9 @@ const loc = key => game.i18n.localize(key);
 /** Catégorie de catalogue d'un service déjà présent sur la Compagnie (null s'il a été créé à la main). */
 const catalogCategory = item => item.getFlag(SYSTEM_ID, "catalog")?.category ?? null;
 
+/** Vétérans et Élite ne se recrutent pas : ils s'obtiennent par l'expérience, sous l'arbitrage du MJ (seul le MJ les pose). */
+const mayChooseTraining = key => game.user.isGM || !["veteran", "elite"].includes(key);
+
 /**
  * Catalogue de la Compagnie : services (règles maison) et constructeur d'unité
  * (entraînement = coût en Effectif, type = coût en Puissance).
@@ -78,7 +81,7 @@ export class CompanyCatalog extends HandlebarsApplicationMixin(ApplicationV2) {
       wealth: s.resources.wealth.value,
       manpower: s.resources.manpower.value,
       might: s.resources.might.value,
-      trainings: Object.entries(UNIT_TRAININGS).map(([key, t]) => ({ key, label: loc(t.label), manpower: t.manpower, discipline: t.discipline })),
+      trainings: Object.entries(UNIT_TRAININGS).map(([key, t]) => ({ key, label: loc(t.label), manpower: t.manpower, discipline: t.discipline, disabled: !mayChooseTraining(key) })),
       unitTypes: Object.entries(COMPANY_UNIT_TYPES).map(([key, t]) => ({
         key, ...t, label: loc(`AFC.CompanyCatalog.UnitType.${key}`),
         abilityNames: t.abilities.map(a => loc(ABILITIES[a].label)).join(", ") || loc("AFC.Catalog.AnyThree")
@@ -160,6 +163,7 @@ export class CompanyCatalog extends HandlebarsApplicationMixin(ApplicationV2) {
 
   static async #onAddUnit() {
     const u = this.#readUnit();
+    if (!mayChooseTraining(u.training)) return ui.notifications.warn(loc("AFC.CompanyCatalog.VeteranGMOnly"));
     const typeName = key => loc(`AFC.CompanyCatalog.UnitType.${key}`);
     const name = `${typeName(u.typeKey)}${u.second ? ` + ${typeName(u.type2Key)}` : ""} (${loc(UNIT_TRAININGS[u.training].label).toLowerCase()})${u.count > 1 ? ` ×${u.count}` : ""}`;
     await this.actor.createEmbeddedDocuments("Item", [{
