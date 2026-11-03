@@ -104,7 +104,7 @@ Chaque unité a :
 | État | Effet |
 |---|---|
 | Fraîche | Aucun. |
-| Éprouvée | Pas de malus, mais ne peut plus utiliser sa réserve d'encaissement. |
+| Éprouvée | Pas de malus ; peut encore utiliser sa réserve d'encaissement (décision du 2026-11-03, v0.33.2 : avant, seulement Fraîche). |
 | Désorganisée | −1D à tous ses tests ; ne peut plus Charger *(avertissement)*. |
 | En déroute | Ne fait que fuir (2 cases vers son bord) jusqu'à être ralliée. La fuite se joue *à la main* : la carte de fin de tour la rappelle. On peut encore lui tirer dessus et la poursuivre en mêlée : elle ne lance pas de dés, n'oppose que sa Défense passive (4 × Corps à corps), ne rend pas les coups, et le moindre degré la détruit (décision du 2026-11-03). |
 | Détruite | Retirée de la carte *(à la main)*. Retirée, elle reste comptée au Bilan (v0.27.10). |
@@ -369,7 +369,7 @@ Un tour de bataille dure **3 rounds individuels** (à l'essai, 2026-11-02). Un P
 
 **Mêlée** : opposition ; +1B par ordre gagnant, flanc (+1B au plus, quel que soit le nombre d'alliés au contact), embuscade, PJ (par degré), terrain, traits ; perdant −1 état par degré ; égalité : le défenseur garde la case.
 
-**États** : Fraîche → Éprouvée (plus d'encaissement) → Désorganisée (−1D, pas de charge) → En déroute (fuit) → Détruite.
+**États** : Fraîche → Éprouvée (encaissement encore possible) → Désorganisée (−1D, pas de charge) → En déroute (fuit) → Détruite.
 
 **Actions des PJ** (une par tour, ou 3 rounds de scène individuelle) : Commander · Rallier (contre Discipline) · Combattre en première ligne · Tirer avec l'unité · Lire le champ · Porter un ordre · Exploit · Action libre (1 degré petit avantage, 2 avantage net, 3+ coup d'éclat ; échec : le PJ s'expose).
 

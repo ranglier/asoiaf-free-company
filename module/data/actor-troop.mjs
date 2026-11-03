@@ -99,7 +99,9 @@ export default class TroopData extends foundry.abstract.TypeDataModel {
     this.care = this.side === "company" ? battleCare(game.actors?.get(this.source.actor), this.has.mounted) : 0;
     this.loss = Math.round(this.lossBase * (1 - this.care));
     this.lostMen = Math.round(this.men * this.loss / 100);
-    this.canCushion = this.state === "fresh" && this.cushion > 0;
+    // Encaissement (décision du 2026-11-03) : tant que la troupe est Fraîche ou Éprouvée. Garder un point pour éviter
+    // la désorganisation devient un vrai choix.
+    this.canCushion = ["fresh", "shaken"].includes(this.state) && this.cushion > 0;
     // Vigilance passive (4 x le rang), comme pour les personnages : embuscades, éclaireurs.
     this.passive = { awareness: skills.awareness * 4 };
     this.prepareBook();
