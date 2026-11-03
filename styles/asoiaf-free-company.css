@@ -522,15 +522,19 @@ body.detached .application.afc.afc-fill.afc-dialog .window-content { max-height:
 .afc .afc-battle .battle-filters .chip.active { background: var(--afc-ink); color: var(--afc-paper-light); border-color: var(--afc-ink); }
 .afc .afc-battle .battle-group-list h3.side { font-size: 1rem; margin: 0.5rem 0 0.25rem; }
 .afc .afc-battle .battle-troop { gap: 0.4rem; padding: 0.2rem 0.4rem; margin-bottom: 0.25rem; align-items: center; }
-.afc .afc-battle .battle-troop .symbol { width: 30px; height: 30px; }
-.afc .afc-battle .battle-troop .line.main { display: grid; grid-template-columns: minmax(8rem, 1.2fr) 6.2rem minmax(10rem, 1.6fr) minmax(9rem, 1.3fr); gap: 0.4rem; align-items: center; margin: 0; }
-.afc .afc-battle .battle-troop .line.main > span { display: flex; flex-wrap: wrap; gap: 0.25rem; align-items: center; min-width: 0; }
-.afc .afc-battle .battle-troop .who .name { overflow: hidden; text-overflow: ellipsis; }
-.afc .afc-battle .battle-troop .order-cell select { flex: 0 1 9.5rem; height: 1.6rem; }
+.afc .afc-battle .battle-troop .symbol { width: 28px; height: 28px; }
+/* Une ligne principale de hauteur fixe : rien ne passe à la ligne, les textes trop longs sont coupés (nom complet au survol). */
+.afc .afc-battle .battle-troop .line.main { display: grid; grid-template-columns: minmax(0, 1.25fr) 6.4rem minmax(0, 1.75fr) minmax(0, 1fr); gap: 0.5rem; align-items: center; margin: 0; height: 1.75rem; }
+.afc .afc-battle .battle-troop .line.main > span { display: flex; flex-wrap: nowrap; gap: 0.3rem; align-items: center; min-width: 0; overflow: hidden; white-space: nowrap; }
+.afc .afc-battle .battle-troop .who .name, .afc .afc-battle .battle-troop .order-cell .target { min-width: 0; flex: 0 1 auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.afc .afc-battle .battle-troop .who > :not(.name), .afc .afc-battle .battle-troop .order-cell > :not(.target) { flex: none; }
+.afc .afc-battle .battle-troop .state-cell .tag { font-size: 0.78rem; }
+.afc .afc-battle .battle-troop .order-cell select { flex: 0 0 8.6rem; width: 8.6rem; height: 1.6rem; }
 .afc .afc-battle .battle-troop .line.main > span.officer-cell { font-size: 0.9rem; flex-wrap: nowrap; }
 .afc .afc-battle .battle-troop .officer-cell .oname { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; flex: 0 1 auto; }
 .afc .afc-battle .battle-troop .officer-cell button { flex: none; }
-.afc .afc-battle .battle-troop .line.stats { display: block; font-size: 0.8rem; color: var(--afc-ink-soft); gap: 0; margin: 0.05rem 0 0; }
+.afc .afc-battle .battle-troop .line.stats { display: block; font-size: 0.8rem; color: var(--afc-ink-soft); gap: 0; margin: 0.05rem 0 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.afc .window-content .afc-battle .battle-troop button.small.icon { padding: 0 0.3rem; margin: 0; }
 .afc .afc-battle .battle-troop .line.stats .trait { border: none; padding: 0; font-size: inherit; text-decoration: underline dotted; }
 .afc .afc-battle .battle-troop.missing { box-shadow: inset 0 0 0 1px #b5651d; }
 .afc .afc-battle .battle-troop.missing .order-cell select { border-color: #b5651d; }

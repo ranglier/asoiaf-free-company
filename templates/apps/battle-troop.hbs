@@ -3,7 +3,7 @@
   <div class="body">
     <div class="line main">
       <span class="who">
-        <a class="name" data-action="focus" data-tooltip="AFC.Battle.Focus">{{t.name}}</a>
+        <a class="name" data-action="focus" data-tooltip="{{t.name}}">{{t.name}}</a>
         {{#if t.hex}}<span class="tag hex" data-tooltip="AFC.Battle.Rules.hexTip">{{t.hex}}</span>{{/if}}
         {{#if t.hidden}}<i class="fa-solid fa-eye-slash" data-tooltip="AFC.Battle.Hidden"></i>{{/if}}
         {{#if t.known}}<a class="icon" data-action="openTroop" data-tooltip="AFC.Battle.OpenSheet"><i class="fa-solid fa-file-lines"></i></a>{{/if}}
@@ -25,7 +25,7 @@
         <span class="tag muted">{{localize "AFC.Battle.Waiting"}}</span>
         {{/if}}
         {{#if t.targeted}}{{#if t.showOrder}}
-        <span class="target"><i class="fa-solid fa-arrow-right"></i> {{#if t.targetName}}{{t.targetName}}{{else}}<i>{{localize "AFC.Battle.NoTarget"}}</i>{{/if}}</span>
+        <span class="target" {{#if t.targetName}}data-tooltip="{{t.targetName}}"{{/if}}><i class="fa-solid fa-arrow-right"></i> {{#if t.targetName}}{{t.targetName}}{{else}}<i>{{localize "AFC.Battle.NoTarget"}}</i>{{/if}}</span>
         {{#if t.canSet}}<a class="icon" data-action="pickTarget" data-tooltip="AFC.Battle.PickOnMap"><i class="fa-solid fa-crosshairs"></i></a>
         {{#if t.targetName}}<a class="icon" data-action="clearTarget" data-tooltip="AFC.Battle.ClearTarget"><i class="fa-solid fa-xmark"></i></a>{{/if}}{{/if}}
         {{/if}}{{/if}}
@@ -36,16 +36,16 @@
 
       <span class="officer-cell">
         {{#if t.known}}{{#unless t.inactive}}
-        <i class="fa-solid fa-user-tie"></i> {{#if t.officerName}}<span class="oname" data-tooltip="{{t.officerName}}">{{t.officerName}}</span>{{#if t.officerNote}} <small>({{t.officerNote}})</small>{{/if}}{{else}}<i class="muted">{{localize "AFC.Battle.NoOfficerRank"}}</i>{{/if}}
+        <i class="fa-solid fa-user-tie" data-tooltip="{{#if t.officerName}}{{t.officerName}}{{else}}{{localize "AFC.Battle.NoOfficerRank"}}{{/if}}"></i> {{#if t.officerName}}<span class="oname" data-tooltip="{{t.officerName}}">{{t.officerName}}</span>{{#if t.officerNote}} <small>({{t.officerNote}})</small>{{/if}}{{else}}<span class="oname muted">—</span>{{/if}}
         {{#if t.mine}}<a class="icon" data-action="officer" data-tooltip="AFC.Battle.OfficerButton"><i class="fa-solid fa-pen"></i></a>{{/if}}
-        {{#if t.canOfficerCommand}}{{#if t.officerBusy}}<span data-tooltip="{{t.officerBusy}}"><button type="button" class="small" disabled><i class="fa-solid fa-bullhorn"></i> {{localize "AFC.Battle.Options.commandButton"}}</button></span>{{else}}<button type="button" class="small" data-action="command" data-tooltip="AFC.Battle.Options.commandHint"><i class="fa-solid fa-bullhorn"></i> {{localize "AFC.Battle.Options.commandButton"}}</button>{{/if}}{{/if}}
+        {{#if t.canOfficerCommand}}{{#if t.officerBusy}}<span data-tooltip="{{t.officerBusy}}"><button type="button" class="small icon" disabled><i class="fa-solid fa-bullhorn"></i></button></span>{{else}}<button type="button" class="small icon" data-action="command" data-tooltip="AFC.Battle.Options.commandButton"><i class="fa-solid fa-bullhorn"></i></button>{{/if}}{{/if}}
         {{/unless}}{{/if}}
-        {{#if t.canRally}}<button type="button" class="small" data-action="rally"><i class="fa-solid fa-flag"></i> {{localize "AFC.Battle.Rally"}}</button>{{/if}}
-        {{#if t.overload}}<span class="warn">{{localize "AFC.Battle.TooMany" n=t.overload}}</span>{{/if}}
+        {{#if t.canRally}}<button type="button" class="small icon" data-action="rally" data-tooltip="AFC.Battle.Rally"><i class="fa-solid fa-flag"></i></button>{{/if}}
+        {{#if t.overload}}<i class="fa-solid fa-triangle-exclamation warn" data-tooltip="{{localize "AFC.Battle.TooMany" n=t.overload}}"></i>{{/if}}
       </span>
     </div>
     {{#if t.known}}{{#unless t.inactive}}
-    <div class="line stats">{{t.stats}}{{#each t.traits as |tr|}}{{#if @first}} · {{else}}, {{/if}}<span class="trait" data-tooltip="{{tr.effect}}">{{tr.name}}</span>{{/each}}</div>
+    <div class="line stats" data-tooltip="{{t.stats}}">{{t.stats}}{{#each t.traits as |tr|}}{{#if @first}} · {{else}}, {{/if}}<span class="trait" data-tooltip="{{tr.effect}}">{{tr.name}}</span>{{/each}}</div>
     {{/unless}}{{/if}}
   </div>
 </div>
