@@ -28,6 +28,7 @@ b { font-weight: 700; color: var(--encre-forte); }
 .couverture { page: couverture; height: 297mm; box-sizing: border-box; padding: 70mm 22mm 25mm; display: flex; flex-direction: column; border: 0; }
 .couverture .titre-couv { font-weight: 700; text-align: left;  font-size: 46pt; margin: 0; line-height: 1; border-bottom: 2pt solid #000; padding-bottom: 6mm; }
 .couverture .sous-titre { font-size: 15pt; font-style: italic; margin: 6mm 0 0; }
+.couverture .edition { font-family: var(--f-titre); font-size: 24pt; font-weight: 600; margin: 5mm 0 0; }
 .couverture .pied { margin-top: auto; font-size: 9pt; color: var(--encre-douce); border-top: .5pt solid #000; padding-top: 3mm; }
 .couverture svg { width: 120mm; margin: 22mm 0 0; }
 

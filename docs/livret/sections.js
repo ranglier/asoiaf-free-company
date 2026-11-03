@@ -4,6 +4,7 @@
 // chapitre. La hauteur se mesure à l'écran, à la largeur de la page imprimée (livret.css, @media screen).
 // Un schéma et l'encadré d'exemple qui le suit (dans un sens ou dans l'autre) forment un bloc insécable : ils restent
 // sur la même page, quitte à passer ensemble à la suivante.
+// Un en-tête marqué .page (sommaire, fiche, aides-mémoire, index) ouvre toujours une page.
 (() => {
   const mm = px => px * 25.4 / 96;
   const PAGE = 297 - 17 - 18; // hauteur utile d'une page (marges de @page), en mm
@@ -31,6 +32,6 @@
     const height = mm(box.getBoundingClientRect().height);
     box.dataset.mm = Math.round(height);
     const long = height > PAGE * 0.96;
-    box.classList.add(long || els[0].matches(".ouverture-chap") ? "nouvelle-page" : "courte");
+    box.classList.add(long || els[0].matches(".ouverture-chap, .page") ? "nouvelle-page" : "courte");
   }
 })();

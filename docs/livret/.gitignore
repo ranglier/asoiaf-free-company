@@ -1,3 +1,5 @@
 # Produits par build.sh à chaque construction
 livret.html
 pages.js
+livret-*.html
+pages-*.js
