@@ -751,6 +751,7 @@
       "UnitTroop": "Troop sheet",
       "NoTroopSheet": "This unit has no troop sheet yet: the GM creates it by deploying it.",
       "AlreadyDeployed": "{name} already has a block on this scene: split it from the map.",
+      "Hud": { "Order": "Order", "Counter": "Counter-order", "Target": "Target", "Move": "Destination", "Resolve": "Resolve", "Officer": "Officer", "Split": "Split", "Veil": "Visibility", "Identify": "Identify", "Forget": "Forget", "Sheet": "Sheet" },
       "Ring": { "Color": "Ring colour", "Style": "Ring style", "simple": "Plain", "double": "Double", "thin": "Thin", "dotted": "Dotted", "stone": "Stone (Tokenizer)", "frame": "Tokenizer frame", "none": "None", "PickFrame": "Choose a frame", "FramesWorld": "World frames (ring generator)", "NoFrames": "No frame found: is Tokenizer 2 active?" },
       "HudStateUp": "Recover one state",
       "HudStateDown": "Lose one state",

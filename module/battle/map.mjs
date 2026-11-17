@@ -174,7 +174,7 @@ export function onRenderTokenHUD(hud, html) {
       const o = document.createElement("button");
       o.type = "button";
       o.className = `control-icon${unit.order === order ? " active" : ""}`;
-      o.dataset.tooltip = `${loc(`AFC.Battle.Order.${order}`)} : ${loc(`AFC.Battle.OrderHelp.${order}`)}`;
+      o.dataset.tooltip = loc(`AFC.Battle.Order.${order}`);
       o.innerHTML = `<i class="fa-solid ${ORDER_ICONS[order]}"></i>`;
       o.addEventListener("click", event => {
         event.stopPropagation();
@@ -183,39 +183,52 @@ export function onRenderTokenHUD(hud, html) {
       });
       palette.append(o);
     }
-    const label = battle.revealed ? loc("AFC.Battle.Counter") : loc("AFC.Battle.GiveOrder");
+    const label = battle.revealed ? loc("AFC.Battle.Hud.Counter") : loc("AFC.Battle.Hud.Order");
     button(unit.order ? ORDER_ICONS[unit.order] : "fa-flag", label, () => togglePalette(palette), { active: !!unit.order }).append(palette);
     if (TARGETED_ORDERS.includes(unit.order)) {
-      button("fa-crosshairs", unit.target ? loc("AFC.Battle.PlanChange") : loc("AFC.Battle.PlanSet"), () => { hud.close(); startTargetPick(token); });
+      button("fa-crosshairs", loc("AFC.Battle.Hud.Target"), () => { hud.close(); startTargetPick(token); });
     }
     // Case d'arrivée : à choisir pour Manœuvrer et Se replier, facultative pour Charger et Attaquer.
     const movable = PATH_ORDERS.includes(unit.order) || (APPROACH_ORDERS.includes(unit.order) && unit.target);
-    if (movable && !hasMoved(token)) button("fa-route", loc("AFC.Battle.Moves.Button"), () => { hud.close(); startMoveChoice(token); });
+    if (movable && !hasMoved(token)) button("fa-route", loc("AFC.Battle.Hud.Move"), () => { hud.close(); startMoveChoice(token); });
   }
   // MJ : résoudre l'engagement de cette troupe directement depuis la carte.
   const plan = game.user.isGM && battle.revealed ? plannedEngagements(battle).find(p => p.from === token.id) : null;
-  if (!book && plan) button(plan.shoot ? "fa-bullseye" : "fa-swords", fmt("AFC.Battle.ResolveHud", { d: plan.toName }), () => { hud.close(); resolvePlanned(plan); });
-  if (commander) button("fa-user-tie", loc(book ? "AFC.BattleBook.Attach" : "AFC.Battle.OfficerButton"), () => { hud.close(); chooseOfficer(token); }, { active: !!unit.officer });
-  if (!book && mayCommand(token, battle)) button("fa-bullhorn", loc("AFC.Battle.Options.commandHint"), () => { hud.close(); commandTroop(token.id); });
-  if (!book && commander && token.actor.system.state !== "fresh") button("fa-flag-checkered", `${loc("AFC.Battle.Rally")} (${token.actor.system.rallies}/${token.actor.system.ralliesMax})`, () => rallyTroop(token.id));
-  if (!book && battle.outnumber && commander && token.actor.system.units > 1) button("fa-code-branch", loc("AFC.Battle.Split.Button"), () => { hud.close(); chooseSplit(token); });
+  if (!book && plan) button(plan.shoot ? "fa-bullseye" : "fa-swords", loc("AFC.Battle.Hud.Resolve"), () => { hud.close(); resolvePlanned(plan); });
+  if (!book && mayCommand(token, battle)) button("fa-bullhorn", loc("AFC.Battle.Options.commandButton"), () => { hud.close(); commandTroop(token.id); });
+  if (!book && commander && token.actor.system.state !== "fresh") button("fa-flag-checkered", loc("AFC.Battle.Rally"), () => rallyTroop(token.id));
+  if (!book && battle.outnumber && commander && token.actor.system.units > 1) button("fa-code-branch", loc("AFC.Battle.Hud.Split"), () => { hud.close(); chooseSplit(token); });
   // Visibilité d'une troupe ennemie pour les joueurs (MJ) : un clic passe à l'état suivant. En brouillard automatique,
   // « Identifier » garde la vue calculée et ne fait que donner le nom (Lire le champ).
   if (game.user.isGM && token.actor.system.side === "enemy") {
     const state = veilState(token), next = nextVeil(token);
-    button(VEIL_ICONS[state], fmt("AFC.Battle.Veil.Button", { state: loc(`AFC.Battle.Veil.${state}`), next: loc(`AFC.Battle.Veil.${next}`) }), () => { hud.close(); setVeil(token, next); }, { active: state !== "auto" });
+    button(VEIL_ICONS[state], `${loc("AFC.Battle.Hud.Veil")} : ${loc(`AFC.Battle.Veil.${state}`)}`, () => { hud.close(); setVeil(token, next); }, { active: state !== "auto" });
     if (state === "auto") {
       const fog = fogState(token);
-      button("fa-magnifying-glass", loc(fog.known ? "AFC.Battle.Fog.Forget" : "AFC.Battle.Fog.Identify"), () => { hud.close(); toggleKnown(token); }, { active: !!fog.known });
+      button("fa-magnifying-glass", loc(fog.known ? "AFC.Battle.Hud.Forget" : "AFC.Battle.Hud.Identify"), () => { hud.close(); toggleKnown(token); }, { active: !!fog.known });
     }
   }
-  // Colonne de droite, avec cacher/révéler : fiche de la troupe et fenêtre Bataille.
+  // Colonne de droite, avec cacher/révéler : officier, fiche de la troupe et fenêtre Bataille (colonnes rééquilibrées le 2026-11-17).
   const right = html.querySelector(".col.right");
+  if (commander) right?.append(button("fa-user-tie", loc(book ? "AFC.BattleBook.Attach" : "AFC.Battle.Hud.Officer"), () => { hud.close(); chooseOfficer(token); }, { active: !!unit.officer }));
   if (token.actor.testUserPermission(game.user, "OBSERVER")) {
-    right?.append(button("fa-file-lines", loc("AFC.Battle.OpenSheet"), () => { hud.close(); token.actor.sheet.render({ force: true }); }));
+    right?.append(button("fa-file-lines", loc("AFC.Battle.Hud.Sheet"), () => { hud.close(); token.actor.sheet.render({ force: true }); }));
   }
   right?.append(button("fa-chess-rook", loc("AFC.Battle.Title"), () => game.afc.openBattle()));
-  if (!book) html.append(hudCard(hud, token, battle, unit));
+  if (!book) {
+    const card = hudCard(hud, token, battle, unit);
+    html.append(card);
+    // L'encadré se pose au-dessus de la plus haute colonne de boutons, sans les couvrir.
+    requestAnimationFrame(() => {
+      const box = html.getBoundingClientRect();
+      const top = Math.min(box.top, ...[...html.querySelectorAll(".col")].map(c => c.getBoundingClientRect().top));
+      // Le HUD suit le zoom de la carte : les distances à l'écran se ramènent à son échelle.
+      const parent = card.offsetParent ?? html;
+      const ref = parent.getBoundingClientRect();
+      const scale = parent.offsetHeight ? ref.height / parent.offsetHeight : 1;
+      card.style.bottom = `${Math.round((ref.bottom - top) / scale + 6)}px`;
+    });
+  }
 }
 
 /**
@@ -228,10 +241,9 @@ function hudCard(hud, token, battle, unit) {
   const known = game.user.isGM || s.side === "company" || !unknownToMe(token);
   const card = document.createElement("div");
   card.className = "afc-hud-card";
-  const target = unit.target ? token.parent.tokens.get(unit.target) : null;
   const officer = game.actors.get(unit.officer);
-  const order = unit.order && orderVisible(token, battle)
-    ? `<div><i class="fa-solid ${ORDER_ICONS[unit.order]}"></i> ${esc(loc(`AFC.Battle.Order.${unit.order}`))}${target && (game.user.isGM || !target.hidden) ? ` → ${esc(fogName(target))}` : ""}</div>` : "";
+  // L'ordre n'y figure plus : sa pastille est déjà sous le jeton (retour du 2026-11-17).
+  const order = "";
   const gm = game.user.isGM;
   const step = (path, delta, icon, label) => `<button type="button" data-hud-step="${path}" data-delta="${delta}" aria-label="${esc(label)}"><i class="fa-solid ${icon}"></i></button>`;
   card.innerHTML = `<b>${esc(fogName(token))}</b>
