@@ -5,7 +5,7 @@
  * - pastille d'ordre dans le bas du jeton et flèches « troupe → cible ».
  * Avant la révélation, ordres et flèches ne sont visibles que de qui commande la troupe (et du MJ).
  */
-import { ORDER_ICONS, ORDERS, TROOP_STATES } from "./battle-config.mjs";
+import { ORDER_ICONS, ORDERS, STATE_ORDER, TROOP_STATES } from "./battle-config.mjs";
 import { SYSTEM_ID } from "../config.mjs";
 import { BOOK_STATUS_CHIP, isBookTargeted } from "./book-config.mjs";
 import { drawBookHealth, fillBookHUD } from "./book.mjs";
@@ -215,6 +215,43 @@ export function onRenderTokenHUD(hud, html) {
     right?.append(button("fa-file-lines", loc("AFC.Battle.OpenSheet"), () => { hud.close(); token.actor.sheet.render({ force: true }); }));
   }
   right?.append(button("fa-chess-rook", loc("AFC.Battle.Title"), () => game.afc.openBattle()));
+  if (!book) html.append(hudCard(hud, token, battle, unit));
+}
+
+/**
+ * Fiche résumée au-dessus du jeton (décision du 2026-11-17) : nom, état, effectif, encaissement, ordre et cible,
+ * officier, en clair. Le MJ y corrige l'état et l'encaissement du bloc (même circuit que les résolutions).
+ */
+function hudCard(hud, token, battle, unit) {
+  const s = token.actor.system;
+  const esc = v => foundry.utils.escapeHTML(String(v ?? ""));
+  const known = game.user.isGM || s.side === "company" || !unknownToMe(token);
+  const card = document.createElement("div");
+  card.className = "afc-hud-card";
+  const target = unit.target ? token.parent.tokens.get(unit.target) : null;
+  const officer = game.actors.get(unit.officer);
+  const order = unit.order && orderVisible(token, battle)
+    ? `<div><i class="fa-solid ${ORDER_ICONS[unit.order]}"></i> ${esc(loc(`AFC.Battle.Order.${unit.order}`))}${target && (game.user.isGM || !target.hidden) ? ` → ${esc(fogName(target))}` : ""}</div>` : "";
+  const gm = game.user.isGM;
+  const step = (path, delta, icon, label) => `<button type="button" data-hud-step="${path}" data-delta="${delta}" aria-label="${esc(label)}"><i class="fa-solid ${icon}"></i></button>`;
+  card.innerHTML = `<b>${esc(fogName(token))}</b>
+    ${known ? `<div class="hud-state"><span class="state-chip ${s.state}">${esc(loc(TROOP_STATES[s.state].label))}</span>${gm ? step("state", -1, "fa-arrow-up", loc("AFC.Battle.HudStateUp")) + step("state", 1, "fa-arrow-down", loc("AFC.Battle.HudStateDown")) : ""}</div>
+    <div>${esc(fmt("AFC.Battle.MenCount", { n: s.men }))} · ${esc(loc("AFC.Battle.Cushion"))} ${s.cushion}/${s.cushionMax}${gm ? step("cushion", -1, "fa-minus", loc("AFC.Battle.HudCushionDown")) + step("cushion", 1, "fa-plus", loc("AFC.Battle.HudCushionUp")) : ""}</div>` : ""}
+    ${order}
+    ${officer && known ? `<div><i class="fa-solid fa-user-tie"></i> ${esc(officer.name)}</div>` : ""}`;
+  card.addEventListener("click", async event => {
+    const b = event.target.closest("[data-hud-step]");
+    if (!b || !gm) return;
+    event.stopPropagation();
+    const delta = Number(b.dataset.delta);
+    const a = token.actor, sys = a.system;
+    if (b.dataset.hudStep === "state") {
+      const i = Math.max(0, Math.min(STATE_ORDER.length - 1, sys.stateIndex + delta));
+      await a.update({ "system.state": STATE_ORDER[i] });
+    } else await a.update({ "system.cushion": Math.max(0, sys.cushion + delta) });
+    hud.render();
+  });
+  return card;
 }
 
 /** Icônes des états de visibilité d'une troupe ennemie. */
@@ -535,9 +572,36 @@ function drawSideFrame(token) {
   token.addChild(frame);
 }
 
+/**
+ * Chevrons d'effectif (décision du 2026-11-17) : un chevron par centaine d'hommes de force (une unité montée complète
+ * compte 100), 5 au plus, en bas du jeton. Pas sur une troupe ennemie que le joueur n'a pas identifiée.
+ */
+function drawStrengthChevrons(token) {
+  token.children.filter(c => c.name === "afcChevrons").forEach(c => c.destroy({ children: true }));
+  const doc = token.document;
+  const s = doc.actor?.system;
+  if (doc.actor?.type !== "troop" || isBook(doc.parent) || s.state === "destroyed" || unknownToMe(doc)) return;
+  const n = Math.max(1, Math.min(5, Math.round((s.strength ?? s.men) / 100)));
+  const g = new PIXI.Graphics();
+  g.name = "afcChevrons";
+  g.eventMode = "none";
+  const w = token.w * 0.15, h = w * 0.5, gap = w * 0.2;
+  const total = n * w + (n - 1) * gap;
+  const x0 = (token.w - total) / 2, y0 = token.h * 0.86;
+  const color = s.side === "company" ? 0x4f8fc8 : 0xd04a3f;
+  for (let i = 0; i < n; i++) {
+    const x = x0 + i * (w + gap);
+    // Chevron pointe en haut, liseré clair pour rester lisible sur tous les terrains.
+    g.lineStyle({ width: 7, color: 0xf3ead6, alpha: 1 }).moveTo(x, y0 + h).lineTo(x + w / 2, y0).lineTo(x + w, y0 + h);
+    g.lineStyle({ width: 4, color, alpha: 1 }).moveTo(x, y0 + h).lineTo(x + w / 2, y0).lineTo(x + w, y0 + h);
+  }
+  token.addChild(g);
+}
+
 /** Pastille d'ordre et marqueur d'état d'un jeton de troupe ; troupe inconnue (brouillard) : un « ? ». */
 export function drawTroopMarks(token) {
   drawSideFrame(token);
+  drawStrengthChevrons(token);
   drawOfficerMarker(token);
   drawOrderBadge(token);
   drawStateMarker(token);

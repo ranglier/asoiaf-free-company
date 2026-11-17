@@ -31,7 +31,7 @@ import { AFCCombatant } from "./module/dice/initiative.mjs";
 
 Hooks.once("init", () => {
   CONFIG.AFC = AFC;
-  game.afc = { rollAbilityTest, rollTest, evaluateTest, rollAttack, resolveDamage, runCreation, openBattle: () => BattleApp.open() };
+  game.afc = { rollAbilityTest, rollTest, evaluateTest, rollAttack, resolveDamage, runCreation, openBattle: opts => BattleApp.open(opts) };
   registerTroopStatuses();
   registerSettings();
 
@@ -240,7 +240,7 @@ Hooks.on("updateActor", (actor, changes, options, userId) => {
   }
   // Icônes d'état du jeton, posées par le client qui a fait la modification.
   // État : marqueur au centre du jeton (et retrait des anciennes icônes d'état de Foundry).
-  if (foundry.utils.hasProperty(changes, "system.state") || foundry.utils.hasProperty(changes, "system.book")) for (const t of actor.getActiveTokens()) drawTroopMarks(t);
+  if (["state", "book", "men", "units", "side"].some(k => foundry.utils.hasProperty(changes, `system.${k}`))) for (const t of actor.getActiveTokens()) drawTroopMarks(t);
   if (userId === game.user.id && foundry.utils.hasProperty(changes, "system.state")) syncTroopStatus(actor);
   // Compétences : suivent le type et l'entraînement.
   if (userId === game.user.id && (foundry.utils.hasProperty(changes, "system.training") || foundry.utils.hasProperty(changes, "system.unitType"))) prepareBookTroop(actor, { force: true });

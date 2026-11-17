@@ -6,7 +6,7 @@
 
   {{#each sides as |s|}}
   <div class="side {{#if s.winner}}winner{{/if}}">
-    <div class="who"><strong class="troop">{{s.name}}</strong><small>{{s.roller}} · {{s.order}}</small></div>
+    <div class="who"><strong class="troop">{{s.name}}</strong><small>{{s.roller}} · {{s.order}}{{#if s.state}} · {{s.state}}{{/if}}</small></div>
     <div class="total">{{s.total}}</div>
     <ol class="dice">{{#each s.dice as |d|}}<li class="die d{{d.value}} {{#unless d.kept}}dropped{{/unless}}">{{d.value}}</li>{{/each}}</ol>
     <footer><span class="pool">{{s.pool}}</span>{{#each s.tags}}<span class="tag">{{this}}</span>{{/each}}</footer>

@@ -376,7 +376,7 @@ async function meleeOnce(att, def) {
   const mutual = !fleeing && unitOf(battle, def.id).target === att.id && ["charge", "attack"].includes(m.dOrder);
   await markEngaged(scene, [att.id, def.id], mutual ? [att.id, def.id] : [att.id], winner ? [[winner.id, "won", 1], [loser.id, "lost", 1], [winner.id, "inflicted", losses]] : []);
   const side = (token, r, mods, p, test, order) => ({
-    name: token.name, roller: r.name, order: orderLabel(order), total: test.total, dice: test.dice,
+    name: token.name, roller: r.name, order: orderLabel(order), state: loc(TROOP_STATES[token.actor.system.state].label), total: test.total, dice: test.dice,
     pool: poolLabel(p, test), tags: [...modTags(mods), ...(test.reused ? [loc("AFC.Battle.Options.sameRoll")] : [])], winner: winner === token
   });
   const apply = loser && losses > 0 ? { token: loser.id, losses, scene: scene.id } : null;
@@ -440,7 +440,7 @@ async function shootOnce(shooter, target) {
     total: test.total, dice: test.dice, success: degrees > 0, degrees,
     verdict: degrees ? `${loc("AFC.Battle.Card.Hit")} : ${lossLabel(publicName(target), losses)}${o.note ? ` (${o.note})` : ""}` : loc("AFC.Battle.Card.Miss"),
     detail: fmt("AFC.Battle.Card.Against", { n: m.difficulty, detail: m.diff.map(d => `${d.label} ${d.value}`).join(" + ") }),
-    pool: poolLabel(p, test), tags: [r.name, ...modTags(m.mods)],
+    pool: poolLabel(p, test), tags: [r.name, ...modTags(m.mods), `${publicName(target)} : ${orderLabel(m.tOrder) || "—"}, ${loc(TROOP_STATES[target.actor.system.state].label)}`],
     ...cardApply(apply, opts.auto, volley)
   });
   const message = await postResult({ content, rolls: [test.roll], apply, auto: opts.auto, kind: volley ? "shot" : null, scene });

@@ -44,8 +44,8 @@
         {{#if t.overload}}<i class="fa-solid fa-triangle-exclamation warn" data-tooltip="{{localize "AFC.Battle.TooMany" n=t.overload}}"></i>{{/if}}
       </span>
     </div>
-    {{#if t.known}}{{#unless t.inactive}}
+    {{#if @root.details}}{{#if t.known}}{{#unless t.inactive}}
     <div class="line stats fit">{{t.stats}}{{#each t.traits as |tr|}}{{#if @first}} · {{else}}, {{/if}}<span class="trait" data-tooltip="{{tr.effect}}">{{tr.name}}</span>{{/each}}</div>
-    {{/unless}}{{/if}}
+    {{/unless}}{{/if}}{{/if}}
   </div>
 </div>

@@ -672,3 +672,12 @@ body.detached .application.afc.afc-fill.afc-dialog .window-content { max-height:
 .afc-dialog .cushion-dialog .cushion-who img { width: 40px; height: 40px; border: none; }
 .afc-dialog .cushion-dialog .cushion-who small { display: block; opacity: 0.8; }
 .afc-dialog .cushion-dialog .cushion-choices { display: flex; flex-direction: column; gap: 0.25rem; }
+#token-hud .afc-hud-card { position: absolute; bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%); min-width: 200px; max-width: 280px; padding: 6px 8px; background: rgba(243, 234, 214, 0.97); color: #2b2118; border: 1px solid #8a7a5a; border-radius: 4px; font-size: 13px; line-height: 1.35; pointer-events: all; white-space: nowrap; }
+#token-hud .afc-hud-card b { display: block; overflow: hidden; text-overflow: ellipsis; }
+#token-hud .afc-hud-card .state-chip { padding: 0 0.35rem; border-radius: 3px; border: 1px solid #8a7a5a; }
+#token-hud .afc-hud-card .state-chip.shaken { background: #c9a227; }
+#token-hud .afc-hud-card .state-chip.disordered { background: #b5651d; color: #fff; }
+#token-hud .afc-hud-card .state-chip.routed { background: #9b2c25; color: #fff; }
+#token-hud .afc-hud-card .state-chip.destroyed { background: #2b2118; color: #fff; }
+#token-hud .afc-hud-card button { width: 22px; height: 20px; line-height: 18px; margin-left: 4px; padding: 0; font-size: 11px; display: inline-block; }
+#afc-battle-bar .pc-hint { color: #8a2c1c; font-weight: bold; }

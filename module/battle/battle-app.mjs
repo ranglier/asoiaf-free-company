@@ -11,7 +11,7 @@ import { battleReport, commandTroop, endTurn, mayCommand, officerBonus, orderLab
 import { chooseOfficer, giveOrder, hexNumber, hexNumbersOn, ORDER_ICONS, orderVisible, startMoveChoice, startTargetPick, TARGETED_ORDERS } from "./map.mjs";
 import { APPROACH_ORDERS, contactForbidden, hasMoved, inContact, PATH_ORDERS } from "./moves.mjs";
 import { actionOf, describeAction, isDeclared, MANUAL_ACTIONS, mayAct, officerBusy, pcLines, recordAction, SCENE_ROUNDS } from "./pc-actions.mjs";
-import { cancelAction, declareAction, needsTroop, PC_ACTIONS, pendingActions, playAction, troopChoices } from "./pc-rolls.mjs";
+import { cancelAction, confirmPcsDone, declareAction, needsTroop, PC_ACTIONS, pendingActions, playAction, troopChoices } from "./pc-rolls.mjs";
 import { changePlan, PLAN_USES, planPoints } from "./plan-points.mjs";
 import { BATTLE_OPTIONS, canCommand, clearBattle, getBattle, isDeploying, saveBattle, setUnit, unitOf } from "./state.mjs";
 import { createEnemyTroop, troopPool } from "./troops.mjs";
@@ -73,6 +73,7 @@ export class BattleApp extends HandlebarsApplicationMixin(ApplicationV2) {
       resolveNext: BattleApp.#onResolveNext,
       veilAll: BattleApp.#onVeilAll,
       filter: BattleApp.#onFilter,
+      details: BattleApp.#onDetails,
       drawer: BattleApp.#onDrawer,
       pcAct: BattleApp.#onPcAct,
       pcDeclare: BattleApp.#onPcDeclare,
@@ -89,8 +90,9 @@ export class BattleApp extends HandlebarsApplicationMixin(ApplicationV2) {
   static PARTS = { body: { template: `systems/${SYSTEM_ID}/templates/apps/battle.hbs`, scrollable: [".battle-scroll"] } };
 
   /** Ouvre (ou ramène au premier plan) la fenêtre unique. */
-  static open() {
+  static open({ drawer = null } = {}) {
     const app = foundry.applications.instances.get("afc-battle") ?? new BattleApp();
+    if (drawer) app.drawer = drawer;
     return app.render({ force: true });
   }
 
@@ -248,7 +250,7 @@ export class BattleApp extends HandlebarsApplicationMixin(ApplicationV2) {
     for (const d of drawers) d.active = d.key === drawer;
     return {
       fogAuto: fogOn(scene),
-      steps, status, given, total: orderable.length, filters, groups, drawers, drawer, free, deploying, pcHint,
+      steps, status, given, total: orderable.length, filters, groups, drawers, drawer, free, deploying, pcHint, details: this.details,
       // Actions des personnages à jouer, en tête de la file du MJ (avant les tirs).
       showQueue: isGM && battle.revealed,
       pcQueue: isGM && battle.revealed ? pending.map(a => ({ id: a.actor, name: game.actors.get(a.actor)?.name ?? "?", what: describeAction(a, scene) })) : [],
@@ -378,20 +380,11 @@ export class BattleApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
   static #onReveal() { return revealOrders(); }
   static #onVeilAll(event, target) { target.closest("details")?.removeAttribute("open"); return setVeilAll(canvas.scene, target.dataset.veil); }
-  static async #onResolveNext() { const next = plannedEngagements()[0]; if (next && await BattleApp.#pcsDone()) return resolvePlanned(next); }
-
-  /** Avant le premier engagement : des actions de personnages déclarées n'ont pas été jouées ? Le MJ confirme. */
-  static async #pcsDone() {
-    const battle = getBattle();
-    const pending = pendingActions(battle);
-    if (!pending.length || battle.done?.length) return true;
-    const names = pending.map(a => `${game.actors.get(a.actor)?.name ?? "?"} (${describeAction(a)})`).join(", ");
-    return foundry.applications.api.DialogV2.confirm({
-      window: { title: loc("AFC.Battle.PcActions.Title") }, classes: ["afc", "afc-dialog"],
-      content: `<p>${foundry.utils.escapeHTML(fmt("AFC.Battle.PcActions.PendingConfirm", { names }))}</p>`, rejectClose: false
-    });
-  }
+  static async #onResolveNext() { const next = plannedEngagements()[0]; if (next && await confirmPcsDone()) return resolvePlanned(next); }
   static #onFilter(event, target) { this.filter = target.dataset.filter; this.render(); }
+  /** Ligne de caractéristiques des troupes : masquée par défaut (décision du 2026-11-17, fenêtre moins chargée). */
+  details = false;
+  static #onDetails() { this.details = !this.details; this.render(); }
   static #onDrawer(event, target) { this.drawer = this.drawer === target.dataset.drawer ? null : target.dataset.drawer; this.render(); }
   static #onEndTurn() { return endTurn(); }
   static #onReport() { return isBook() ? bookReport() : battleReport(); }
@@ -428,7 +421,7 @@ export class BattleApp extends HandlebarsApplicationMixin(ApplicationV2) {
   /** Engagement prévu : tir si l'ordre est Tirer, sinon mêlée. */
   static async #onResolvePlan(event, target) {
     const { from, to, shoot } = target.dataset;
-    if (!(await BattleApp.#pcsDone())) return;
+    if (!(await confirmPcsDone())) return;
     return resolvePlanned({ from, to, shoot: shoot === "true" });
   }
 

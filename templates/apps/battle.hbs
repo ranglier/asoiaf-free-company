@@ -126,6 +126,7 @@
 
     <nav class="battle-filters">
       {{#each filters as |f|}}<a class="chip {{#if f.active}}active{{/if}} {{#if f.warn}}warn{{/if}}" data-action="filter" data-filter="{{f.key}}">{{f.label}} <b>{{f.n}}</b></a>{{/each}}
+      <a class="chip details {{#if details}}active{{/if}}" data-action="details"><i class="fa-solid fa-list"></i> {{localize "AFC.Battle.Details"}}</a>
     </nav>
 
     {{#each groups as |g|}}

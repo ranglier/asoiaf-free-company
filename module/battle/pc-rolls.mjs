@@ -39,6 +39,18 @@ export { isDeclared };
 /** Actions des personnages encore à jouer ce tour. */
 export const pendingActions = battle => (Array.isArray(battle.actions) ? battle.actions : []).filter(isDeclared);
 
+/** Avant le premier engagement : des actions de personnages déclarées n'ont pas été jouées ? Le MJ confirme. */
+export async function confirmPcsDone() {
+  const battle = getBattle();
+  const pending = pendingActions(battle);
+  if (!pending.length || battle.done?.length) return true;
+  const names = pending.map(a => `${game.actors.get(a.actor)?.name ?? "?"} (${loc(`${L}.Action.${a.action}`)})`).join(", ");
+  return DialogV2.confirm({
+    window: { title: loc(`${L}.Title`) }, classes: ["afc", "afc-dialog"],
+    content: `<p>${esc(fmt(`${L}.PendingConfirm`, { names }))}</p>`, rejectClose: false
+  });
+}
+
 /** Camp d'un personnage : celui des troupes qu'il mène, sinon la Compagnie. */
 function sideOf(actorId, battle, scene) {
   const led = battle.units.find(u => u.officer === actorId);
