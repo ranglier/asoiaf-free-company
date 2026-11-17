@@ -6,10 +6,10 @@ Dans Foundry, le MJ peut modifier à la main sur les fiches l'état, l'encaissem
 
 ## A. S'appliquent à la main, rien à faire
 - Ligne de vue, cible invisible (−1D), embuscade (+1B) : le MJ cache les jetons et ajoute les dés dans la fenêtre. Depuis la v0.28 : avec l'option Brouillard de guerre par case, Foundry calcule la vue et cache les ennemis ; le +1B d'embuscade est codé (v0.28.5). Restent *à la main* : la Charge, l'Attaque ou le tir à l'aveugle sur une case non vue (−1D), et l'exception à « au contact, on ne charge que l'ennemi touché » (test d'officier).
-- Pont à une unité par tour, fuite des déroutes, case prise par le vainqueur, troupe détruite retirée : le MJ déplace ou retire les jetons. Le Bilan garde les pertes d'une troupe retirée.
+- Pont à une unité par tour, case prise par le vainqueur, troupe détruite retirée : le MJ déplace ou retire les jetons. Le Bilan garde les pertes d'une troupe retirée. La fuite des déroutes est automatique depuis la v0.34.0 (2026-11-17) ; une troupe acculée reste au MJ.
 - Pas de Charge (marais, pluie, Désorganisée) : Foundry avertit ; le MJ change l'ordre en Attaquer (il n'a pas de limite de contre-ordres).
 - Officier qui mène trop de troupes : avertissement.
-- Actions des PJ (première ligne, tir avec l'unité, Lire le champ, Porter un ordre, exploit, action libre) : test sur la fiche du PJ, puis dés reportés dans la fenêtre de mêlée ou de tir.
+- Actions des PJ : déclarées et jouées dans le volet Personnages depuis la v0.35.0 (2026-11-17) ; le bonus de première ligne et de tir avec l'unité s'ajoute seul. Restent au MJ : ce que révèle Lire le champ au-delà de l'identification, l'effet d'un exploit ou d'une action libre, et ce qui arrive au personnage qui s'expose.
 - Cohésion après une victoire ou une défaite, discours du chef : jet à part, puis valeur modifiée sur la fiche de Compagnie.
 
 ## B. Applicables, mais Foundry fait autrement par défaut (risque d'erreur à la table)
@@ -48,3 +48,4 @@ Dans Foundry, le MJ peut modifier à la main sur les fiches l'état, l'encaissem
 - 2026-11-02, points d'initiative et de plan : une seule réserve, les points de plan, sans plafond ; points d'initiative retirés ; contre-ordre = 1 point de plan ou Porter un ordre. Réserve dans la fenêtre Bataille (v0.27.15), dépenses annoncées dans le chat.
 - 2026-11-02 (soir), décisions après les batteries F, G, H et C, codées en v0.28 à v0.28.7 : brouillard de guerre par case (option), identification à 3 cases, nuit, tir à l'aveugle (à la main), plus de portée divisée par deux en brouillard, flanc limité à +1B (plus une option), +1B d'embuscade, case d'un allié qui part, charge qui se rabat, échanges de cases, contact (ni Manœuvrer ni Course ; Se replier en fin de tour ; relève). Gardés tels quels : Commander, village, infanterie lourde.
 - Plus aucun écart ouvert en bataille. Reste côté Compagnie : discours du chef, victoire et défaite (Cohésion à la main), achat de service à la main.
+- 2026-11-17, après la partie du 09/11 (v0.34.0 à v0.38.0) : blocs = jetons d'une même fiche, déploiement guidé, encaissement demandé au bon joueur, fuite automatique, actions des PJ dans le tour, cavalerie à 100 hommes, surnombre sur les pertes, +1 au-delà du plafond de dés de bonus, jet unique retiré, repli au mouvement, cavalerie qui se dégage au contact (Dressage), Perforant et Perforant lourd. Le développement du système de bataille est ensuite mis en pause (décision du 2026-11-17).
