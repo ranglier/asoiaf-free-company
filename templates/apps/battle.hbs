@@ -45,6 +45,7 @@
         {{/if}}
       {{else}}
         <span class="hint">{{status}}</span>
+        {{#if pcHint}}<a class="hint warn" data-action="drawer" data-drawer="pcs"><i class="fa-solid fa-user-shield"></i> {{pcHint}}</a>{{/if}}
       {{/if}}
     </div>
   </header>
@@ -69,10 +70,15 @@
       <div class="pc-line {{#if p.done}}done{{/if}}" data-pc="{{p.id}}">
         <img src="{{p.img}}" alt=""><b>{{p.name}}</b><span class="pc-status">{{p.status}}</span>
         <span class="pc-buttons">
-          {{#if p.canAct}}<select data-pc-action>{{selectOptions @root.pcActionOptions}}</select>
-          <button type="button" class="small" data-action="pcAct"><i class="fa-solid fa-check"></i> {{localize "AFC.Battle.PcActions.Act"}}</button>{{/if}}
+          {{#if p.canDeclare}}
+          <select data-pc-action>{{#each p.actionChoices as |o|}}<option value="{{o.key}}" {{#if o.selected}}selected{{/if}}>{{o.label}}</option>{{/each}}</select>
+          <select data-pc-troop>{{#if p.optionalTroop}}<option value="">—</option>{{/if}}{{#each p.troopChoices as |o|}}<option value="{{o.id}}" {{#if o.selected}}selected{{/if}}>{{o.name}}</option>{{/each}}</select>
+          <button type="button" class="small" data-action="pcDeclare"><i class="fa-solid fa-check"></i> {{localize "AFC.Battle.PcActions.Declare"}}</button>
+          {{/if}}
+          {{#if p.canPlay}}<button type="button" class="small primary" data-action="pcPlay"><i class="fa-solid fa-dice"></i> {{localize "AFC.Battle.PcActions.Play"}}</button>{{/if}}
+          {{#if p.canCancel}}<button type="button" class="small" data-action="pcCancel"><i class="fa-solid fa-rotate-left"></i> {{localize "AFC.Battle.PcActions.Cancel"}}</button>{{/if}}
           {{#if p.canRound}}<button type="button" class="small" data-action="pcRound" data-tooltip="AFC.Battle.PcActions.RoundHint"><i class="fa-solid fa-hourglass-half"></i> {{localize "AFC.Battle.PcActions.Round"}}</button>{{/if}}
-          {{#if p.canClear}}<button type="button" class="small icon" data-action="pcClear" data-tooltip="AFC.Battle.PcActions.Clear"><i class="fa-solid fa-xmark"></i></button>{{/if}}
+          {{#if p.canClear}}{{#unless p.canCancel}}<button type="button" class="small icon" data-action="pcClear" data-tooltip="AFC.Battle.PcActions.Clear"><i class="fa-solid fa-xmark"></i></button>{{/unless}}{{/if}}
         </span>
       </div>
       {{else}}<p class="hint">{{localize "AFC.Battle.PcActions.None"}}</p>{{/each}}
@@ -97,9 +103,16 @@
   {{/if}}
 
   <div class="battle-scroll">
-    {{#if queue}}
+    {{#if showQueue}}
     <section class="battle-queue">
       <h3>{{localize "AFC.Battle.Ui.Queue"}}</h3>
+      {{#each pcQueue as |a|}}
+      <div class="queue-line pc" data-pc="{{a.id}}">
+        <i class="fa-solid fa-user-shield"></i> <b>{{a.name}}</b> <small>{{a.what}}</small>
+        <button type="button" class="small" data-action="pcPlay">{{localize "AFC.Battle.PcActions.PlayFor"}}</button>
+        <button type="button" class="small icon" data-action="pcCancel" aria-label="{{localize "AFC.Battle.PcActions.Cancel"}}"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      {{/each}}
       {{#each queue as |p|}}
       <div class="queue-line {{#if p.first}}first{{/if}}">
         <i class="fa-solid {{#if p.shoot}}fa-bullseye{{else}}fa-swords{{/if}}"></i>
@@ -126,7 +139,7 @@
   </div>
 
   <footer class="battle-foot">
-    {{#each drawers as |d|}}<button type="button" class="small {{#if d.active}}active{{/if}}" data-action="drawer" data-drawer="{{d.key}}"><i class="fa-solid {{d.icon}}"></i> {{d.label}}{{#if d.badge}} <b class="badge">{{d.badge}}</b>{{/if}}</button>{{/each}}
+    {{#each drawers as |d|}}<button type="button" class="small {{#if d.active}}active{{/if}} {{#if d.warn}}warn{{/if}}" data-action="drawer" data-drawer="{{d.key}}"><i class="fa-solid {{d.icon}}"></i> {{d.label}}{{#if d.badge}} <b class="badge">{{d.badge}}</b>{{/if}}</button>{{/each}}
   </footer>
 {{/if}}
 </div>

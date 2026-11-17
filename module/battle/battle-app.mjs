@@ -7,10 +7,11 @@ import { ORDERS, TRIANGLE, TROOP_STATES, WEATHER } from "./battle-config.mjs";
 import { bookContext, bookReport, chooseCommanders, freeAttack, giveBookOrder, nextStep, resetBook, switchRules } from "./book.mjs";
 import { battleRules, isBook, RULES } from "./rules.mjs";
 import { TerrainPainter } from "./terrain.mjs";
-import { battleReport, commandTroop, endTurn, mayCommand, officerBonus, orderLabel, plannedEngagements, rallyTroop, resolveMelee, resolvePlanned, resolveShoot, revealOrders, shootRange, startBattle } from "./engagement.mjs";
+import { battleReport, commandTroop, endTurn, mayCommand, officerBonus, orderLabel, pcPhase, plannedEngagements, rallyTroop, resolveMelee, resolvePlanned, resolveShoot, revealOrders, shootRange, startBattle } from "./engagement.mjs";
 import { chooseOfficer, giveOrder, hexNumber, hexNumbersOn, ORDER_ICONS, orderVisible, startMoveChoice, startTargetPick, TARGETED_ORDERS } from "./map.mjs";
 import { APPROACH_ORDERS, CONTACT_FORBIDDEN, hasMoved, inContact, PATH_ORDERS } from "./moves.mjs";
-import { MANUAL_ACTIONS, mayAct, officerBusy, pcLines, recordAction, SCENE_ROUNDS } from "./pc-actions.mjs";
+import { actionOf, describeAction, isDeclared, MANUAL_ACTIONS, mayAct, officerBusy, pcLines, recordAction, SCENE_ROUNDS } from "./pc-actions.mjs";
+import { cancelAction, declareAction, needsTroop, PC_ACTIONS, pendingActions, playAction, troopChoices } from "./pc-rolls.mjs";
 import { changePlan, PLAN_USES, planPoints } from "./plan-points.mjs";
 import { BATTLE_OPTIONS, canCommand, clearBattle, getBattle, isDeploying, saveBattle, setUnit, unitOf } from "./state.mjs";
 import { createEnemyTroop, troopPool } from "./troops.mjs";
@@ -22,7 +23,7 @@ const loc = key => game.i18n.localize(key);
 const COMMAND = ["commandement", "command"];
 const fmt = (key, data) => game.i18n.format(key, data);
 /** Étapes du tour affichées en tête de la fenêtre (règles maison). */
-const STEPS = ["deploy", "orders", "reveal", "shots", "melees", "end"];
+const STEPS = ["deploy", "orders", "reveal", "pcs", "shots", "melees", "end"];
 const poolText = p => `${p.rank}D${p.bonus ? `+${p.bonus}B` : ""}`;
 
 /** Bonus de l'officier sur la fiche : bonus fixe, ou résultat de son test une fois lancé. */
@@ -74,6 +75,9 @@ export class BattleApp extends HandlebarsApplicationMixin(ApplicationV2) {
       filter: BattleApp.#onFilter,
       drawer: BattleApp.#onDrawer,
       pcAct: BattleApp.#onPcAct,
+      pcDeclare: BattleApp.#onPcDeclare,
+      pcPlay: BattleApp.#onPcPlay,
+      pcCancel: BattleApp.#onPcCancel,
       pcRound: BattleApp.#onPcRound,
       pcClear: BattleApp.#onPcClear,
       planAdd: () => changePlan(1),
@@ -146,7 +150,8 @@ export class BattleApp extends HandlebarsApplicationMixin(ApplicationV2) {
           ...s.traits.map(k => ({ name: loc(`AFC.Battle.Trait.${k}.name`), effect: loc(`AFC.Battle.Trait.${k}.effect`) })),
           ...["armor", "melee", "shoot"].filter(k => s.upgrades[k]).map(k => ({ name: loc(`AFC.Unit.Upgrade.${k}`), effect: loc(`AFC.Unit.Upgrade.${k}Effect`) }))
         ],
-        canRally: mine && !["fresh", "destroyed"].includes(s.state),
+        // Rallier : pendant la phase des personnages seulement (décision du 2026-11-17).
+        canRally: mine && !["fresh", "destroyed"].includes(s.state) && (isGM || pcPhase(battle)),
         // Ligne compacte : une troupe hors de combat tient sur une ligne ; une troupe à qui il manque un ordre est signalée.
         inactive: !unknown && ["routed", "destroyed"].includes(s.state),
         missing: !battle.revealed && mine && !unit.order && !["routed", "destroyed"].includes(s.state),
@@ -178,7 +183,7 @@ export class BattleApp extends HandlebarsApplicationMixin(ApplicationV2) {
       weathers: Object.fromEntries(Object.keys(WEATHER).map(k => [k, `AFC.Battle.Weather.${k}`])),
       weatherLabel: `AFC.Battle.Weather.${battle.weather}`,
       plans,
-      pcs: scene && !book ? pcLines(battle, scene) : [],
+      pcs: scene && !book ? pcLines(battle, scene).map(p => this.#pcView(p, battle, scene)) : [],
       planPoints: planPoints(battle),
       planUses: Object.fromEntries(PLAN_USES.map(k => [k, loc(`AFC.Battle.Plan.Use.${k}`)])),
       pcActionOptions: Object.fromEntries(MANUAL_ACTIONS.map(k => [k, loc(`AFC.Battle.PcActions.Action.${k}`)])),
@@ -203,7 +208,8 @@ export class BattleApp extends HandlebarsApplicationMixin(ApplicationV2) {
     // Un joueur ne compte pas les engagements d'une troupe cachée : l'étape trahirait un tir embusqué.
     const plans = (scene ? plannedEngagements(battle, scene) : []).filter(p => isGM || !scene.tokens.get(p.from)?.hidden);
     const deploying = isDeploying(battle);
-    const step = deploying ? "deploy" : !battle.revealed ? "orders" : plans.some(p => p.shoot) ? "shots" : plans.length ? "melees" : "end";
+    const pending = pendingActions(battle);
+    const step = deploying ? "deploy" : !battle.revealed ? "orders" : pending.length && pcPhase(battle) ? "pcs" : plans.some(p => p.shoot) ? "shots" : plans.length ? "melees" : "end";
     const steps = STEPS.map((key, i) => ({ key, label: loc(`AFC.Battle.Ui.Step.${key}`), state: i < STEPS.indexOf(step) ? "done" : key === step ? "on" : "" }));
     const orderable = all.filter(t => !t.inactive && !t.unknown && (isGM || t.mine));
     const given = orderable.filter(t => t.order).length;
@@ -212,6 +218,10 @@ export class BattleApp extends HandlebarsApplicationMixin(ApplicationV2) {
     let status = "";
     if (!isGM) status = deploying ? loc("AFC.Battle.DeployPlayer") : !battle.revealed ? (orderable.length ? fmt("AFC.Battle.BarOrdersPlayer", { given, total: orderable.length }) : loc("AFC.Battle.BarWaitingPlayer"))
       : loc(orderable.length ? "AFC.Battle.BarCounterPlayer" : "AFC.Battle.BarRevealedPlayer");
+    // Rappel au joueur : son personnage n'a encore rien déclaré, ou a une action à jouer.
+    const myPcs = context.pcs.filter(p => p.canEdit && !isGM);
+    const toDeclare = myPcs.filter(p => p.canDeclare).length, toPlay = myPcs.filter(p => p.canPlay).length;
+    const pcHint = toPlay ? loc("AFC.Battle.PcActions.HintPlay") : toDeclare && !deploying ? loc("AFC.Battle.PcActions.HintDeclare") : "";
     // Filtre : « Sans ordre » n'a de sens qu'avant la révélation ; s'il est vide, on revient à toutes les troupes.
     const filters = [
       { key: "all", n: all.length },
@@ -226,10 +236,10 @@ export class BattleApp extends HandlebarsApplicationMixin(ApplicationV2) {
     const keep = t => filter === "all" || (filter === "missing" ? t.missing : filter === "mine" ? t.mine : t.side === filter);
     const groups = ["company", "enemy"].map(key => ({ key, label: loc(`AFC.Battle.Side.${key}`), troops: context[key].filter(keep) }))
       .filter(g => g.troops.length || filter === "all");
-    const free = context.pcs.filter(p => p.canAct).length;
+    const free = context.pcs.filter(p => !p.done).length;
     const drawers = [
       { key: "plan", icon: "fa-scroll", label: loc("AFC.Battle.Ui.Drawer.plan"), badge: context.planPoints },
-      { key: "pcs", icon: "fa-user-shield", label: loc("AFC.Battle.Ui.Drawer.pcs"), badge: context.pcs.length ? `${free}/${context.pcs.length}` : "" },
+      { key: "pcs", icon: "fa-user-shield", label: loc("AFC.Battle.Ui.Drawer.pcs"), badge: pending.length ? `${pending.length} ⏳` : context.pcs.length ? `${free}/${context.pcs.length}` : "", warn: !!(toDeclare || toPlay) },
       ...(isGM ? [{ key: "engage", icon: "fa-swords", label: loc("AFC.Battle.Ui.Drawer.engage"), badge: plans.length || "" }] : []),
       { key: "help", icon: "fa-circle-question", label: loc("AFC.Battle.Ui.Drawer.help") },
       ...(isGM ? [{ key: "settings", icon: "fa-gear", label: loc("AFC.Battle.Ui.Drawer.settings") }] : [])
@@ -238,7 +248,10 @@ export class BattleApp extends HandlebarsApplicationMixin(ApplicationV2) {
     for (const d of drawers) d.active = d.key === drawer;
     return {
       fogAuto: fogOn(scene),
-      steps, status, given, total: orderable.length, filters, groups, drawers, drawer, free, deploying,
+      steps, status, given, total: orderable.length, filters, groups, drawers, drawer, free, deploying, pcHint,
+      // Actions des personnages à jouer, en tête de la file du MJ (avant les tirs).
+      showQueue: isGM && battle.revealed,
+      pcQueue: isGM && battle.revealed ? pending.map(a => ({ id: a.actor, name: game.actors.get(a.actor)?.name ?? "?", what: describeAction(a, scene) })) : [],
       // Après la révélation, le MJ voit la file des engagements en tête de liste (le prochain en bouton principal).
       queue: isGM && battle.revealed ? plans.map((p, i) => ({ ...p, first: i === 0 })) : null,
       next: next ? { ...next, label: fmt("AFC.Battle.Ui.ResolveNext", { a: next.fromName, d: next.toName }) } : null
@@ -254,6 +267,13 @@ export class BattleApp extends HandlebarsApplicationMixin(ApplicationV2) {
       battle.weather = event.target.value;
       await saveBattle(battle);
     });
+    // Volet Personnages : le choix en cours (action, troupe) est gardé, la liste des troupes suit l'action.
+    this.element.querySelectorAll("select[data-pc-action], select[data-pc-troop]").forEach(select => select.addEventListener("change", event => {
+      const line = event.target.closest("[data-pc]");
+      const draft = this.pcDraft[line.dataset.pc] ??= {};
+      if (event.target.matches("[data-pc-action]")) { draft.action = event.target.value; draft.troop = ""; this.render(); }
+      else draft.troop = event.target.value;
+    }));
     // Choix d'un ordre dans une fiche de troupe (enchaîne sur la cible pour un ordre offensif).
     this.element.querySelectorAll("select[data-order]").forEach(select => select.addEventListener("change", event => {
       const token = canvas.scene.tokens.get(event.target.closest("[data-troop]").dataset.troop);
@@ -358,7 +378,19 @@ export class BattleApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
   static #onReveal() { return revealOrders(); }
   static #onVeilAll(event, target) { target.closest("details")?.removeAttribute("open"); return setVeilAll(canvas.scene, target.dataset.veil); }
-  static #onResolveNext() { const next = plannedEngagements()[0]; if (next) return resolvePlanned(next); }
+  static async #onResolveNext() { const next = plannedEngagements()[0]; if (next && await BattleApp.#pcsDone()) return resolvePlanned(next); }
+
+  /** Avant le premier engagement : des actions de personnages déclarées n'ont pas été jouées ? Le MJ confirme. */
+  static async #pcsDone() {
+    const battle = getBattle();
+    const pending = pendingActions(battle);
+    if (!pending.length || battle.done?.length) return true;
+    const names = pending.map(a => `${game.actors.get(a.actor)?.name ?? "?"} (${describeAction(a)})`).join(", ");
+    return foundry.applications.api.DialogV2.confirm({
+      window: { title: loc("AFC.Battle.PcActions.Title") }, classes: ["afc", "afc-dialog"],
+      content: `<p>${foundry.utils.escapeHTML(fmt("AFC.Battle.PcActions.PendingConfirm", { names }))}</p>`, rejectClose: false
+    });
+  }
   static #onFilter(event, target) { this.filter = target.dataset.filter; this.render(); }
   static #onDrawer(event, target) { this.drawer = this.drawer === target.dataset.drawer ? null : target.dataset.drawer; this.render(); }
   static #onEndTurn() { return endTurn(); }
@@ -394,12 +426,45 @@ export class BattleApp extends HandlebarsApplicationMixin(ApplicationV2) {
   static #onShoot() { const p = BattleApp.#pair(); return p && resolveShoot(...p); }
 
   /** Engagement prévu : tir si l'ordre est Tirer, sinon mêlée. */
-  static #onResolvePlan(event, target) {
+  static async #onResolvePlan(event, target) {
     const { from, to, shoot } = target.dataset;
+    if (!(await BattleApp.#pcsDone())) return;
     return resolvePlanned({ from, to, shoot: shoot === "true" });
   }
 
   /** Actions des PJ : action de bataille choisie dans la liste, round de scène individuelle, effacement (MJ). */
+  /** Brouillon de l'action d'un personnage (choix en cours) : survit aux rafraîchissements de la fenêtre. */
+  pcDraft = {};
+
+  /** Ligne du volet Personnages : action déclarée, à jouer ou jouée, et listes de choix. */
+  #pcView(p, battle, scene) {
+    const entry = actionOf(battle, p.id);
+    const declared = isDeclared(entry);
+    const led = battle.units.find(u => u.officer === p.id)?.id ?? "";
+    const draft = this.pcDraft[p.id] ?? (this.pcDraft[p.id] = { action: led ? "command" : "frontLine", troop: "" });
+    const troops = troopChoices(p.id, draft.action, battle, scene);
+    const troop = troops.some(t => t.id === draft.troop) ? draft.troop : (troops.find(t => t.id === led)?.id ?? troops[0]?.id ?? "");
+    return {
+      ...p, declared,
+      canDeclare: p.canEdit && (game.user.isGM ? !declared : !entry) && !battle.done?.length,
+      canPlay: p.canEdit && declared && !!battle.revealed,
+      canCancel: p.canEdit && declared,
+      actionChoices: PC_ACTIONS.map(k => ({ key: k, label: loc(`AFC.Battle.PcActions.Action.${k}`), selected: k === draft.action })),
+      troopChoices: troops.map(t => ({ ...t, selected: t.id === troop })),
+      needsTroop: needsTroop(draft.action), optionalTroop: !needsTroop(draft.action)
+    };
+  }
+
+  static #onPcDeclare(event, target) {
+    const line = target.closest("[data-pc]");
+    const id = line.dataset.pc;
+    const action = line.querySelector("select[data-pc-action]")?.value;
+    const troop = line.querySelector("select[data-pc-troop]")?.value ?? "";
+    return declareAction(id, action, troop);
+  }
+  static #onPcPlay(event, target) { return playAction(target.closest("[data-pc]").dataset.pc); }
+  static #onPcCancel(event, target) { return cancelAction(target.closest("[data-pc]").dataset.pc); }
+
   static async #onPcAct(event, target) {
     const line = target.closest("[data-pc]");
     const action = line.querySelector("select[data-pc-action]")?.value;

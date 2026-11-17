@@ -6,6 +6,7 @@
  * Le compteur repart à zéro en fin de tour.
  */
 import { getBattle, gmHandlers, requestGM, saveBattle, sceneOf, serialGM, unitOf } from "./state.mjs";
+import { fogState, setVeil, toggleKnown, unknownToMe, veilState } from "./vision.mjs";
 
 const { DialogV2 } = foundry.applications.api;
 const loc = key => game.i18n.localize(key);
@@ -31,21 +32,37 @@ export function withAction(battle, actorId, entry) {
   return entry ? [...list, { actor: actorId, ...entry }] : list;
 }
 
-/** Texte court : « Commander (Archers) », « Scène : 2/3 rounds ». */
+/** Action déclarée mais pas encore jouée (décision du 2026-11-17). */
+export const isDeclared = entry => entry?.kind === "battle" && entry.status === "declared";
+
+/** Texte court : « Commander (Archers) », « Scène : 2/3 rounds », « Lire le champ (Archers) : à jouer », « : 2 degrés ». */
 export function describeAction(entry, scene = canvas.scene) {
   if (!entry) return loc(`${L}.Free`);
   if (entry.kind === "scene") return fmt(`${L}.Rounds`, { n: entry.rounds, max: SCENE_ROUNDS });
-  const troop = entry.troop ? scene?.tokens.get(entry.troop)?.name : null;
-  return `${loc(`${L}.Action.${entry.action}`)}${troop ? ` (${troop})` : ""}`;
+  const token = entry.troop ? scene?.tokens.get(entry.troop) : null;
+  // Une troupe ennemie non identifiée reste « Troupe inconnue » pour le joueur.
+  const troop = token ? (unknownToMe(token) || (!game.user.isGM && token.hidden) ? loc("AFC.Battle.Fog.Unknown") : token.name) : null;
+  const what = `${loc(`${L}.Action.${entry.action}`)}${troop ? ` (${troop})` : ""}`;
+  if (isDeclared(entry)) return fmt(`${L}.ToPlay`, { what });
+  if (entry.result) return fmt(entry.result.success ? `${L}.Played` : `${L}.PlayedFail`, { what, n: entry.result.degrees });
+  return what;
+}
+
+/** Bonus des personnages à une troupe pour ce tour : Combattre en première ligne (mêlée) ou Tirer avec l'unité (tir). */
+export function pcBonuses(battle, tokenId, action) {
+  return (Array.isArray(battle.actions) ? battle.actions : [])
+    .filter(a => a.kind === "battle" && a.action === action && a.troop === tokenId && a.result?.success && a.result.degrees > 0)
+    .map(a => ({ label: `${loc(`${L}.Action.${action}`)} (${game.actors.get(a.actor)?.name ?? "?"})`, b: a.result.degrees, d: 0, p: 0 }));
 }
 
 /**
  * Le personnage peut-il faire une action de bataille ? Un joueur est arrêté s'il a déjà agi ; le MJ
  * reçoit une confirmation (il peut faire une exception).
  */
-export async function mayAct(actorId, battle = getBattle()) {
+export async function mayAct(actorId, battle = getBattle(), action = null) {
   const entry = actionOf(battle, actorId);
-  if (!entry) return true;
+  // L'action déclarée pendant les ordres se joue maintenant : ce n'est pas une deuxième action.
+  if (!entry || (isDeclared(entry) && (!action || entry.action === action))) return true;
   const data = { name: game.actors.get(actorId)?.name ?? "?", what: describeAction(entry) };
   if (!game.user.isGM) {
     ui.notifications.warn(fmt(`${L}.Busy`, data));
@@ -77,16 +94,37 @@ gmHandlers.pcAction = serialGM(async data => {
   const old = actionOf(battle, data.actor);
   let entry;
   if (data.entry === null) {
-    if (!user.isGM) return;
+    // Un joueur retire son action tant qu'elle n'est pas jouée ; le MJ efface tout.
+    if (!user.isGM && !isDeclared(old)) return;
     entry = null;
   } else if (data.entry === "round") {
     // Une scène individuelle ne suit pas une action de bataille.
     if (old?.kind === "battle") return;
     entry = { kind: "scene", rounds: Math.min(SCENE_ROUNDS, (old?.rounds ?? 0) + 1) };
-  } else entry = { kind: "battle", action: data.entry.action, troop: data.entry.troop ?? "" };
+  } else {
+    // Un joueur ne déclare pas une deuxième action par-dessus une action jouée.
+    if (!user.isGM && old && !isDeclared(old) && data.entry.status === "declared") return;
+    entry = { kind: "battle", action: data.entry.action, troop: data.entry.troop ?? "" };
+    if (data.entry.status) entry.status = data.entry.status;
+    if (data.entry.result) entry.result = data.entry.result;
+  }
   battle.actions = withAction(battle, data.actor, entry);
   await saveBattle(battle, scene);
+  // Le MJ est prévenu de ce que font les joueurs (décision du 2026-11-17 : plus rien à retenir de tête).
+  if (!user.isGM && game.user.isGM) {
+    const what = entry ? describeAction(entry, scene) : loc(`${L}.Cancelled`);
+    ui.notifications.info(`${actor.name} : ${what}`);
+  }
+  // Lire le champ réussi : la troupe visée est identifiée (brouillard de guerre ou voile « inconnue »).
+  if (entry?.action === "readField" && entry.result?.success) await identify(scene.tokens.get(entry.troop));
 });
+
+/** Identifie une troupe ennemie pour la Compagnie (MJ). */
+async function identify(token) {
+  if (!token) return;
+  if (veilState(token) === "unknown") return setVeil(token, "known");
+  if (!fogState(token).known) await toggleKnown(token);
+}
 
 /**
  * Lignes du panneau : officiers des troupes de la scène et personnages des joueurs. Un joueur ne voit
@@ -106,7 +144,7 @@ export function pcLines(battle, scene) {
       const entry = actionOf(battle, a.id);
       const canEdit = isGM || a.isOwner;
       return {
-        id: a.id, name: a.name, img: a.img, status: describeAction(entry, scene), done: !!entry,
+        id: a.id, name: a.name, img: a.img, status: describeAction(entry, scene), done: !!entry, canEdit,
         canAct: canEdit && (isGM || !entry),
         canRound: canEdit && entry?.kind !== "battle" && (entry?.rounds ?? 0) < SCENE_ROUNDS,
         canClear: isGM && !!entry

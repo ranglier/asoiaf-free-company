@@ -10,7 +10,7 @@ import {
   MAX_LOSS, MOVING_ORDERS, OFFICER_TEST, ORDER_ICONS, STATE_ORDER, TERRAINS, TRIANGLE, TROOP_STATES, WEATHER
 } from "./battle-config.mjs";
 import { executeDeferredMoves, executeMoves, fleeRouted } from "./moves.mjs";
-import { mayAct, recordAction, withAction } from "./pc-actions.mjs";
+import { mayAct, pcBonuses, recordAction, withAction } from "./pc-actions.mjs";
 import { moraleMod, troopPool } from "./troops.mjs";
 import { askHandlers, askUser, canCommand, getBattle, gmHandlers, playerFor, requestGM, resetOrders, saveBattle, sceneOf, unitOf } from "./state.mjs";
 import { fogName, markActed, publicName, secretTroop } from "./vision.mjs";
@@ -139,6 +139,9 @@ export function meleeMods(att, def, battle) {
     if (aEdge) am.push(mod(loc("AFC.Battle.Split.Outnumber"), { b: aEdge }));
     if (dEdge) dm.push(mod(loc("AFC.Battle.Split.Outnumber"), { b: dEdge }));
   }
+  // Personnages en première ligne : +1B par degré, ajoutés seuls (décision du 2026-11-17).
+  am.push(...pcBonuses(battle, att.id, "frontLine"));
+  dm.push(...pcBonuses(battle, def.id, "frontLine"));
   // Armes de mêlée améliorées.
   if (A.upgrades.melee) am.push(mod(loc("AFC.Unit.Upgrade.melee"), { b: 1 }));
   if (D.upgrades.melee) dm.push(mod(loc("AFC.Unit.Upgrade.melee"), { b: 1 }));
@@ -211,6 +214,8 @@ export function shootMods(shooter, target, battle) {
   if (cover) diff.push({ label: loc("AFC.Battle.Mod.cover"), value: cover });
   if (terrainValue(sTerrain, "defense") && !terrainValue(tTerrain, "defense")) mods.push(mod(loc("AFC.Battle.Terrain.hill"), { b: 1 }));
   if (S.upgrades.shoot) mods.push(mod(loc("AFC.Unit.Upgrade.shoot"), { b: 1 }));
+  // Personnages qui tirent avec l'unité : +1B par degré, ajoutés seuls (décision du 2026-11-17).
+  mods.push(...pcBonuses(battle, shooter.id, "shootWith"));
   if (ambushing(battle, shooter)) mods.push(mod(loc("AFC.Battle.Mod.ambush"), { b: 1 }));
   if (weather.shoot && !slings) mods.push(mod(loc("AFC.Battle.Weather.rain"), { p: 1 }));
   // Cible cachée (brouillard ou MJ) : tir à l'aveugle, −1D, et le MJ en est prévenu.
@@ -587,10 +592,23 @@ async function lossesOnce(tokenId, losses, message, sceneId) {
 }
 
 /** Ralliement : test d'Art militaire (Commandement) d'un PJ ou PNJ contre la Discipline de la troupe. */
-export async function rallyTroop(tokenId) {
+/**
+ * Phase des personnages (décision du 2026-11-17) : après la révélation, avant le premier tir ou la première mêlée.
+ * Un joueur est arrêté en dehors ; le MJ confirme s'il veut faire une exception.
+ */
+export const pcPhase = (battle = getBattle()) => !!battle.revealed && !(battle.done ?? []).length;
+export async function inPcPhase(battle = getBattle()) {
+  if (pcPhase(battle)) return true;
+  const key = battle.revealed ? "AFC.Battle.PcActions.PhaseOver" : "AFC.Battle.PcActions.AfterReveal";
+  if (!game.user.isGM) { ui.notifications.warn(loc(key)); return false; }
+  return DialogV2.confirm({ window: { title: loc("AFC.Battle.PcActions.Title") }, classes: ["afc", "afc-dialog"], content: `<p>${esc(loc(key))} ${esc(loc("AFC.Battle.PcActions.GMOverride"))}</p>`, rejectClose: false });
+}
+
+export async function rallyTroop(tokenId, preferredId = null) {
   const token = canvas.scene.tokens.get(tokenId);
   const actor = token?.actor;
   if (!actor) return;
+  if (!(await inPcPhase())) return;
   const s = actor.system;
   if (s.state === "fresh") return ui.notifications.info(loc("AFC.Battle.RallyFresh"));
   if (s.state === "destroyed") return;
@@ -605,12 +623,12 @@ export async function rallyTroop(tokenId) {
     window: { title: fmt("AFC.Battle.RallyTitle", { name: token.name }) },
     classes: ["afc", "afc-dialog"],
     content: `<div class="afc-test-dialog"><p>${fmt("AFC.Battle.RallyIntro", { d: discipline, n: s.rallies, max: s.ralliesMax })}</p>
-      <label>${loc("AFC.Battle.Rallier")}<select name="who">${candidates.map(a => `<option value="${a.id}" ${a.id === officerId ? "selected" : ""}>${esc(a.name)}</option>`).join("")}</select></label>
+      <label>${loc("AFC.Battle.Rallier")}<select name="who">${candidates.map(a => `<option value="${a.id}" ${a.id === (preferredId ?? officerId) ? "selected" : ""}>${esc(a.name)}</option>`).join("")}</select></label>
       <label>+B<input type="number" name="b" value="0"></label></div>`,
     ok: { label: loc("AFC.Battle.Roll"), callback: (ev, button) => ({ id: button.form.elements.who.value, b: Number(button.form.elements.b.value) || 0 }) },
     rejectClose: false
   });
-  if (!pick || !(await mayAct(pick.id))) return;
+  if (!pick || !(await mayAct(pick.id, getBattle(), "rally"))) return;
   const rallier = game.actors.get(pick.id);
   const warfare = rallier.system.abilities.warfare;
   // Officiers disciplinaires de la Compagnie (décision du 2026-11-03) : +1 aux tests de Rallier de ses troupes.
@@ -725,8 +743,8 @@ export async function commandTroop(tokenId) {
     const s = token.actor.system;
     const officerId = unitOf(battle, tokenId).officer;
     const officer = game.actors.get(officerId);
-    // Une action de bataille par personnage et par tour.
-    if (!(await mayAct(officerId, battle))) return;
+    // Une action de bataille par personnage et par tour (Commander déclaré pendant les ordres compte comme la même).
+    if (!(await mayAct(officerId, battle, "command"))) return;
     const d = commandDifficulty(s);
     const detail = [fmt("AFC.Battle.Options.commandDetail", { d: s.discipline, m: OFFICER_TEST.margin }), ...(d.size ? [fmt("AFC.Battle.Options.commandSize", { n: d.size })] : []), ...(d.morale ? [moraleLabel(d.morale)] : [])].join(" + ");
     const opts = await commandDialog(token, officer, d, fmt("AFC.Battle.Card.Against", { n: d.total, detail }));
