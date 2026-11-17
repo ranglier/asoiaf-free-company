@@ -30,6 +30,7 @@
     <label>{{localize "AFC.Battle.SourceUnit"}}<select name="system.source.item"><option value="">—</option>{{selectOptions ownerUnits selected=system.source.item}}</select></label>
     <label>{{localize "AFC.Battle.Ring.Color"}}<input type="color" name="system.appearance.ringColor" value="{{system.appearance.ringColor}}"></label>
     <label>{{localize "AFC.Battle.Ring.Style"}}<select name="system.appearance.ringStyle">{{selectOptions ringStyles selected=system.appearance.ringStyle localize=true}}</select></label>
+    {{#if canPickFrame}}<button type="button" class="small add-button" data-action="pickFrame"><i class="fa-solid fa-circle-notch"></i> {{localize "AFC.Battle.Ring.PickFrame"}}</button>{{/if}}
   </div>
   {{/if}}
 

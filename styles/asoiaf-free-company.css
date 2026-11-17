@@ -704,3 +704,12 @@ body.detached .application.afc.afc-fill.afc-dialog .window-content { max-height:
 .afc-sheet label.inline input { width: 5rem; }
 .afc-sheet prose-mirror { min-height: 20rem; }
 .afc .afc-heraldry .heraldry-preview canvas.coa-arms { width: 230px; height: 230px; display: block; object-fit: contain; }
+/* Galerie des cadres Tokenizer (2026-11-17). */
+.afc-frame-gallery { display: grid; gap: 0.4rem; }
+.afc-frame-gallery h3 { margin: 0.6rem 0 0.2rem; }
+.afc-frame-gallery .frame-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 6px; }
+.afc-frame-gallery .frame-cell { position: relative; width: 84px; height: 84px; padding: 0; border: 2px solid transparent; border-radius: 8px; background: #6f6a62; cursor: pointer; }
+.afc-frame-gallery .frame-cell.active { border-color: #d4af37; }
+.afc-frame-gallery .frame-cell img { position: absolute; border: none; }
+.afc-frame-gallery .frame-cell .frame { inset: 2px; width: calc(100% - 4px); height: calc(100% - 4px); }
+.afc-frame-gallery .frame-cell .picto { left: 11%; top: 11%; width: 78%; height: 78%; }

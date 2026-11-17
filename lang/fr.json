@@ -751,7 +751,7 @@
       "UnitTroop": "Fiche de troupe",
       "NoTroopSheet": "Cette unité n'a pas encore de fiche de troupe : le MJ la crée en la déployant.",
       "AlreadyDeployed": "{name} a déjà un bloc sur cette scène : divisez-le depuis la carte.",
-      "Ring": { "Color": "Couleur de l'anneau", "Style": "Style de l'anneau", "simple": "Simple", "double": "Double", "thin": "Fin", "dotted": "Pointillé", "stone": "Pierre (Tokenizer)", "none": "Aucun" },
+      "Ring": { "Color": "Couleur de l'anneau", "Style": "Style de l'anneau", "simple": "Simple", "double": "Double", "thin": "Fin", "dotted": "Pointillé", "stone": "Pierre (Tokenizer)", "frame": "Cadre Tokenizer", "none": "Aucun", "PickFrame": "Choisir un cadre", "FramesWorld": "Cadres du monde (générateur d'anneaux)", "NoFrames": "Aucun cadre trouvé : Tokenizer 2 est-il actif ?" },
       "HudStateUp": "Remonter d'un état",
       "HudStateDown": "Perdre un état",
       "HudCushionUp": "Encaissement +1",

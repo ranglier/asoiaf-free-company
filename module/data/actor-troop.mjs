@@ -45,7 +45,9 @@ export default class TroopData extends foundry.abstract.TypeDataModel {
       // Jeton rond (décision du 2026-11-17) : anneau au choix, plus de bleu ou de rouge imposé selon le camp.
       appearance: new fields.SchemaField({
         ringColor: new fields.StringField({ initial: "#2b2118" }),
-        ringStyle: new fields.StringField({ initial: "simple", choices: ["simple", "double", "thin", "dotted", "stone", "none"] })
+        ringStyle: new fields.StringField({ initial: "simple", choices: ["simple", "double", "thin", "dotted", "stone", "frame", "none"] }),
+        // Cadre Tokenizer 2 choisi dans la galerie (style « frame »).
+        ringFrame: new fields.StringField({ blank: true })
       }),
       // Règles du livre : données à part (basculer de règles ne perd rien).
       book: new fields.SchemaField({

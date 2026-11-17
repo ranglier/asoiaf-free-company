@@ -512,22 +512,25 @@ async function drawRing(token) {
   token.children.filter(c => c.name === "afcRing").forEach(c => c.destroy({ children: true }));
   const doc = token.document;
   if (doc.actor?.type !== "troop" || unknownToMe(doc)) return;
-  const { ringColor = "#2b2118", ringStyle = "simple" } = doc.actor.system.appearance ?? {};
+  const { ringColor = "#2b2118", ringStyle = "simple", ringFrame = "" } = doc.actor.system.appearance ?? {};
   if (ringStyle === "none") return;
   const color = foundry.utils.Color.from(ringColor);
   const r = ringRadius(token), cx = token.w / 2, cy = token.h / 2, w = token.w;
   const ring = new PIXI.Container();
   ring.name = "afcRing";
   ring.eventMode = "none";
-  const stone = ringStyle === "stone" && game.modules.get("tokenizer-2")?.active;
-  if (stone) {
-    const texture = await foundry.canvas.loadTexture("modules/tokenizer-2/img/default-frame-pc.png").catch(() => null);
+  // Cadre Tokenizer 2 (galerie de la fiche) ; « stone » : l'ancien cadre par défaut. Sans Tokenizer, anneau simple.
+  const frame = ["frame", "stone"].includes(ringStyle) && game.modules.get("tokenizer-2")?.active
+    ? (ringStyle === "frame" && ringFrame) || "modules/tokenizer-2/img/default-frame-pc.png" : null;
+  if (frame) {
+    const texture = await foundry.canvas.loadTexture(frame).catch(() => null);
     if (token.destroyed) return;
     if (texture) {
       const sprite = new PIXI.Sprite(texture);
       sprite.anchor.set(0.5);
       sprite.position.set(cx, cy);
-      sprite.width = sprite.height = r * 2.12;
+      // Le cadre entoure le disque : sa fenêtre fait environ 78 % de sa taille.
+      sprite.width = sprite.height = r * 2.55;
       ring.addChild(sprite);
     }
   } else {
@@ -547,7 +550,8 @@ async function drawRing(token) {
     ring.addChild(g);
   }
   token.children.filter(c => c.name === "afcRing").forEach(c => c.destroy({ children: true }));
-  token.addChild(ring);
+  // Sous toutes nos marques (état, chevrons, officier, ordre), même s'il arrive après elles.
+  token.addChildAt(ring, 0);
 }
 
 /**

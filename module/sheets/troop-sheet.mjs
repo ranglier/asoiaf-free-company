@@ -10,6 +10,7 @@ import { BOOK_ABILITIES, BOOK_EQUIPMENT, BOOK_FORMATIONS, BOOK_STATUS } from "..
 import { prepareBookTroop } from "../battle/book.mjs";
 import { isBook } from "../battle/rules.mjs";
 import { blocksOf, isAutoIcon, setTroopImage, troopIcon, typeLabel } from "../battle/troops.mjs";
+import { framesAvailable, pickFrame } from "../battle/frames.mjs";
 
 const { HandlebarsApplicationMixin } = foundry.applications.api;
 const { ActorSheetV2 } = foundry.applications.sheets;
@@ -29,6 +30,7 @@ export class TroopSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       resetImage: TroopSheet.#onResetImage,
       resetTraits: TroopSheet.#onResetTraits,
       resetBook: TroopSheet.#onResetBook,
+      pickFrame: TroopSheet.#onPickFrame,
       openBlock: TroopSheet.#onOpenBlock
     }
   };
@@ -107,7 +109,8 @@ export class TroopSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     Object.assign(context, {
       actor: this.document, system: s, editable: this.isEditable, blocks, isBlock: this.document.isToken,
       owners: Object.fromEntries(game.actors.filter(a => ["company", "house"].includes(a.type)).map(a => [a.id, a.name])),
-      ringStyles: Object.fromEntries(["simple", "double", "thin", "dotted", ...(game.modules.get("tokenizer-2")?.active ? ["stone"] : []), "none"].map(k => [k, `AFC.Battle.Ring.${k}`])),
+      ringStyles: Object.fromEntries(["simple", "double", "thin", "dotted", ...(framesAvailable() ? ["frame"] : []), "none"].map(k => [k, `AFC.Battle.Ring.${k}`])),
+      canPickFrame: framesAvailable(),
       ownerUnits: Object.fromEntries((game.actors.get(s.source.actor)?.items.filter(i => i.type === "unit") ?? []).map(i => [i.id, i.name])),
       editMode: this.isEditable && this.editMode, subtitle, tracks, stats,
       traits, activeTraits: traits.filter(t => t.on), upgrades,
@@ -173,6 +176,14 @@ export class TroopSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   /** Clic : test rapide ; Maj + clic : dialogue complet. */
   static #onRollSkill(event, target) {
     return rollAbilityTest(this.document, target.dataset.ability, { quick: !event.shiftKey });
+  }
+
+  /** Galerie des cadres Tokenizer : le cadre choisi devient l'anneau de la troupe. */
+  static async #onPickFrame() {
+    if (!this.isEditable) return;
+    const a = this.document.system.appearance;
+    const frame = await pickFrame(a.ringFrame, this.document.img);
+    if (frame) await this.document.update({ "system.appearance.ringStyle": "frame", "system.appearance.ringFrame": frame });
   }
 
   /** Fiche d'un bloc posé sur une scène. */
