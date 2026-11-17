@@ -662,3 +662,13 @@ body.detached .application.afc.afc-fill.afc-dialog .window-content { max-height:
 .afc .unit-upgrades { display: flex; flex-wrap: wrap; align-items: center; gap: 0.3rem; }
 .afc .unit-upgrades button { width: auto; flex: none; }
 .afc .unit-upgrades button.active { background: var(--afc-wax); color: var(--afc-wax-text); border-color: var(--afc-wax); }
+
+/* ---------- Retours du 09/11 (2026-11-17) : blocs, encaissement ---------- */
+.afc-sheet .troop-blocks { display: flex; flex-direction: column; gap: 0.25rem; margin: 0.5rem 0; padding: 0.5rem; border: 1px dashed var(--afc-rule, #8a7a5a); }
+.afc-sheet .troop-blocks .troop-block { cursor: pointer; }
+.afc-sheet .troop-blocks .troop-block:hover { text-decoration: underline; }
+.afc-sheet .troop-source { margin: 0.25rem 0 0.5rem; }
+.afc-dialog .cushion-dialog .cushion-who { display: flex; align-items: center; gap: 0.5rem; }
+.afc-dialog .cushion-dialog .cushion-who img { width: 40px; height: 40px; border: none; }
+.afc-dialog .cushion-dialog .cushion-who small { display: block; opacity: 0.8; }
+.afc-dialog .cushion-dialog .cushion-choices { display: flex; flex-direction: column; gap: 0.25rem; }

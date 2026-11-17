@@ -9,7 +9,7 @@ import { combineTypes } from "../unit-mix.mjs";
 import { BOOK_ABILITIES, BOOK_EQUIPMENT, BOOK_FORMATIONS, BOOK_STATUS } from "../battle/book-config.mjs";
 import { prepareBookTroop } from "../battle/book.mjs";
 import { isBook } from "../battle/rules.mjs";
-import { isAutoIcon, setTroopImage, troopIcon, typeLabel } from "../battle/troops.mjs";
+import { blocksOf, isAutoIcon, setTroopImage, troopIcon, typeLabel } from "../battle/troops.mjs";
 
 const { HandlebarsApplicationMixin } = foundry.applications.api;
 const { ActorSheetV2 } = foundry.applications.sheets;
@@ -28,7 +28,8 @@ export class TroopSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       editImage: TroopSheet.#onEditImage,
       resetImage: TroopSheet.#onResetImage,
       resetTraits: TroopSheet.#onResetTraits,
-      resetBook: TroopSheet.#onResetBook
+      resetBook: TroopSheet.#onResetBook,
+      openBlock: TroopSheet.#onOpenBlock
     }
   };
 
@@ -97,8 +98,16 @@ export class TroopSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     // Compétences triées par ordre alphabétique, comme sur les fiches de personnage.
     const bookAbilities = BOOK_ABILITIES.map(k => ({ key: k, name: loc(`AFC.Ability.${k}`), value: s.book.abilities[k] }))
       .sort((a, b) => a.name.localeCompare(b.name, game.i18n.lang));
+    // Blocs (décision du 2026-11-17) : la fiche de l'annuaire est l'unité au repos ; en bataille, l'état, l'encaissement
+    // et l'effectif se lisent et se corrigent sur chaque bloc (fiche ouverte depuis la carte).
+    const blocks = this.document.isToken ? [] : blocksOf(this.document).map(({ scene, token }) => ({
+      scene: scene.id, token: token.id, name: token.name, where: scene.name,
+      state: loc(book ? `AFC.BattleBook.Status.${token.actor.system.book.status}` : TROOP_STATES[token.actor.system.state].label), men: men(token.actor.system.men)
+    }));
     Object.assign(context, {
-      actor: this.document, system: s, editable: this.isEditable,
+      actor: this.document, system: s, editable: this.isEditable, blocks, isBlock: this.document.isToken,
+      owners: Object.fromEntries(game.actors.filter(a => ["company", "house"].includes(a.type)).map(a => [a.id, a.name])),
+      ownerUnits: Object.fromEntries((game.actors.get(s.source.actor)?.items.filter(i => i.type === "unit") ?? []).map(i => [i.id, i.name])),
       editMode: this.isEditable && this.editMode, subtitle, tracks, stats,
       traits, activeTraits: traits.filter(t => t.on), upgrades,
       sides: { company: "AFC.Battle.Side.company", enemy: "AFC.Battle.Side.enemy" },
@@ -163,6 +172,11 @@ export class TroopSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   /** Clic : test rapide ; Maj + clic : dialogue complet. */
   static #onRollSkill(event, target) {
     return rollAbilityTest(this.document, target.dataset.ability, { quick: !event.shiftKey });
+  }
+
+  /** Fiche d'un bloc posé sur une scène. */
+  static #onOpenBlock(event, target) {
+    return game.scenes.get(target.dataset.scene)?.tokens.get(target.dataset.token)?.actor?.sheet.render(true);
   }
 
   /** Règles du livre : compétences et équipement recalculés depuis le type et l'entraînement. */

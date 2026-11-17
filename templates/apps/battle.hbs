@@ -34,12 +34,15 @@
 
     <div class="battle-next">
       {{#if isGM}}
-        {{#unless battle.revealed}}
+        {{#if deploying}}
+        <span class="hint">{{localize "AFC.Battle.DeployGM"}}</span>
+        <button type="button" class="primary" data-action="startBattle"><i class="fa-solid fa-flag-checkered"></i> {{localize "AFC.Battle.Start"}}</button>
+        {{else unless battle.revealed}}
         <button type="button" class="primary" data-action="reveal"><i class="fa-solid fa-eye"></i> {{localize "AFC.Battle.Reveal"}} ({{given}}/{{total}})</button>
         {{else}}
         {{#if next}}<button type="button" class="primary" data-action="resolveNext"><i class="fa-solid {{#if next.shoot}}fa-bullseye{{else}}fa-swords{{/if}}"></i> {{next.label}}</button>{{/if}}
         <button type="button" class="{{#unless next}}primary{{/unless}}" data-action="endTurn"><i class="fa-solid fa-forward-step"></i> {{localize "AFC.Battle.EndTurn"}}</button>
-        {{/unless}}
+        {{/if}}
       {{else}}
         <span class="hint">{{status}}</span>
       {{/if}}

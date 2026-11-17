@@ -10,7 +10,7 @@ import { runConversion } from "../conversion.mjs";
 import { openContractHelp } from "../contract-help.mjs";
 import { runHouseEvent } from "../house-month.mjs";
 import { runHeraldry, saveArmsImage } from "../heraldry.mjs";
-import { deployUnit } from "../battle/troops.mjs";
+import { deployUnit, ensureUnitTroop, troopOfUnit } from "../battle/troops.mjs";
 
 const { HandlebarsApplicationMixin } = foundry.applications.api;
 const { ActorSheetV2 } = foundry.applications.sheets;
@@ -45,6 +45,7 @@ class AFCActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       removeRow: AFCActorSheet.#onRemoveRow,
       openActor: AFCActorSheet.#onOpenActor,
       deployUnit: AFCActorSheet.#onDeployUnit,
+      unitTroop: AFCActorSheet.#onUnitTroop,
       rollInitiative: AFCActorSheet.#onRollInitiative
     }
   };
@@ -225,6 +226,14 @@ class AFCActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   static #onDeployUnit(event, target) {
     const item = this.document.items.get(target.closest("[data-item-id]").dataset.itemId);
     return item && deployUnit(this.document, item);
+  }
+
+  /** Fiche de troupe de l'unité (créée au besoin par le MJ). */
+  static async #onUnitTroop(event, target) {
+    const item = this.document.items.get(target.closest("[data-item-id]").dataset.itemId);
+    if (!item) return;
+    const troop = troopOfUnit(item) ?? (game.user.isGM ? await ensureUnitTroop(this.document, item) : null);
+    return troop ? troop.sheet.render(true) : ui.notifications.info(game.i18n.localize("AFC.Battle.NoTroopSheet"));
   }
 
   static async #onSetGrip(event, target) {

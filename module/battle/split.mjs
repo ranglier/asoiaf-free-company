@@ -8,7 +8,7 @@ import { rollDice } from "../dice/test-roll.mjs";
 import { center, commandDifficulty } from "./engagement.mjs";
 import { inContact } from "./moves.mjs";
 import { mayAct, recordAction } from "./pc-actions.mjs";
-import { getBattle, gmHandlers, gmOnScene, requestGM, unitOf } from "./state.mjs";
+import { getBattle, gmHandlers, gmOnScene, isDeploying, requestGM, unitOf } from "./state.mjs";
 
 const COMMAND = ["commandement", "command"];
 /** Ordres permis le tour d'un découpage en pleine bataille. */
@@ -44,7 +44,7 @@ export async function splitTroop(data) {
   const battle = getBattle(scene);
   const refuse = key => { ui.notifications.warn(loc(`AFC.Battle.Split.${key}`)); return null; };
   if (["routed", "destroyed"].includes(s.state)) return refuse("NotRouted");
-  if (battle.round > 1 || battle.revealed) {
+  if (!isDeploying(battle)) {
     if (battle.revealed) return refuse("OrdersOnly");
     if (inContact(token, battle)) return refuse("InContact");
     if (splitRound !== battle.round) return refuse("NeedTest");
@@ -55,27 +55,40 @@ export async function splitTroop(data) {
   // L'encaissement se partage au prorata, arrondi au profit du bloc d'origine : découper n'en crée pas.
   const cushion = Math.floor(s.cushion * units / s.units);
   // Nom unique : un deuxième bloc de même taille prend une lettre (« (1) B »).
-  const base = name ?? `${token.name} (${units})`;
+  // Nom de l'unité sans son compte (« ×5 ») ni l'ancien suffixe de bloc.
+  const plainName = n => n.replace(/\s*\(\d+\)(\s+[A-Z])?$/, "").replace(/\s*×\s*\d+/, "");
+  const base = name ?? `${plainName(token.name)} (${units})`;
   const names = new Set(scene.tokens.map(t => t.name));
   let label = base;
   for (let n = 2; names.has(label); n++) label = `${base} ${String.fromCharCode(64 + n)}`;
-  const source = token.actor.toObject();
-  delete source._id;
-  // Ordre et officier vont sur le jeton : l'acteur copié ne garde pas ceux de la troupe d'origine.
-  delete source.flags?.[SYSTEM_ID]?.unit;
-  foundry.utils.mergeObject(source, {
-    name: label,
-    "system.units": units, "system.men": men, "system.cushion": cushion,
-    "prototypeToken.name": label
-  });
-  const actor = await Actor.create(source);
-  await token.actor.update({ "system.units": s.units - units, "system.men": s.men - men, "system.cushion": s.cushion - cushion });
-  const doc = await actor.getTokenDocument({
-    x: at.x - canvas.grid.sizeX / 2, y: at.y - canvas.grid.sizeY / 2, hidden: token.hidden,
+  names.add(label);
+  // Blocs (décision du 2026-11-17) : le nouveau bloc est un deuxième jeton de la même fiche, pas une nouvelle fiche.
+  // Un jeton encore lié à sa fiche est d'abord détaché : la fiche reste l'unité entière, au repos.
+  if (token.actorLink) await token.update({ actorLink: false });
+  const fresh = scene.tokens.get(id);
+  const doc = fresh.toObject();
+  delete doc._id;
+  // Le bloc garde ce qui a déjà été consommé (ralliements, désorganisations, Indéfectible), son propre effectif.
+  const delta = foundry.utils.deepClone(doc.delta ?? {});
+  foundry.utils.setProperty(delta, "system.units", units);
+  foundry.utils.setProperty(delta, "system.men", men);
+  foundry.utils.setProperty(delta, "system.cushion", cushion);
+  foundry.utils.setProperty(delta, "system.state", s.state);
+  foundry.utils.setProperty(delta, "system.disorders", s.disorders);
+  foundry.utils.setProperty(delta, "system.rallies", s.rallies);
+  Object.assign(doc, {
+    name: label, actorLink: false, delta,
+    x: at.x - canvas.grid.sizeX / 2, y: at.y - canvas.grid.sizeY / 2, hidden: fresh.hidden,
     // Le brouillard suit le nouveau bloc (caché, identifié ou non, comme la troupe d'origine).
-    flags: { [SYSTEM_ID]: { unit: { order: "", target: "", officer, countered: false, path: [], splitRound }, ...(token.getFlag(SYSTEM_ID, "fog") ? { fog: foundry.utils.deepClone(token.getFlag(SYSTEM_ID, "fog")) } : {}) } }
+    flags: { [SYSTEM_ID]: { unit: { order: "", target: "", officer, countered: false, path: [], splitRound }, ...(fresh.getFlag(SYSTEM_ID, "fog") ? { fog: foundry.utils.deepClone(fresh.getFlag(SYSTEM_ID, "fog")) } : {}) } }
   });
-  const [created] = await scene.createEmbeddedDocuments("Token", [doc.toObject()]);
+  await fresh.actor.update({ "system.units": s.units - units, "system.men": s.men - men, "system.cushion": s.cushion - cushion });
+  // Noms clairs : chaque bloc dit combien d'unités il garde (« Infanterie lourde (3) » et « (2) »).
+  const plain = plainName(fresh.name);
+  let kept = `${plain} (${s.units - units})`;
+  for (let n = 2; kept !== fresh.name && names.has(kept); n++) kept = `${plain} (${s.units - units}) ${String.fromCharCode(64 + n)}`;
+  if (kept !== fresh.name) await fresh.update({ name: kept });
+  const [created] = await scene.createEmbeddedDocuments("Token", [doc]);
   // Découpage en pleine bataille : les deux blocs ne peuvent que Tenir ou Manœuvrer ce tour-ci.
   if (splitRound) await token.setFlag(SYSTEM_ID, "unit.splitRound", splitRound);
   return created;
@@ -90,7 +103,7 @@ export async function chooseSplit(token) {
   // Pendant la bataille (décision du 2026-11-03) : pendant les ordres, hors contact, troupe ni en déroute ni détruite,
   // et c'est l'action d'un officier (Art militaire, Commandement, contre la difficulté de Commander). Avant la
   // première révélation, le découpage reste libre.
-  const inBattle = battle.round > 1 || battle.revealed;
+  const inBattle = !isDeploying(battle);
   if (["routed", "destroyed"].includes(s.state)) return ui.notifications.warn(loc("AFC.Battle.Split.NotRouted"));
   if (inBattle && battle.revealed) return ui.notifications.warn(loc("AFC.Battle.Split.OrdersOnly"));
   if (inBattle && inContact(token, battle)) return ui.notifications.warn(loc("AFC.Battle.Split.InContact"));

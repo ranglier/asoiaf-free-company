@@ -7,12 +7,12 @@ import { ORDERS, TRIANGLE, TROOP_STATES, WEATHER } from "./battle-config.mjs";
 import { bookContext, bookReport, chooseCommanders, freeAttack, giveBookOrder, nextStep, resetBook, switchRules } from "./book.mjs";
 import { battleRules, isBook, RULES } from "./rules.mjs";
 import { TerrainPainter } from "./terrain.mjs";
-import { battleReport, commandTroop, endTurn, mayCommand, officerBonus, orderLabel, plannedEngagements, rallyTroop, resolveMelee, resolvePlanned, resolveShoot, revealOrders, shootRange } from "./engagement.mjs";
+import { battleReport, commandTroop, endTurn, mayCommand, officerBonus, orderLabel, plannedEngagements, rallyTroop, resolveMelee, resolvePlanned, resolveShoot, revealOrders, shootRange, startBattle } from "./engagement.mjs";
 import { chooseOfficer, giveOrder, hexNumber, hexNumbersOn, ORDER_ICONS, orderVisible, startMoveChoice, startTargetPick, TARGETED_ORDERS } from "./map.mjs";
 import { APPROACH_ORDERS, CONTACT_FORBIDDEN, hasMoved, inContact, PATH_ORDERS } from "./moves.mjs";
 import { MANUAL_ACTIONS, mayAct, officerBusy, pcLines, recordAction, SCENE_ROUNDS } from "./pc-actions.mjs";
 import { changePlan, PLAN_USES, planPoints } from "./plan-points.mjs";
-import { BATTLE_OPTIONS, canCommand, clearBattle, getBattle, saveBattle, setUnit, unitOf } from "./state.mjs";
+import { BATTLE_OPTIONS, canCommand, clearBattle, getBattle, isDeploying, saveBattle, setUnit, unitOf } from "./state.mjs";
 import { createEnemyTroop, troopPool } from "./troops.mjs";
 import { fogName, fogOn, setVeilAll, unknownToMe } from "./vision.mjs";
 
@@ -22,7 +22,7 @@ const loc = key => game.i18n.localize(key);
 const COMMAND = ["commandement", "command"];
 const fmt = (key, data) => game.i18n.format(key, data);
 /** Étapes du tour affichées en tête de la fenêtre (règles maison). */
-const STEPS = ["orders", "reveal", "shots", "melees", "end"];
+const STEPS = ["deploy", "orders", "reveal", "shots", "melees", "end"];
 const poolText = p => `${p.rank}D${p.bonus ? `+${p.bonus}B` : ""}`;
 
 /** Bonus de l'officier sur la fiche : bonus fixe, ou résultat de son test une fois lancé. */
@@ -49,6 +49,7 @@ export class BattleApp extends HandlebarsApplicationMixin(ApplicationV2) {
     window: { title: "AFC.Battle.Title", icon: "fa-solid fa-chess-rook", resizable: true },
     actions: {
       reveal: BattleApp.#onReveal,
+      startBattle: () => startBattle(),
       endTurn: BattleApp.#onEndTurn,
       report: BattleApp.#onReport,
       newEnemy: BattleApp.#onNewEnemy,
@@ -201,14 +202,15 @@ export class BattleApp extends HandlebarsApplicationMixin(ApplicationV2) {
     const all = [...context.company, ...context.enemy];
     // Un joueur ne compte pas les engagements d'une troupe cachée : l'étape trahirait un tir embusqué.
     const plans = (scene ? plannedEngagements(battle, scene) : []).filter(p => isGM || !scene.tokens.get(p.from)?.hidden);
-    const step = !battle.revealed ? "orders" : plans.some(p => p.shoot) ? "shots" : plans.length ? "melees" : "end";
+    const deploying = isDeploying(battle);
+    const step = deploying ? "deploy" : !battle.revealed ? "orders" : plans.some(p => p.shoot) ? "shots" : plans.length ? "melees" : "end";
     const steps = STEPS.map((key, i) => ({ key, label: loc(`AFC.Battle.Ui.Step.${key}`), state: i < STEPS.indexOf(step) ? "done" : key === step ? "on" : "" }));
     const orderable = all.filter(t => !t.inactive && !t.unknown && (isGM || t.mine));
     const given = orderable.filter(t => t.order).length;
     const missing = all.filter(t => t.missing).length;
     const next = plans[0];
     let status = "";
-    if (!isGM) status = !battle.revealed ? (orderable.length ? fmt("AFC.Battle.BarOrdersPlayer", { given, total: orderable.length }) : loc("AFC.Battle.BarWaitingPlayer"))
+    if (!isGM) status = deploying ? loc("AFC.Battle.DeployPlayer") : !battle.revealed ? (orderable.length ? fmt("AFC.Battle.BarOrdersPlayer", { given, total: orderable.length }) : loc("AFC.Battle.BarWaitingPlayer"))
       : loc(orderable.length ? "AFC.Battle.BarCounterPlayer" : "AFC.Battle.BarRevealedPlayer");
     // Filtre : « Sans ordre » n'a de sens qu'avant la révélation ; s'il est vide, on revient à toutes les troupes.
     const filters = [
@@ -236,7 +238,7 @@ export class BattleApp extends HandlebarsApplicationMixin(ApplicationV2) {
     for (const d of drawers) d.active = d.key === drawer;
     return {
       fogAuto: fogOn(scene),
-      steps, status, given, total: orderable.length, filters, groups, drawers, drawer, free,
+      steps, status, given, total: orderable.length, filters, groups, drawers, drawer, free, deploying,
       // Après la révélation, le MJ voit la file des engagements en tête de liste (le prochain en bouton principal).
       queue: isGM && battle.revealed ? plans.map((p, i) => ({ ...p, first: i === 0 })) : null,
       next: next ? { ...next, label: fmt("AFC.Battle.Ui.ResolveNext", { a: next.fromName, d: next.toName }) } : null

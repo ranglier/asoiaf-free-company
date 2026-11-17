@@ -212,6 +212,30 @@ function tokenUpdate(token, key) {
   return { _id: token.id, x: Math.round(c.x - (token.width * canvas.grid.sizeX) / 2), y: Math.round(c.y - (token.height * canvas.grid.sizeY) / 2) };
 }
 
+/**
+ * Fuite des déroutes (décision du 2026-11-17) : en fin de tour, chaque troupe en déroute fuit seule de 2 cases au
+ * plus (marais à 2, rivière sans gué infranchissable), vers la case libre la plus éloignée des ennemis encore en
+ * état de combattre. Quelle que soit la façon dont elle est passée en déroute (résolution ou fiche corrigée à la main).
+ * Renvoie une ligne par troupe pour la carte de fin de tour (MJ).
+ */
+export async function fleeRouted(scene) {
+  const lines = [];
+  for (const token of troops(scene).filter(t => t.actor.system.state === "routed")) {
+    const occupied = occupiedCells(scene, { all: true });
+    const foes = troops(scene).filter(t => t.actor.system.side !== token.actor.system.side && canMove(t));
+    const name = esc(publicName(token));
+    if (!foes.length) continue;
+    const here = keyOf(cellOf(token));
+    const gap = point => Math.min(...foes.map(f => canvas.grid.measurePath([point, center(f)]).spaces));
+    const best = [...reach(token, 2, occupied)].filter(([key]) => key !== here && !occupied.has(key))
+      .map(([key, v]) => ({ key, gap: gap(cellCenter(key)), cost: v.cost })).sort((a, b) => b.gap - a.gap || b.cost - a.cost)[0];
+    if (!best || best.gap <= gap(center(token))) { lines.push(fmt("AFC.Battle.FleeStuck", { name })); continue; }
+    await scene.updateEmbeddedDocuments("Token", [tokenUpdate(token, best.key)]);
+    lines.push(fmt("AFC.Battle.Fleeing", { name }));
+  }
+  return lines;
+}
+
 /** Dernière case libre du chemin : on s'arrête avant un ennemi, on ne finit pas sur une case prise. */
 function walk(token, path, occupied) {
   let last = null;

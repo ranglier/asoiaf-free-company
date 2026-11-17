@@ -23,6 +23,23 @@
     </div>
   </header>
 
+  {{#if editMode}}
+  {{!-- Rattachement à une Compagnie (ou une Maison) et à l'une de ses unités : moral, soins, expérience. --}}
+  <div class="grid-3 troop-source">
+    <label>{{localize "AFC.Battle.SourceOwner"}}<select name="system.source.actor"><option value="">—</option>{{selectOptions owners selected=system.source.actor}}</select></label>
+    <label>{{localize "AFC.Battle.SourceUnit"}}<select name="system.source.item"><option value="">—</option>{{selectOptions ownerUnits selected=system.source.item}}</select></label>
+  </div>
+  {{/if}}
+
+  {{#if blocks.length}}
+  {{!-- Unité en bataille : son état se lit et se corrige sur chacun de ses blocs. --}}
+  <section class="troop-blocks">
+    <p class="hint">{{localize "AFC.Battle.BlocksHint"}}</p>
+    {{#each blocks as |b|}}
+    <a class="troop-block" data-action="openBlock" data-scene="{{b.scene}}" data-token="{{b.token}}"><i class="fa-solid fa-chess-pawn"></i> <b>{{b.name}}</b> · {{b.state}} · {{b.men}} <small>({{b.where}})</small></a>
+    {{/each}}
+  </section>
+  {{else}}
   {{!-- Pistes de bataille, comme les pistes de santé d'un PJ : modifiables dans les deux modes. --}}
   <section class="afc-vitals troop-tracks">
     {{#each tracks as |c|}}
@@ -35,6 +52,7 @@
     </div>
     {{/each}}
   </section>
+  {{/if}}
 
   <div class="troop-columns">
     {{!-- Compétences en registre, comme sur la fiche de PJ. --}}

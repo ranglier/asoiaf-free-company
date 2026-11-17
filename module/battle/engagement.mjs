@@ -9,10 +9,10 @@ import { autoPenalties, evaluateTest, rollDice } from "../dice/test-roll.mjs";
 import {
   MAX_LOSS, MOVING_ORDERS, OFFICER_TEST, ORDER_ICONS, STATE_ORDER, TERRAINS, TRIANGLE, TROOP_STATES, WEATHER
 } from "./battle-config.mjs";
-import { executeDeferredMoves, executeMoves } from "./moves.mjs";
+import { executeDeferredMoves, executeMoves, fleeRouted } from "./moves.mjs";
 import { mayAct, recordAction, withAction } from "./pc-actions.mjs";
 import { moraleMod, troopPool } from "./troops.mjs";
-import { askHandlers, askUser, canCommand, getBattle, gmHandlers, requestGM, resetOrders, saveBattle, sceneOf, unitOf } from "./state.mjs";
+import { askHandlers, askUser, canCommand, getBattle, gmHandlers, playerFor, requestGM, resetOrders, saveBattle, sceneOf, unitOf } from "./state.mjs";
 import { fogName, markActed, publicName, secretTroop } from "./vision.mjs";
 
 const { DialogV2 } = foundry.applications.api;
@@ -473,14 +473,45 @@ function fillOutcome(message, html) {
 
 /* ---------- Pertes, encaissement, ralliement ---------- */
 
+/**
+ * Contexte de la question d'encaissement (décision du 2026-11-17) : quelle troupe, dans quel état, frappée par qui,
+ * et l'état qui résulte de chaque choix. Données simples : elles voyagent jusqu'au joueur.
+ */
+function cushionContext(token, losses, cause = "") {
+  const s = token.actor.system;
+  const max = Math.min(s.cushion, losses);
+  const after = spend => loc(TROOP_STATES[STATE_ORDER[Math.min(STATE_ORDER.length - 1, s.stateIndex + losses - spend)]].label);
+  return {
+    name: token.name, img: token.texture?.src ?? token.actor.img, state: loc(TROOP_STATES[s.state].label), cause,
+    choices: Array.from({ length: max + 1 }, (_, spend) => ({ spend, state: after(spend) }))
+  };
+}
+
+/** Texte du verdict d'une carte de tir ou de mêlée : « Chevaliers l'emporte — Arbalétriers perd 2 états ». */
+function causeOf(card) {
+  if (!card?.content) return "";
+  const div = document.createElement("div");
+  div.innerHTML = card.content;
+  const v = div.querySelector(".verdict");
+  return v ? [v.querySelector("strong")?.textContent, v.querySelector("small")?.textContent].map(t => t?.trim()).filter(Boolean).join(" — ") : "";
+}
+
 /** Combien de points d'encaissement dépenser ? (null si la fenêtre est fermée) */
-function cushionDialog({ name, losses, cushion }) {
+function cushionDialog({ name, img, state, cause, losses, cushion, choices }) {
+  const max = Math.min(cushion, losses);
+  // Anciens appels (sans choix calculés) : une ligne par dépense possible, sans l'état d'arrivée.
+  const list = choices ?? Array.from({ length: max + 1 }, (_, spend) => ({ spend, state: "" }));
+  const pick = Math.min(1, max);
   return DialogV2.prompt({
     window: { title: fmt("AFC.Battle.CushionTitle", { name }) },
     classes: ["afc", "afc-dialog"],
-    content: `<div class="afc-test-dialog"><p>${fmt("AFC.Battle.CushionQuestion", { n: losses, c: cushion })}</p>
-      <label>${loc("AFC.Battle.Cushion")}<input type="number" name="spend" value="${Math.min(1, cushion, losses)}" min="0" max="${Math.min(cushion, losses)}"></label></div>`,
-    ok: { label: loc("AFC.Battle.Apply"), callback: (ev, button) => Math.max(0, Math.min(cushion, losses, Number(button.form.elements.spend.value) || 0)) },
+    content: `<div class="afc-test-dialog cushion-dialog">
+      <div class="cushion-who">${img ? `<img src="${esc(img)}" alt="">` : ""}<div><strong>${esc(name)}</strong><small>${esc(state ?? "")} · ${fmt("AFC.Battle.CushionLeft", { c: cushion })}</small></div></div>
+      ${cause ? `<p class="hint">${esc(cause)}</p>` : ""}
+      <p>${fmt("AFC.Battle.CushionQuestion", { n: losses, c: cushion })}</p>
+      <div class="cushion-choices">${list.map(c => `<label class="checkbox"><input type="radio" name="spend" value="${c.spend}" ${c.spend === pick ? "checked" : ""}>
+        ${c.spend ? fmt(c.spend === 1 ? "AFC.Battle.CushionSpend1" : "AFC.Battle.CushionSpendN", { n: c.spend }) : loc("AFC.Battle.CushionSpend0")}${c.state ? ` → <b>${esc(c.state)}</b>` : ""}</label>`).join("")}</div></div>`,
+    ok: { label: loc("AFC.Battle.Apply"), callback: (ev, button) => Math.max(0, Math.min(cushion, losses, Number(button.form.querySelector('[name="spend"]:checked')?.value) || 0)) },
     rejectClose: false
   });
 }
@@ -491,10 +522,11 @@ askHandlers.cushion = cushionDialog;
  * sans réponse à temps, la question revient à qui applique les pertes (le MJ).
  * Le joueur qui ferme sa fenêtre n'encaisse rien ; le MJ qui ferme la sienne annule.
  */
-async function askCushion(token, losses) {
+async function askCushion(token, losses, cause = "") {
   const actor = token.actor;
-  const data = { name: token.name, losses, cushion: actor.system.cushion };
-  const player = game.users.find(u => !u.isGM && u.active && actor.testUserPermission(u, "OWNER"));
+  const data = { ...cushionContext(token, losses, cause), losses, cushion: actor.system.cushion };
+  // Le joueur qui commande cette troupe (officier, ordre), pas le premier propriétaire venu (décision du 2026-11-17).
+  const player = playerFor(token);
   if (!game.user.isGM || !player) return cushionDialog(data);
   ui.notifications.info(fmt("AFC.Battle.CushionWaiting", { name: token.name, user: player.name }));
   const answer = await askUser(player.id, "cushion", data);
@@ -526,7 +558,7 @@ async function lossesOnce(tokenId, losses, message, sceneId) {
   const s = actor.system;
   let spend = 0;
   if (s.canCushion) {
-    spend = await askCushion(token, losses);
+    spend = await askCushion(token, losses, causeOf(card));
     // Fenêtre fermée : aucun encaissement, les pertes s'appliquent quand même (sinon elles seraient perdues).
     if (spend === null) spend = 0;
   }
@@ -593,7 +625,7 @@ export async function rallyTroop(tokenId) {
     // Le joueur qui commande par son officier sans posséder la troupe passe par le MJ.
     const changes = { "system.state": STATE_ORDER[s.stateIndex - 1], "system.rallies": s.rallies + 1 };
     if (actor.isOwner) await actor.update(changes);
-    else requestGM("troopUpdate", { actor: actor.id, changes });
+    else requestGM("troopUpdate", { token: token.id, scene: token.parent.id, changes });
   }
   return ChatMessage.create({
     rolls: [test.roll], speaker: ChatMessage.getSpeaker({ actor: rallier }), whisper: disciplineWhisper(token),
@@ -608,7 +640,8 @@ export async function rallyTroop(tokenId) {
   });
 }
 
-gmHandlers.troopUpdate = ({ actor, changes }) => game.actors.get(actor)?.update(changes);
+// Le bloc (jeton) et non la fiche de l'unité : un jeton non lié porte son propre état.
+gmHandlers.troopUpdate = ({ token, scene, actor, changes }) => (token ? game.scenes.get(scene)?.tokens.get(token)?.actor : game.actors.get(actor))?.update(changes);
 
 /* ---------- Commander (test d'officier, en option) ---------- */
 
@@ -792,10 +825,21 @@ export async function revealOrders() {
   try { return await revealOnce(); } finally { revealing = false; }
 }
 
+/** Fin du déploiement (MJ) : les jetons se figent, les divisions passent par un officier. */
+export async function startBattle() {
+  if (!game.user.isGM) return;
+  const battle = getBattle();
+  if (battle.started) return;
+  battle.started = true;
+  await saveBattle(battle);
+  return ChatMessage.create({ content: `<div class="afc-card battle"><header><h3>${loc("AFC.Battle.Started")}</h3></header><p>${loc("AFC.Battle.StartedHint")}</p></div>` });
+}
+
 async function revealOnce() {
   const battle = getBattle();
   if (battle.revealed) return;
   battle.revealed = true;
+  battle.started = true;
   battle.moved = [];
   // Embuscades du tour : relevées avant les mouvements, qui peuvent révéler les troupes. Seule une troupe cachée
   // en position frappe en embuscade (décision du 2026-11-03) : elle n'a pas bougé depuis la révélation précédente.
@@ -869,8 +913,9 @@ async function endTurnNow() {
       await token.actor.update({ "system.state": state });
       lines.push(fmt("AFC.Battle.Reorganized", { name: esc(fogName(token, { forAll: true })), state: loc(TROOP_STATES[state].label) }));
     }
-    if (s.state === "routed") lines.push(fmt("AFC.Battle.Fleeing", { name: esc(fogName(token, { forAll: true })) }));
   }
+  // Les déroutes fuient seules, après les replis et les réorganisations.
+  lines.push(...await fleeRouted(canvas.scene));
   // Relue après les mises à jour : un point de plan dépensé entre-temps reste dépensé.
   Object.assign(battle, getBattle());
   battle.round += 1;

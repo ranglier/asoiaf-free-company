@@ -19,9 +19,9 @@ import { keepRemovedTroop, onRenderBattleCard } from "./module/battle/engagement
 import { migrateBattle, registerBattleSocket } from "./module/battle/state.mjs";
 import { renderBattleBar } from "./module/battle/bar.mjs";
 import { cancelMovePick } from "./module/battle/moves.mjs";
-import { getBattle } from "./module/battle/state.mjs";
+import { getBattle, isDeploying } from "./module/battle/state.mjs";
 import { cancelTargetPick, drawHexNumbers, drawPlanArrows, drawRegionLabels, drawTroopMarks, onRenderTokenHUD, refreshOrderBadges, scheduleArrows } from "./module/battle/map.mjs";
-import { refreshTroopImage, registerTroopStatuses, syncTroopStatus } from "./module/battle/troops.mjs";
+import { ensureUnitTroop, refreshTroopImage, registerTroopStatuses, syncTroopStatus } from "./module/battle/troops.mjs";
 import { drawFog, invalidateFog, markActed, onPreUpdateToken, scheduleFog, unknownToMe } from "./module/battle/vision.mjs";
 import { evaluateTest, rollAbilityTest, rollTest } from "./module/dice/test-roll.mjs";
 import { onRenderChatMessage, resolveDamage, rollAttack } from "./module/dice/attack.mjs";
@@ -164,12 +164,18 @@ for (const hook of ["createToken", "deleteToken"]) {
 }
 // Troupe touchée retirée de la carte : ses pertes restent au bilan.
 Hooks.on("preDeleteToken", (doc, options, userId) => { if (userId === game.user.id) keepRemovedTroop(doc); });
+// Unité ajoutée à la Compagnie ou à la Maison : sa fiche de troupe est créée tout de suite (par le MJ actif,
+// un joueur ne crée pas d'acteur). Décision du 2026-11-17.
+Hooks.on("createItem", item => {
+  if (item.type !== "unit" || !["company", "house"].includes(item.parent?.type) || game.users.activeGM?.id !== game.user.id) return;
+  ensureUnitTroop(item.parent, item);
+});
 Hooks.on("canvasTearDown", () => { cancelTargetPick(); cancelMovePick(); });
 // Règles maison : pendant les ordres, un joueur ne déplace pas ses jetons (ils bougent à la révélation), sauf au déploiement.
 Hooks.on("preUpdateToken", (doc, changes) => {
   if (game.user.isGM || doc.actor?.type !== "troop" || !("x" in changes || "y" in changes) || isBook(doc.parent)) return;
   const battle = getBattle(doc.parent);
-  if (battle.revealed || battle.freeMove) return;
+  if (battle.revealed || battle.freeMove || isDeploying(battle)) return;
   ui.notifications.warn(game.i18n.localize("AFC.Battle.Moves.Locked"));
   return false;
 });

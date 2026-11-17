@@ -43,6 +43,13 @@ export function getBattle(scene = canvas.scene) {
   return battle;
 }
 
+/**
+ * Déploiement (décision du 2026-11-17) : toute bataille s'ouvre sur cette étape. Chacun place et divise ses troupes
+ * librement ; le MJ la clôt par « Commencer la bataille » (ou en révélant les premiers ordres). Une bataille déjà
+ * avancée (tour 2 ou plus, ordres révélés) n'y revient pas.
+ */
+export const isDeploying = battle => !battle.started && battle.round === 1 && !battle.revealed;
+
 /** Enregistre la partie « scène » de la bataille (MJ). */
 export async function saveBattle(battle, scene = canvas.scene) {
   if (!game.user.isGM) return;
@@ -90,6 +97,25 @@ export function unitOf(battle, tokenId) {
 }
 
 /** Peut-on commander cette troupe : MJ, propriétaire de la troupe ou de son officier. */
+/**
+ * Joueur qui répond pour une troupe (encaissement) : celui dont le personnage est son officier, sinon celui qui
+ * lui a donné son ordre, sinon un joueur à qui la fiche est confiée nommément. Les droits « tous les joueurs »
+ * ne désignent personne. Aucun joueur connecté : null (le MJ décide).
+ */
+export function playerFor(token, battle = getBattle(token.parent)) {
+  const active = u => u && !u.isGM && u.active;
+  const named = doc => game.users.find(u => active(u) && doc?.ownership?.[u.id] === CONST.DOCUMENT_OWNERSHIP_LEVELS.OWNER);
+  const unit = unitOf(battle, token.id);
+  const officer = game.actors.get(unit.officer);
+  if (officer) {
+    const player = game.users.find(u => active(u) && u.character?.id === officer.id) ?? named(officer);
+    if (player) return player;
+  }
+  const by = game.users.get(unit.by);
+  if (active(by)) return by;
+  return named(token.actorLink ? token.actor : (token.baseActor ?? game.actors.get(token.actorId))) ?? null;
+}
+
 export function canCommand(token, battle = getBattle(token.parent), user = game.user) {
   if (user.isGM) return true;
   if (token.actor?.testUserPermission(user, "OWNER")) return true;
@@ -129,6 +155,8 @@ async function applyUnit(scene, tokenId, changes, user) {
   }
   const counter = battle.revealed && "order" in changes && changes.order !== unit.order;
   for (const key of ["order", "target", "officer"]) if (key in changes) unit[key] = changes[key] ?? "";
+  // Joueur qui a donné l'ordre : c'est lui qu'on interroge ensuite pour cette troupe (encaissement), à défaut d'officier joueur.
+  if ("order" in changes && !user.isGM) unit.by = user.id;
   // Nouvel ordre ou nouvelle cible : le mouvement prévu repart de zéro.
   if ("order" in changes || "target" in changes) unit.path = [];
   if ("path" in changes) unit.path = changes.path ?? [];
