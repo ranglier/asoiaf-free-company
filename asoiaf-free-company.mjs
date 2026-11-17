@@ -20,7 +20,7 @@ import { migrateBattle, registerBattleSocket } from "./module/battle/state.mjs";
 import { renderBattleBar } from "./module/battle/bar.mjs";
 import { cancelMovePick } from "./module/battle/moves.mjs";
 import { getBattle, isDeploying } from "./module/battle/state.mjs";
-import { cancelTargetPick, drawHexNumbers, drawPlanArrows, drawRegionLabels, drawTroopMarks, onRenderTokenHUD, refreshOrderBadges, scheduleArrows } from "./module/battle/map.mjs";
+import { cancelTargetPick, drawHexNumbers, drawPlanArrows, drawRegionLabels, drawTroopMarks, onRenderTokenHUD, refreshOrderBadges, scheduleArrows, TOKEN_SCALE } from "./module/battle/map.mjs";
 import { ensureUnitTroop, isOldIcon, refreshTroopImage, registerTroopStatuses, setTroopImage, syncTroopStatus, troopIcon } from "./module/battle/troops.mjs";
 import { drawFog, invalidateFog, markActed, onPreUpdateToken, scheduleFog, unknownToMe } from "./module/battle/vision.mjs";
 import { evaluateTest, rollAbilityTest, rollTest } from "./module/dice/test-roll.mjs";
@@ -181,17 +181,23 @@ Hooks.on("preUpdateToken", (doc, changes) => {
 });
 // Jetons de troupe : jamais de rotation (rotation automatique au déplacement, molette), image verrouillée
 // (retour du 2026-11-17). La remise à zéro ci-dessous passe par l'option afcRotation.
-Hooks.on("preCreateToken", doc => { if (doc.actor?.type === "troop") doc.updateSource({ lockRotation: true, rotation: 0 }); });
+// Jeton rond plus petit que la case (décision du 2026-11-17) : l'image est réduite, sauf réglage déjà fait à la main.
+Hooks.on("preCreateToken", doc => {
+  if (doc.actor?.type !== "troop") return;
+  doc.updateSource({ lockRotation: true, rotation: 0, ...(doc.texture.scaleX === 1 ? { "texture.scaleX": TOKEN_SCALE, "texture.scaleY": TOKEN_SCALE } : {}) });
+});
 Hooks.on("preUpdateToken", (doc, changes, options) => {
   if (doc.actor?.type === "troop" && "rotation" in changes && !options.afcRotation) delete changes.rotation;
 });
 Hooks.once("ready", async () => {
   if (game.users.activeGM?.id !== game.user.id) return;
   for (const scene of game.scenes) {
-    const updates = scene.tokens.filter(t => t.actor?.type === "troop" && (!t.lockRotation || t.rotation)).map(t => ({ _id: t.id, lockRotation: true, rotation: 0 }));
+    const updates = scene.tokens.filter(t => t.actor?.type === "troop" && (!t.lockRotation || t.rotation || t.texture.scaleX === 1))
+      .map(t => ({ _id: t.id, lockRotation: true, rotation: 0, ...(t.texture.scaleX === 1 ? { "texture.scaleX": TOKEN_SCALE, "texture.scaleY": TOKEN_SCALE } : {}) }));
     if (updates.length) await scene.updateEmbeddedDocuments("Token", updates, { afcRotation: true });
   }
-  const actors = game.actors.filter(a => a.type === "troop" && !a.prototypeToken.lockRotation).map(a => ({ _id: a.id, "prototypeToken.lockRotation": true }));
+  const actors = game.actors.filter(a => a.type === "troop" && (!a.prototypeToken.lockRotation || a.prototypeToken.texture.scaleX === 1))
+    .map(a => ({ _id: a.id, "prototypeToken.lockRotation": true, ...(a.prototypeToken.texture.scaleX === 1 ? { "prototypeToken.texture.scaleX": TOKEN_SCALE, "prototypeToken.texture.scaleY": TOKEN_SCALE } : {}) }));
   if (actors.length) await Actor.updateDocuments(actors);
   // Jetons ronds (décision du 2026-11-17) : les anciens symboles (cartes bleues ou rouges) passent au pictogramme du type,
   // sur la fiche et sur les jetons posés ; une image choisie par un joueur ne bouge pas.

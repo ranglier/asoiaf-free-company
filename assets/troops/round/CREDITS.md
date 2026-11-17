@@ -19,7 +19,7 @@ Auteurs : carl-olsen, delapouite, lorc, skoll.
 | heavyShips | lorc/galleon |
 | hedgeKnights | delapouite/black-knight-helm |
 | infantry | lorc/crossed-swords |
-| lightCavalry | delapouite/horse-head |
+| lightCavalry | lorc/feathered-wing |
 | lightInfantry | lorc/daggers |
 | lightShips | delapouite/sailboat |
 | mercenaries | lorc/crossed-swords+lorc/crown-coin |
@@ -34,3 +34,7 @@ Auteurs : carl-olsen, delapouite, lorc, skoll.
 | support | delapouite/old-wagon |
 | volunteers | skoll/fist |
 | warships | delapouite/galley |
+
+## Icônes d'état
+
+routed : lorc/run ; destroyed : lorc/broken-skull ; shaken : lorc/cracked-shield ; disordered : delapouite/split-arrows (game-icons.net, CC BY 3.0).

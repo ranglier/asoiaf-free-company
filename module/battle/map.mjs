@@ -497,7 +497,12 @@ function segment(g, a, b, dash) {
 const STATE_COLORS = { shaken: 0xc9a227, disordered: 0xd0701c, routed: 0x9b2c25, destroyed: 0x2b2118 };
 
 /** Rayon de l'anneau d'un jeton rond. */
-const ringRadius = token => Math.min(token.w, token.h) * 0.47;
+/**
+ * Rayon du disque d'un jeton rond : celui de l'image (disque de 236 sur 512), réduite pour ne pas remplir la case
+ * (TOKEN_SCALE, décision du 2026-11-17).
+ */
+export const TOKEN_SCALE = 0.8;
+const ringRadius = token => Math.min(token.w, token.h) * 0.462 * Math.abs(token.document.texture.scaleX || 1);
 
 /**
  * Anneau du jeton (décision du 2026-11-17) : couleur et style au choix sur la fiche de troupe (simple, double, fin,
@@ -564,21 +569,31 @@ export async function drawStateMarker(token) {
   inner.lineStyle({ width: token.w * 0.05, color, alpha: 0.95 }).drawCircle(token.w / 2, token.h / 2, ringRadius(token) - token.w * 0.075);
   marker.addChild(inner);
   token.addChild(marker);
+  raiseChevrons(token);
   token.children.filter(c => c.name === "afcState" && c !== marker).forEach(c => c.destroy({ children: true }));
   if (!["routed", "destroyed"].includes(state)) return;
   const pastille = new PIXI.Container();
-  const r = token.w * 0.13;
+  const r = token.w * 0.12;
   const circle = new PIXI.Graphics();
   circle.lineStyle({ width: 3, color: 0xf3ead6, alpha: 1 }).beginFill(color, 0.95).drawCircle(0, 0, r).endFill();
   pastille.addChild(circle);
-  pastille.position.set(token.w * 0.8, token.h * 0.8);
+  // Sur le bord du disque, en bas à droite.
+  const R = ringRadius(token) * 0.74;
+  pastille.position.set(token.w / 2 + R, token.h / 2 + R);
   marker.addChild(pastille);
   await drawStateIcon(token, pastille, state, r);
 }
 
+/** Les chevrons d'effectif passent au premier plan : l'anneau d'état ne les recouvre pas. */
+function raiseChevrons(token) {
+  const ch = token.children.find(c => c.name === "afcChevrons");
+  if (ch) { token.removeChild(ch); token.addChild(ch); }
+}
+
 /** Icône de l'état dans la pastille. */
 async function drawStateIcon(token, marker, state, r) {
-  const src = TROOP_STATES[state]?.icon;
+  // Icônes de la maquette du 2026-11-17 (game-icons, en blanc) : fuite et crâne brisé.
+  const src = `systems/${SYSTEM_ID}/assets/troops/states/${state}.svg`;
   if (src) {
     const texture = await foundry.canvas.loadTexture(src);
     if (texture && !marker.destroyed) {
@@ -649,7 +664,8 @@ function drawStrengthChevrons(token) {
   const w = token.w * 0.13, h = w * 0.45, gap = h * 0.45;
   const total = n * h + (n - 1) * gap;
   // Colonne centrée verticalement, du bas vers le haut, comme des galons.
-  const x = token.w * 0.04, yBottom = (token.h + total) / 2 - h;
+  // À gauche du disque, sans le chevaucher.
+  const x = Math.max(token.w * 0.01, token.w / 2 - ringRadius(token) - w * 0.75), yBottom = (token.h + total) / 2 - h;
   // Couleur de l'anneau choisi (plus de bleu ou de rouge selon le camp).
   const color = foundry.utils.Color.from(s.appearance?.ringColor ?? "#2b2118");
   for (let i = 0; i < n; i++) {
