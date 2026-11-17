@@ -274,6 +274,13 @@ Hooks.on("updateActor", (actor, changes, options, userId) => {
   if (userId === game.user.id && (foundry.utils.hasProperty(changes, "system.training") || foundry.utils.hasProperty(changes, "system.unitType"))) prepareBookTroop(actor, { force: true });
   // Image personnalisée : liseré du camp.
   if ("img" in changes || foundry.utils.hasProperty(changes, "system.side")) for (const t of actor.getActiveTokens()) drawTroopMarks(t);
+  // Nouvelle image de l'unité (Tokenizer, demande approuvée par le MJ, sélecteur) : ses blocs déjà posés la reprennent.
+  if ("img" in changes && !actor.isToken && userId === game.user.id) {
+    for (const scene of game.scenes) {
+      const updates = scene.tokens.filter(t => t.actorId === actor.id && t.texture.src !== actor.img && (t.isOwner || game.user.isGM)).map(t => ({ _id: t.id, "texture.src": actor.img }));
+      if (updates.length) scene.updateEmbeddedDocuments("Token", updates);
+    }
+  }
   // Symbole du jeton : suit le type et le camp.
   if (userId === game.user.id && (foundry.utils.hasProperty(changes, "system.side") || foundry.utils.hasProperty(changes, "system.unitType"))) refreshTroopImage(actor);
 });

@@ -9,7 +9,7 @@ import { combineTypes } from "../unit-mix.mjs";
 import { BOOK_ABILITIES, BOOK_EQUIPMENT, BOOK_FORMATIONS, BOOK_STATUS } from "../battle/book-config.mjs";
 import { prepareBookTroop } from "../battle/book.mjs";
 import { isBook } from "../battle/rules.mjs";
-import { blocksOf, isAutoIcon, setTroopImage, troopIcon, typeLabel } from "../battle/troops.mjs";
+import { baseTroop, blocksOf, isAutoIcon, setTroopImage, troopIcon, typeLabel } from "../battle/troops.mjs";
 import { framesAvailable, pickFrame } from "../battle/frames.mjs";
 
 const { HandlebarsApplicationMixin } = foundry.applications.api;
@@ -194,11 +194,29 @@ export class TroopSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   /** Règles du livre : compétences et équipement recalculés depuis le type et l'entraînement. */
   static #onResetBook() { return prepareBookTroop(this.document, { force: true }); }
 
-  static #onEditImage() {
+  /**
+   * Image de la troupe (décision du 2026-11-17) : l'éditeur de Tokenizer 2 s'il est actif (un joueur sans droit d'envoi
+   * passe par « Envoyer au MJ ») ; Maj + clic, ou sans Tokenizer, le sélecteur de fichiers ; sans droit de parcourir,
+   * l'adresse d'une image à coller. L'image vaut pour l'unité et tous ses blocs posés.
+   */
+  static async #onEditImage(event) {
     if (!this.isEditable) return;
-    if (!game.user.can("FILES_BROWSE")) return ui.notifications.warn(game.i18n.localize("AFC.Battle.NoBrowse"));
-    const FP = foundry.applications.apps.FilePicker.implementation;
-    return new FP({ type: "image", current: this.document.img, callback: path => setTroopImage(this.document, path) }).browse();
+    const unit = baseTroop(this.document);
+    const tokenizer = game.modules.get("tokenizer-2");
+    if (tokenizer?.active && tokenizer.api?.openEditor && !event?.shiftKey) return tokenizer.api.openEditor(unit);
+    if (game.user.can("FILES_BROWSE")) {
+      const FP = foundry.applications.apps.FilePicker.implementation;
+      return new FP({ type: "image", current: unit.img, callback: path => setTroopImage(unit, path) }).browse();
+    }
+    const path = await foundry.applications.api.DialogV2.prompt({
+      window: { title: game.i18n.localize("AFC.Battle.ImageTitle") },
+      classes: ["afc", "afc-dialog"],
+      content: `<div class="afc-test-dialog"><p class="hint">${game.i18n.localize("AFC.Battle.ImageHint")}</p>
+        <label>${game.i18n.localize("AFC.Battle.ImageUrl")}<input type="text" name="url" placeholder="https://"></label></div>`,
+      ok: { label: game.i18n.localize("AFC.Battle.Apply"), callback: (ev, button) => button.form.elements.url.value.trim() },
+      rejectClose: false
+    });
+    if (path) return setTroopImage(unit, path);
   }
 
   /** Retour au symbole du type et du camp. */
