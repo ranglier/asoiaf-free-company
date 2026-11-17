@@ -11,6 +11,7 @@ import {
   SUBORDINARIES, TINCTURES
 } from "./heraldry-data.mjs";
 import { canDraw, canDrawLine, renderArms } from "./heraldry-render.mjs";
+import { coaAvailable, renderCoa, toCoa } from "./heraldry-coa.mjs";
 
 const { DialogV2 } = foundry.applications.api;
 const loc = key => game.i18n.localize(key);
@@ -299,6 +300,7 @@ export async function runHeraldry({ initial = null } = {}) {
     ${editHTML()}
     <label>${loc("AFC.House.arms")}<textarea name="arms" rows="2"></textarea></label>
     <label class="checkbox"><input type="checkbox" name="portrait" checked> ${loc("AFC.Heraldry.UseAsPortrait")}</label>
+    ${coaAvailable() ? `<label class="checkbox"><input type="checkbox" name="coaDraw" checked> ${loc("AFC.Heraldry.CoaDraw")}</label>` : ""}
     <p class="hint">${loc("AFC.Heraldry.Hint")}</p>
     <button type="button" class="afc-create" data-reroll><i class="fa-solid fa-dice"></i> ${loc("AFC.Heraldry.Reroll")}</button>
   </div>`;
@@ -311,7 +313,9 @@ export async function runHeraldry({ initial = null } = {}) {
       label: loc("AFC.Heraldry.Apply"),
       callback: (event, button) => {
         const f = button.form.elements;
-        return { arms: f.arms.value.trim(), spec: model, svg: renderArms(renderSpec(model)), portrait: f.portrait.checked };
+        // Dessin Coat of Arms (s'il est actif, coché, et que tout le blason a son équivalent), sinon le nôtre.
+        const coa = !!f.coaDraw?.checked && !!toCoa(model).arms;
+        return { arms: f.arms.value.trim(), spec: model, svg: renderArms(renderSpec(model)), portrait: f.portrait.checked, coa };
       }
     },
     render: (event, dialog) => {
@@ -320,10 +324,24 @@ export async function runHeraldry({ initial = null } = {}) {
       const arms = root.querySelector('[name="arms"]');
       fieldIs.disabled = !g;
       // Le texte suit le blason ; il reste modifiable juste avant d'appliquer.
+      const coaBox = root.querySelector('[name="coaDraw"]');
+      let drawing = 0;
       const refresh = () => {
         arms.value = blazon(model);
-        root.querySelector("[data-preview]").innerHTML = previewHTML(model, g);
+        const preview = root.querySelector("[data-preview]");
+        preview.innerHTML = previewHTML(model, g);
+        if (!coaBox?.checked) return;
+        // Dessin Coat of Arms à la place du nôtre, quand tout le blason a son équivalent ; sinon on dit pourquoi.
+        const res = toCoa(model);
+        if (res.missing) return preview.insertAdjacentHTML("beforeend", `<p class="hint">${esc(game.i18n.format("AFC.Heraldry.CoaMissing", { list: res.missing.join(", ") }))}</p>`);
+        const ticket = ++drawing;
+        renderCoa(model, 400).then(canvas => {
+          if (!canvas || ticket !== drawing) return;
+          canvas.classList.add("coa-arms");
+          preview.querySelector("svg")?.replaceWith(canvas);
+        }).catch(err => console.warn("Coat of Arms", err));
       };
+      coaBox?.addEventListener("change", () => refresh());
       // Aperçu posé après le rendu (le contenu initial du dialogue est nettoyé du SVG).
       writeForm(root, model);
       refresh();
@@ -360,7 +378,7 @@ export async function runHeraldry({ initial = null } = {}) {
   });
 }
 
-/** Enregistre l'image du blason dans les données du monde ; renvoie son chemin (ou null sans droit d'envoi). */
+/** Enregistre l'image du blason (SVG du système, ou PNG de Coat of Arms) dans les données du monde ; renvoie son chemin (ou null sans droit d'envoi). */
 export async function saveArmsImage(actor, svg) {
   if (!game.user.can("FILES_UPLOAD")) {
     ui.notifications.warn(loc("AFC.Heraldry.NoUpload"));
@@ -369,7 +387,8 @@ export async function saveArmsImage(actor, svg) {
   const FP = foundry.applications.apps.FilePicker.implementation;
   const dir = `worlds/${game.world.id}/heraldry`;
   try { await FP.createDirectory("data", dir); } catch (err) { /* dossier déjà présent */ }
-  const file = new File([svg], `${actor.id}-${Date.now()}.svg`, { type: "image/svg+xml" });
+  const png = svg instanceof Blob;
+  const file = new File([svg], `${actor.id}-${Date.now()}.${png ? "png" : "svg"}`, { type: png ? "image/png" : "image/svg+xml" });
   const result = await FP.upload("data", dir, file, {}, { notify: false });
   return result?.path ?? null;
 }

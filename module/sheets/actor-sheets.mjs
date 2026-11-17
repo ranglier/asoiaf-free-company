@@ -10,6 +10,7 @@ import { runConversion } from "../conversion.mjs";
 import { openContractHelp } from "../contract-help.mjs";
 import { runHouseEvent } from "../house-month.mjs";
 import { runHeraldry, saveArmsImage } from "../heraldry.mjs";
+import { coaBlob } from "../heraldry-coa.mjs";
 import { deployUnit, ensureUnitTroop, troopOfUnit } from "../battle/troops.mjs";
 import { COIN, PERSONAL_LISTS } from "../data/actor-character.mjs";
 
@@ -406,7 +407,9 @@ export class HouseSheet extends AFCActorSheet {
     if (!result) return;
     const update = { "system.arms": result.arms, "system.heraldry": result.spec };
     if (result.portrait) {
-      const path = await saveArmsImage(this.document, result.svg);
+      // Dessin Coat of Arms quand il a été retenu dans le générateur, sinon le SVG du système.
+      const image = (result.coa && await coaBlob(result.spec)) || result.svg;
+      const path = await saveArmsImage(this.document, image);
       if (path) update.img = path;
     }
     await this.document.update(update);
