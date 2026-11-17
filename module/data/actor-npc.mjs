@@ -1,4 +1,4 @@
-import { abilitiesSchema, prepareCombatValues } from "./actor-character.mjs";
+import { abilitiesSchema, personalSchema, prepareCombatValues } from "./actor-character.mjs";
 
 const { fields } = foundry.data;
 
@@ -20,6 +20,7 @@ export default class NpcData extends foundry.abstract.TypeDataModel {
       injuries: new fields.SchemaField({
         value: new fields.NumberField({ required: true, nullable: false, integer: true, min: 0, initial: 0 })
       }),
+      ...personalSchema(),
       sourceUrl: new fields.StringField({ blank: true }),
       biography: new fields.HTMLField({ blank: true })
     };

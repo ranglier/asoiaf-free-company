@@ -221,6 +221,9 @@
       "item": "Item sheet",
       "Abilities": "Abilities",
       "Specialty": "Specialty",
+      "Add": "Add",
+      "AddBlood": "Add a bloodline",
+      "AddQuality": "Add a benefit or drawback",
       "AddSpecialty": "Add a specialty",
       "Resources": "Resources",
       "History": "History",
@@ -232,6 +235,7 @@
       "combat": "Combat",
       "equipment": "Equipment",
       "qualities": "Blood and qualities",
+      "personal": "Character",
       "biography": "Biography",
       "services": "Services",
       "units": "Units",
@@ -1119,7 +1123,53 @@
       "sprint": "Sprint",
       "initiative": "Initiative",
       "initiativeHint": "Rolls initiative in the current combat: Agility test, Quickness bonus dice. The token is added to the combat if needed.",
-      "biography": "Biography"
+      "biography": "Biography",
+      "fatigue": "Fatigue",
+      "frustration": "Frustration",
+      "frustrationEffect": "−1D to Deception and Persuasion per point",
+      "intrigue": "Intrigue",
+      "disposition": "Counterpart's disposition",
+      "dispositionRating": "Rating (DR)",
+      "bonuses": "Manual bonuses"
+    },
+    "Possessions": {
+      "title": "Possessions",
+      "copper": "Copper pennies",
+      "silver": "Silver stags",
+      "gold": "Gold dragons",
+      "rates": "1 stag = {stag} pennies, 1 dragon = {dragon} stags",
+      "total": "in all: {n} pennies",
+      "gear": "Gear and possessions",
+      "mounts": "Mounts and livestock",
+      "name": "Name",
+      "animal": "Animal",
+      "value": "Value"
+    },
+    "Personal": {
+      "experience": "Experience",
+      "glory": "Glory",
+      "total": "Total",
+      "spent": "Spent",
+      "available": "Available",
+      "spentOutside": "Spending outside the log",
+      "expense": "Expense",
+      "amount": "Amount",
+      "addExpense": "Add an expense",
+      "destinyBase": "Base",
+      "destinyBonus": "Bonus",
+      "destinyInvested": "Invested",
+      "destinyMax": "Maximum",
+      "destinyHint": "Maximum = base + bonus − points invested in bloodlines, benefits and drawbacks (each one's \"Destiny\" field; negative for points given back).",
+      "virtues": "Virtues",
+      "vices": "Vices",
+      "goals": "Goals",
+      "motivations": "Motivations",
+      "quirks": "Quirks",
+      "distinctive": "Distinctive features",
+      "servants": "Servants",
+      "allies": "Allies",
+      "enemies": "Enemies",
+      "oaths": "Oaths"
     },
     "Npc": {
       "sourceUrl": "Source sheet",
@@ -1288,7 +1338,9 @@
       "kind": "Kind",
       "benefit": "Benefit",
       "drawback": "Drawback",
-      "requirements": "Requirements"
+      "requirements": "Requirements",
+      "destiny": "Destiny invested",
+      "destinyTag": "Destiny {n}"
     },
     "Blood": {
       "summary": "Summary"
@@ -1372,7 +1424,9 @@
         "wounds": "Wounds −{n}D",
         "injuries": "Injuries −{n}",
         "armor": "Armor −{n}",
-        "disorganized": "Disorganized −{n}D"
+        "disorganized": "Disorganized −{n}D",
+        "fatigue": "Fatigue −{n}",
+        "frustration": "Frustration −{n}D"
       },
       "Against": "vs",
       "Success": {

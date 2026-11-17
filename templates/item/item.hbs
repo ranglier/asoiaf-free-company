@@ -32,11 +32,13 @@
     {{#if (eq item.type "quality")}}
     <label>{{localize "AFC.Quality.kind"}}<select name="system.kind">{{selectOptions qualityKinds selected=system.kind localize=true}}</select></label>
     <label>{{localize "AFC.Quality.requirements"}}<input type="text" name="system.requirements" value="{{system.requirements}}"></label>
+    <label>{{localize "AFC.Quality.destiny"}}<input type="number" name="system.destiny" value="{{system.destiny}}"></label>
     {{/if}}
 
     {{#if (eq item.type "blood")}}
     <label>{{localize "AFC.Quality.requirements"}}<input type="text" name="system.requirements" value="{{system.requirements}}"></label>
     <label>{{localize "AFC.Blood.summary"}}<input type="text" name="system.summary" value="{{system.summary}}"></label>
+    <label>{{localize "AFC.Quality.destiny"}}<input type="number" name="system.destiny" value="{{system.destiny}}"></label>
     {{/if}}
 
     {{#if (eq item.type "service")}}
@@ -77,6 +79,6 @@
 
   <section class="afc-notes">
     <h2>{{localize "AFC.Item.description"}}</h2>
-    <prose-mirror name="system.description" value="{{system.description}}" toggled>{{{enrichedDescription}}}</prose-mirror>
+    <prose-mirror name="system.description" value="{{system.description}}">{{{enrichedDescription}}}</prose-mirror>
   </section>
 </div>

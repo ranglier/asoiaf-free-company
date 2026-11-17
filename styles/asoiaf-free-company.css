@@ -681,3 +681,25 @@ body.detached .application.afc.afc-fill.afc-dialog .window-content { max-height:
 #token-hud .afc-hud-card .state-chip.destroyed { background: #2b2118; color: #fff; }
 #token-hud .afc-hud-card button { width: 22px; height: 20px; line-height: 18px; margin-left: 4px; padding: 0; font-size: 11px; display: inline-block; }
 #afc-battle-bar .pc-hint { color: #8a2c1c; font-weight: bold; }
+
+/* ---------- Fiches de PJ et PNJ : ajouts de la fiche Roll20 (2026-11-17) ---------- */
+.afc-sheet .add-button { display: inline-flex; align-items: center; gap: 0.3rem; width: auto; margin: 0.25rem 0 0.5rem; padding: 0.15rem 0.6rem; min-height: 1.8rem; cursor: pointer; }
+.afc-sheet .ability-row a.icon[data-action="addSpecialty"] { display: inline-block; padding: 0.2rem 0.35rem; font-size: 1.05em; }
+.afc-sheet .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.4rem 0.75rem; }
+.afc-sheet .afc-rows-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.afc-sheet .afc-intrigue { margin-bottom: 0.5rem; align-items: end; }
+.afc-sheet .afc-intrigue .vital, .afc-sheet .destiny-detail .vital, .afc-sheet .spend-track .vital { display: flex; flex-direction: column; }
+.afc-sheet .big-num { font-size: 1.4em; font-weight: bold; }
+.afc-sheet table.rows input { width: 100%; }
+.afc-sheet table.rows .col-value { width: 6rem; }
+.afc-sheet .afc-money .coin input { border-left: 6px solid transparent; }
+.afc-sheet .afc-money .copper input { border-left-color: #d68a64; }
+.afc-sheet .afc-money .silver input { border-left-color: #b8b8b8; }
+.afc-sheet .afc-money .gold input { border-left-color: #e8c300; }
+.afc-sheet .afc-personal-lists { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.25rem 1rem; margin-top: 0.75rem; }
+.afc-sheet .afc-personal-lists h3 { margin: 0.5rem 0 0.2rem; }
+.afc-sheet .afc-personal-lists .list-row { display: flex; align-items: center; gap: 0.25rem; margin-bottom: 0.15rem; }
+.afc-sheet .afc-personal-lists .list-row input { flex: 1; }
+.afc-sheet label.inline { display: flex; align-items: center; gap: 0.4rem; }
+.afc-sheet label.inline input { width: 5rem; }
+.afc-sheet prose-mirror { min-height: 20rem; }

@@ -221,6 +221,9 @@
       "item": "Fiche d'objet",
       "Abilities": "Compétences",
       "Specialty": "Spécialité",
+      "Add": "Ajouter",
+      "AddBlood": "Ajouter un sang",
+      "AddQuality": "Ajouter un avantage ou un désavantage",
       "AddSpecialty": "Ajouter une spécialité",
       "Resources": "Ressources",
       "History": "Histoire",
@@ -232,6 +235,7 @@
       "combat": "Combat",
       "equipment": "Équipement",
       "qualities": "Sang et avantages",
+      "personal": "Personnage",
       "biography": "Biographie",
       "services": "Services",
       "units": "Unités",
@@ -1131,7 +1135,53 @@
       "sprint": "Sprint",
       "initiative": "Initiative",
       "initiativeHint": "Lance l'initiative du combat en cours : test d'Agilité, dés de bonus de Vivacité. Le jeton est ajouté au combat s'il n'y est pas.",
-      "biography": "Biographie"
+      "biography": "Biographie",
+      "fatigue": "Fatigue",
+      "frustration": "Frustration",
+      "frustrationEffect": "−1D en Duperie et Persuasion par point",
+      "intrigue": "Intrigue",
+      "disposition": "Disposition de l'interlocuteur",
+      "dispositionRating": "Degré (DR)",
+      "bonuses": "Bonus manuels"
+    },
+    "Possessions": {
+      "title": "Possessions",
+      "copper": "Pennies de cuivre",
+      "silver": "Cerfs d'argent",
+      "gold": "Dragons d'or",
+      "rates": "1 cerf = {stag} pennies, 1 dragon = {dragon} cerfs",
+      "total": "en tout : {n} pennies",
+      "gear": "Équipement et possessions",
+      "mounts": "Montures et bétail",
+      "name": "Nom",
+      "animal": "Animal",
+      "value": "Valeur"
+    },
+    "Personal": {
+      "experience": "Expérience",
+      "glory": "Gloire",
+      "total": "Total",
+      "spent": "Dépensé",
+      "available": "Disponible",
+      "spentOutside": "Dépenses hors journal",
+      "expense": "Dépense",
+      "amount": "Montant",
+      "addExpense": "Ajouter une dépense",
+      "destinyBase": "Base",
+      "destinyBonus": "Bonus",
+      "destinyInvested": "Investis",
+      "destinyMax": "Maximum",
+      "destinyHint": "Maximum = base + bonus − points investis dans les sangs, avantages et désavantages (champ « Destinée » de chacun ; négatif pour des points rendus).",
+      "virtues": "Vertus",
+      "vices": "Vices",
+      "goals": "Objectifs",
+      "motivations": "Motivations",
+      "quirks": "Particularités",
+      "distinctive": "Caractéristiques distinctives",
+      "servants": "Serviteurs",
+      "allies": "Alliés",
+      "enemies": "Ennemis",
+      "oaths": "Serments"
     },
     "Npc": {
       "sourceUrl": "Fiche source (Maze)",
@@ -1300,7 +1350,9 @@
       "kind": "Type",
       "benefit": "Avantage",
       "drawback": "Défaut",
-      "requirements": "Prérequis"
+      "requirements": "Prérequis",
+      "destiny": "Destinée investie",
+      "destinyTag": "Destinée {n}"
     },
     "Blood": {
       "summary": "Résumé"
@@ -1384,7 +1436,9 @@
         "wounds": "Blessures −{n}D",
         "injuries": "Lésions −{n}",
         "armor": "Armure −{n}",
-        "disorganized": "Désorganisée −{n}D"
+        "disorganized": "Désorganisée −{n}D",
+        "fatigue": "Fatigue −{n}",
+        "frustration": "Frustration −{n}D"
       },
       "Against": "contre",
       "Success": {

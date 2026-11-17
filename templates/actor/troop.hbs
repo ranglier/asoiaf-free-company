@@ -12,7 +12,7 @@
         {{#if bookRules}}<label>{{localize "AFC.BattleBook.TypeLabel"}}<select name="system.book.type">{{selectOptions bookTypes selected=system.book.type localize=true}}</select></label>
         {{#if isSpecial}}<label>{{localize "AFC.Battle.Range"}}<select name="system.book.specialRange">{{selectOptions bookRanges selected=system.book.specialRange localize=true}}</select></label>{{/if}}{{/if}}
       </div>
-      {{#if customImage}}<a class="add-item" data-action="resetImage"><i class="fa-solid fa-rotate-left"></i> {{localize "AFC.Battle.ResetImage"}}</a>{{/if}}
+      {{#if customImage}}<button type="button" class="small add-button" data-action="resetImage"><i class="fa-solid fa-rotate-left"></i> {{localize "AFC.Battle.ResetImage"}}</button>{{/if}}
       {{else}}
       <h1 class="name">{{actor.name}}</h1>
       <p class="subtitle">{{subtitle}}</p>
@@ -61,12 +61,12 @@
         <h3>{{localize "AFC.Battle.Skills"}}</h3>
         {{#each bookAbilities as |a|}}
         <div class="ability-row">
-          {{#if @root.editable}}<a class="ability-name" data-action="rollSkill" data-ability="{{a.key}}" data-tooltip="AFC.Roll.QuickHint">{{a.name}}</a>{{else}}<span class="ability-name">{{a.name}}</span>{{/if}}
+          {{#if @root.editable}}<a class="ability-name" data-action="rollSkill" data-ability="{{a.key}}">{{a.name}}</a>{{else}}<span class="ability-name">{{a.name}}</span>{{/if}}
           <span class="specialties"></span>
           {{#if @root.editMode}}<input class="rank" type="number" name="system.book.abilities.{{a.key}}" value="{{a.value}}" min="1" max="9" aria-label="{{a.name}}">{{else}}<span class="rank-value">{{a.value}}</span>{{/if}}
         </div>
         {{/each}}
-        {{#if editMode}}<a class="add-item" data-action="resetBook"><i class="fa-solid fa-rotate"></i> {{localize "AFC.BattleBook.ResetUnit"}}</a>{{/if}}
+        {{#if editMode}}<button type="button" class="small add-button" data-action="resetBook"><i class="fa-solid fa-rotate"></i> {{localize "AFC.BattleBook.ResetUnit"}}</button>{{/if}}
       </div>
     </section>
 
@@ -102,7 +102,7 @@
   {{#unless bookRules}}
   <div class="section-title">
     <h2>{{localize "AFC.Battle.Traits"}}</h2>
-    <a class="add-item" data-action="resetTraits"><i class="fa-solid fa-rotate"></i> {{localize "AFC.Battle.ResetTraits"}}</a>
+    <button type="button" class="small add-button" data-action="resetTraits"><i class="fa-solid fa-rotate"></i> {{localize "AFC.Battle.ResetTraits"}}</button>
   </div>
   <div class="troop-traits">
     {{#each traits as |t|}}<label class="checkbox" data-tooltip="{{t.effect}}"><input type="checkbox" name="trait.{{t.key}}" {{checked t.on}}> {{t.label}}</label>{{/each}}

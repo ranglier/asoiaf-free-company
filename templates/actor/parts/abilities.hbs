@@ -4,8 +4,7 @@
     <h3>{{localize group.label}}</h3>
     {{#each group.abilities as |ab|}}
     <div class="ability-row {{#if ab.isDefault}}default{{/if}}" data-ability="{{ab.key}}">
-      <a class="ability-name" data-action="rollAbility" data-ability="{{ab.key}}"
-         data-tooltip="{{localize "AFC.Roll.QuickHint"}}">{{ab.name}}</a>
+      <a class="ability-name" data-action="rollAbility" data-ability="{{ab.key}}">{{ab.name}}</a>
       <span class="specialties">
         {{#each ab.specialties as |sp idx|}}
         {{#if @root.editMode}}
@@ -15,8 +14,7 @@
           <a class="icon" data-action="removeSpecialty" data-ability="{{ab.key}}" data-index="{{idx}}"><i class="fa-solid fa-xmark"></i></a>
         </span>
         {{else}}
-        <a class="chip" data-action="rollSpecialty" data-ability="{{ab.key}}" data-index="{{idx}}"
-           data-tooltip="{{localize "AFC.Roll.QuickHint"}}">{{sp.name}} {{sp.bonus}}B</a>
+        <a class="chip" data-action="rollSpecialty" data-ability="{{ab.key}}" data-index="{{idx}}">{{sp.name}} {{sp.bonus}}B</a>
         {{/if}}
         {{/each}}
       </span>

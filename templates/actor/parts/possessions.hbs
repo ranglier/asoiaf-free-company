@@ -1,0 +1,39 @@
+{{!-- Possessions (fiche Roll20, 2026-11-17) : argent, équipement et possessions, montures et bétail. --}}
+<h2>{{localize "AFC.Possessions.title"}}</h2>
+<div class="afc-money grid-3">
+  <label class="coin copper">{{localize "AFC.Possessions.copper"}}<input type="number" name="system.money.copper" value="{{system.money.copper}}" min="0"></label>
+  <label class="coin silver">{{localize "AFC.Possessions.silver"}}<input type="number" name="system.money.silver" value="{{system.money.silver}}" min="0"></label>
+  <label class="coin gold">{{localize "AFC.Possessions.gold"}}<input type="number" name="system.money.gold" value="{{system.money.gold}}" min="0"></label>
+</div>
+<p class="hint">{{localize "AFC.Possessions.rates" stag=coin.stag dragon=coin.dragon}} · {{localize "AFC.Possessions.total" n=system.money.inPennies}}</p>
+
+<div class="afc-rows-2">
+  <div>
+    <h3>{{localize "AFC.Possessions.gear"}}</h3>
+    <table class="afc-table rows">
+      <thead><tr><th>{{localize "AFC.Possessions.name"}}</th><th class="col-value">{{localize "AFC.Possessions.value"}}</th><th></th></tr></thead>
+      <tbody>
+      {{#each gearRows as |r|}}
+      <tr><td><input type="text" name="system.gear.{{r.index}}.name" value="{{r.name}}"></td>
+        <td class="col-value"><input type="text" name="system.gear.{{r.index}}.value" value="{{r.value}}"></td>
+        <td class="item-actions">{{#if @root.editable}}<a class="icon" data-action="removeRow" data-list="gear" data-index="{{r.index}}" aria-label="{{localize "Delete"}}"><i class="fa-solid fa-trash"></i></a>{{/if}}</td></tr>
+      {{/each}}
+      </tbody>
+    </table>
+    {{#if editable}}<button type="button" class="small add-button" data-action="addRow" data-list="gear"><i class="fa-solid fa-plus"></i> {{localize "AFC.Sheet.Add"}}</button>{{/if}}
+  </div>
+  <div>
+    <h3>{{localize "AFC.Possessions.mounts"}}</h3>
+    <table class="afc-table rows">
+      <thead><tr><th>{{localize "AFC.Possessions.animal"}}</th><th class="col-value">{{localize "AFC.Possessions.value"}}</th><th></th></tr></thead>
+      <tbody>
+      {{#each mountRows as |r|}}
+      <tr><td><input type="text" name="system.mounts.{{r.index}}.name" value="{{r.name}}"></td>
+        <td class="col-value"><input type="text" name="system.mounts.{{r.index}}.value" value="{{r.value}}"></td>
+        <td class="item-actions">{{#if @root.editable}}<a class="icon" data-action="removeRow" data-list="mounts" data-index="{{r.index}}" aria-label="{{localize "Delete"}}"><i class="fa-solid fa-trash"></i></a>{{/if}}</td></tr>
+      {{/each}}
+      </tbody>
+    </table>
+    {{#if editable}}<button type="button" class="small add-button" data-action="addRow" data-list="mounts"><i class="fa-solid fa-plus"></i> {{localize "AFC.Sheet.Add"}}</button>{{/if}}
+  </div>
+</div>

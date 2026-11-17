@@ -92,7 +92,7 @@
         </tbody>
       </table>
       {{#if editable}}<a class="add-item catalog" data-action="openCatalog"><i class="fa-solid fa-book-open"></i> {{localize "AFC.CompanyCatalog.Open"}}</a>{{/if}}
-      {{#if editable}}<a class="add-item" data-action="createItem" data-type="service"><i class="fa-solid fa-plus"></i> {{localize "AFC.Table.addService"}}</a>{{/if}}
+      {{#if editable}}<button type="button" class="small add-button" data-action="createItem" data-type="service"><i class="fa-solid fa-plus"></i> {{localize "AFC.Table.addService"}}</button>{{/if}}
     </section>
 
     <section class="tab {{tabs.units.cssClass}}" data-group="primary" data-tab="units">
@@ -138,7 +138,7 @@
         {{/if}}
       </table>
       {{#if editable}}<a class="add-item catalog" data-action="openCatalog"><i class="fa-solid fa-book-open"></i> {{localize "AFC.CompanyCatalog.Open"}}</a>{{/if}}
-      {{#if editable}}<a class="add-item" data-action="createItem" data-type="unit"><i class="fa-solid fa-plus"></i> {{localize "AFC.Table.addUnit"}}</a>{{/if}}
+      {{#if editable}}<button type="button" class="small add-button" data-action="createItem" data-type="unit"><i class="fa-solid fa-plus"></i> {{localize "AFC.Table.addUnit"}}</button>{{/if}}
     </section>
 
     <section class="tab {{tabs.members.cssClass}}" data-group="primary" data-tab="members">
@@ -148,7 +148,7 @@
     <section class="tab {{tabs.history.cssClass}}" data-group="primary" data-tab="history">
       {{> "systems/asoiaf-free-company/templates/actor/parts/events.hbs"}}
       <h2>{{localize "AFC.Sheet.History"}}</h2>
-      <prose-mirror name="system.history" value="{{system.history}}" toggled>{{{enrichedHtml}}}</prose-mirror>
+      <prose-mirror name="system.history" value="{{system.history}}">{{{enrichedHtml}}}</prose-mirror>
     </section>
   </div>
 </div>

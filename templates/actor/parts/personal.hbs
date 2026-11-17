@@ -1,0 +1,49 @@
+{{!-- Onglet Personnage (fiche Roll20, 2026-11-17) : expérience, Gloire et Destinée (PJ), puis les listes du personnage. --}}
+{{#if isCharacter}}
+<div class="afc-rows-2">
+  {{#each spendTracks as |t|}}
+  <section class="spend-track">
+    <h2>{{localize t.label}}</h2>
+    <div class="grid-3">
+      <label>{{localize "AFC.Personal.total"}}<input type="number" name="system.{{t.key}}.total" value="{{t.total}}" min="0"></label>
+      <div class="vital"><span class="label">{{localize "AFC.Personal.spent"}}</span><span class="value">{{t.spentTotal}}</span></div>
+      <div class="vital"><span class="label">{{localize "AFC.Personal.available"}}</span><span class="value big-num">{{t.available}}</span></div>
+    </div>
+    {{#if @root.editMode}}<label class="inline">{{localize "AFC.Personal.spentOutside"}}<input type="number" name="system.{{t.key}}.spent" value="{{t.spent}}" min="0"></label>{{/if}}
+    <table class="afc-table rows">
+      <thead><tr><th>{{localize "AFC.Personal.expense"}}</th><th class="col-value">{{localize "AFC.Personal.amount"}}</th><th></th></tr></thead>
+      <tbody>
+      {{#each t.rows as |r|}}
+      <tr><td><input type="text" name="system.{{../key}}.log.{{r.index}}.label" value="{{r.label}}"></td>
+        <td class="col-value"><input type="number" name="system.{{../key}}.log.{{r.index}}.amount" value="{{r.amount}}"></td>
+        <td class="item-actions">{{#if @root.editable}}<a class="icon" data-action="removeRow" data-list="{{../key}}.log" data-index="{{r.index}}" aria-label="{{localize "Delete"}}"><i class="fa-solid fa-trash"></i></a>{{/if}}</td></tr>
+      {{/each}}
+      </tbody>
+    </table>
+    {{#if @root.editable}}<button type="button" class="small add-button" data-action="addRow" data-list="{{t.key}}.log"><i class="fa-solid fa-plus"></i> {{localize "AFC.Personal.addExpense"}}</button>{{/if}}
+  </section>
+  {{/each}}
+</div>
+
+<h2>{{localize "AFC.Character.destiny"}}</h2>
+<div class="grid-4 destiny-detail">
+  <label>{{localize "AFC.Personal.destinyBase"}}<input type="number" name="system.destiny.max" value="{{system.destiny.max}}" min="0"></label>
+  <label>{{localize "AFC.Personal.destinyBonus"}}<input type="number" name="system.destiny.bonus" value="{{system.destiny.bonus}}"></label>
+  <div class="vital"><span class="label">{{localize "AFC.Personal.destinyInvested"}}</span><span class="value">{{system.destiny.invested}}</span></div>
+  <div class="vital"><span class="label">{{localize "AFC.Personal.destinyMax"}}</span><span class="value big-num">{{system.destiny.total}}</span></div>
+</div>
+<p class="hint">{{localize "AFC.Personal.destinyHint"}}</p>
+{{/if}}
+
+<div class="afc-personal-lists">
+  {{#each personalLists as |l|}}
+  <section>
+    <h3>{{localize l.label}}</h3>
+    {{#each l.rows as |r|}}
+    <div class="list-row"><input type="text" name="system.{{l.path}}.{{r.index}}.text" value="{{r.text}}">
+      {{#if @root.editable}}<a class="icon" data-action="removeRow" data-list="{{l.path}}" data-index="{{r.index}}" aria-label="{{localize "Delete"}}"><i class="fa-solid fa-xmark"></i></a>{{/if}}</div>
+    {{/each}}
+    {{#if @root.editable}}<button type="button" class="small add-button" data-action="addRow" data-list="{{l.path}}"><i class="fa-solid fa-plus"></i> {{localize "AFC.Sheet.Add"}}</button>{{/if}}
+  </section>
+  {{/each}}
+</div>

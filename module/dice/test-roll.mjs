@@ -55,6 +55,15 @@ export function autoPenalties(actor, abilityKey) {
     modifier -= s.injuries.value;
     notes.push(game.i18n.format("AFC.Roll.Auto.injuries", { n: s.injuries.value }));
   }
+  // Fatigue : −1 à tous les tests par point ; Frustration : −1D en Duperie et Persuasion par point (fiche Roll20).
+  if (s.fatigue?.value) {
+    modifier -= s.fatigue.value;
+    notes.push(game.i18n.format("AFC.Roll.Auto.fatigue", { n: s.fatigue.value }));
+  }
+  if (s.frustration?.value && ["deception", "persuasion"].includes(abilityKey)) {
+    dice += s.frustration.value;
+    notes.push(game.i18n.format("AFC.Roll.Auto.frustration", { n: s.frustration.value }));
+  }
   if (abilityKey === "agility" && s.armor?.penalty) {
     modifier -= s.armor.penalty;
     notes.push(game.i18n.format("AFC.Roll.Auto.armor", { n: s.armor.penalty }));

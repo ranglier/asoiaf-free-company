@@ -1,0 +1,25 @@
+{{!-- Intrigue (fiche Roll20, 2026-11-17) : Défense d'intrigue, Sang-froid, Disposition ; bonus manuels en mode édition. --}}
+<h2>{{localize "AFC.Character.intrigue"}}</h2>
+<div class="afc-intrigue grid-3">
+  <div class="vital"><span class="label">{{localize "AFC.Character.defenseIntrigue"}}</span><span class="value big-num">{{system.defense.intrigue}}</span></div>
+  <div class="vital"><span class="label">{{localize "AFC.Character.composure"}}</span>
+    <span class="value"><input type="number" name="system.composure.value" value="{{system.composure.value}}" min="0"> / {{system.composure.max}}</span></div>
+  <div class="vital"><span class="label">{{localize "AFC.Character.frustration"}}</span>
+    <span class="pips">{{#each track.frustration as |p|}}<a class="pip {{#if p.on}}on{{/if}}" data-action="setPip" data-path="system.frustration.value" data-n="{{p.n}}"></a>{{/each}}</span>
+    <span class="hint">{{localize "AFC.Character.frustrationEffect"}}</span></div>
+</div>
+<h3>{{localize "AFC.Character.disposition"}}</h3>
+<div class="afc-intrigue grid-3">
+  <label>{{localize "AFC.Character.dispositionRating"}}<input type="number" name="system.disposition.rating" value="{{system.disposition.rating}}"></label>
+  <label>{{localize "AFC.Ability.persuasion"}}<input type="number" name="system.disposition.persuasion" value="{{system.disposition.persuasion}}"></label>
+  <label>{{localize "AFC.Ability.deception"}}<input type="number" name="system.disposition.deception" value="{{system.disposition.deception}}"></label>
+</div>
+{{#if editMode}}
+<h3>{{localize "AFC.Character.bonuses"}}</h3>
+<div class="afc-intrigue grid-4">
+  <label>{{localize "AFC.Character.defenseCombat"}}<input type="number" name="system.bonuses.defense" value="{{system.bonuses.defense}}"></label>
+  <label>{{localize "AFC.Character.defenseIntrigue"}}<input type="number" name="system.bonuses.intrigue" value="{{system.bonuses.intrigue}}"></label>
+  <label>{{localize "AFC.Character.composure"}}<input type="number" name="system.bonuses.composure" value="{{system.bonuses.composure}}"></label>
+  <label>{{localize "AFC.Character.health"}}<input type="number" name="system.bonuses.health" value="{{system.bonuses.health}}"></label>
+</div>
+{{/if}}

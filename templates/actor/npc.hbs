@@ -33,14 +33,23 @@
       {{> "systems/asoiaf-free-company/templates/actor/parts/weapons.hbs"}}
       <h2>{{localize "AFC.Plural.armor"}}</h2>
       {{> "systems/asoiaf-free-company/templates/actor/parts/armor.hbs"}}
+      {{> "systems/asoiaf-free-company/templates/actor/parts/intrigue.hbs"}}
+    </section>
+
+    <section class="tab {{tabs.equipment.cssClass}}" data-group="primary" data-tab="equipment">
+      {{> "systems/asoiaf-free-company/templates/actor/parts/possessions.hbs"}}
     </section>
 
     <section class="tab {{tabs.qualities.cssClass}}" data-group="primary" data-tab="qualities">
       {{> "systems/asoiaf-free-company/templates/actor/parts/qualities.hbs"}}
     </section>
 
+    <section class="tab {{tabs.personal.cssClass}}" data-group="primary" data-tab="personal">
+      {{> "systems/asoiaf-free-company/templates/actor/parts/personal.hbs"}}
+    </section>
+
     <section class="tab {{tabs.biography.cssClass}}" data-group="primary" data-tab="biography">
-      <prose-mirror name="system.biography" value="{{system.biography}}" toggled>{{{enrichedHtml}}}</prose-mirror>
+      <prose-mirror name="system.biography" value="{{system.biography}}">{{{enrichedHtml}}}</prose-mirror>
     </section>
   </div>
 </div>

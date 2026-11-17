@@ -44,10 +44,7 @@
 
     <section class="tab {{tabs.combat.cssClass}}" data-group="primary" data-tab="combat">
       {{> "systems/asoiaf-free-company/templates/actor/parts/weapons.hbs"}}
-      <div class="combat-ref">
-        <span>{{localize "AFC.Character.defenseIntrigue"}} <strong>{{system.defense.intrigue}}</strong></span>
-        <span>{{localize "AFC.Character.composure"}} <strong>{{system.composure.value}} / {{system.composure.max}}</strong></span>
-      </div>
+      {{> "systems/asoiaf-free-company/templates/actor/parts/intrigue.hbs"}}
     </section>
 
     <section class="tab {{tabs.equipment.cssClass}}" data-group="primary" data-tab="equipment">
@@ -76,14 +73,19 @@
         </tbody>
       </table>
       <p class="hint">{{localize "AFC.Table.totalBulk"}} : {{system.armor.bulk}}</p>
+      {{> "systems/asoiaf-free-company/templates/actor/parts/possessions.hbs"}}
     </section>
 
     <section class="tab {{tabs.qualities.cssClass}}" data-group="primary" data-tab="qualities">
       {{> "systems/asoiaf-free-company/templates/actor/parts/qualities.hbs"}}
     </section>
 
+    <section class="tab {{tabs.personal.cssClass}}" data-group="primary" data-tab="personal">
+      {{> "systems/asoiaf-free-company/templates/actor/parts/personal.hbs"}}
+    </section>
+
     <section class="tab {{tabs.biography.cssClass}}" data-group="primary" data-tab="biography">
-      <prose-mirror name="system.biography" value="{{system.biography}}" toggled>{{{enrichedHtml}}}</prose-mirror>
+      <prose-mirror name="system.biography" value="{{system.biography}}">{{{enrichedHtml}}}</prose-mirror>
     </section>
   </div>
 </div>

@@ -47,6 +47,8 @@ export class QualityData extends foundry.abstract.TypeDataModel {
     return {
       kind: new fields.StringField({ initial: "benefit", choices: ["benefit", "drawback"] }),
       requirements: new fields.StringField({ blank: true }),
+      // Points de Destinée investis (négatif : rendus), comptés par la fiche (décision du 2026-11-17).
+      destiny: int(0),
       description: description()
     };
   }
@@ -57,6 +59,7 @@ export class BloodData extends foundry.abstract.TypeDataModel {
   static defineSchema() {
     return {
       requirements: new fields.StringField({ blank: true }),
+      destiny: int(0),
       summary: new fields.StringField({ blank: true }),
       description: description()
     };

@@ -65,7 +65,7 @@ Hooks.once("init", () => {
   DocumentSheetConfig.registerSheet(Item, AFC.SYSTEM_ID, AFCItemSheet, { makeDefault: true, label: "AFC.Sheet.item" });
 
   return foundry.applications.handlebars.loadTemplates([
-    ...["abilities", "vitals", "tabs-nav", "weapons", "armor", "qualities", "mode-toggle", "resources", "members", "events"]
+    ...["abilities", "vitals", "tabs-nav", "weapons", "armor", "qualities", "mode-toggle", "resources", "members", "events", "intrigue", "possessions", "personal"]
       .map(p => `systems/${AFC.SYSTEM_ID}/templates/actor/parts/${p}.hbs`),
     `systems/${AFC.SYSTEM_ID}/templates/apps/battle-troop.hbs`,
     `systems/${AFC.SYSTEM_ID}/templates/apps/battle-book.hbs`,

@@ -11,10 +11,13 @@ import { openContractHelp } from "../contract-help.mjs";
 import { runHouseEvent } from "../house-month.mjs";
 import { runHeraldry, saveArmsImage } from "../heraldry.mjs";
 import { deployUnit, ensureUnitTroop, troopOfUnit } from "../battle/troops.mjs";
+import { COIN, PERSONAL_LISTS } from "../data/actor-character.mjs";
 
 const { HandlebarsApplicationMixin } = foundry.applications.api;
 const { ActorSheetV2 } = foundry.applications.sheets;
 const TPL = `systems/${CONFIG_AFC.SYSTEM_ID}/templates/actor`;
+/** Listes de lignes rangées dans un sous-objet (onglets Équipement et Personnage). */
+const LIST_PATHS = ["gear", "mounts", "experience.log", "glory.log", ...PERSONAL_LISTS.map(k => `lists.${k}`)];
 
 /** Pastilles 1..max pour un compteur (rang, blessures, destinée...). */
 function pips(value, max) {
@@ -90,8 +93,18 @@ class AFCActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
 
     context.track = {
       wounds: pips(s.wounds.value, s.wounds.max),
-      injuries: pips(s.injuries.value, s.injuries.max)
+      injuries: pips(s.injuries.value, s.injuries.max),
+      frustration: pips(s.frustration?.value ?? 0, Math.max(s.frustration?.max ?? 0, s.frustration?.value ?? 0)),
+      fatigue: pips(s.fatigue?.value ?? 0, Math.max(s.fatigue?.max ?? 0, s.fatigue?.value ?? 0))
     };
+    // Onglet Personnage : listes à une colonne (vertus, vices, objectifs…), comme sur la fiche Roll20.
+    context.personalLists = PERSONAL_LISTS.map(key => ({
+      key, path: `lists.${key}`, label: `AFC.Personal.${key}`,
+      rows: (s.lists?.[key] ?? []).map((r, index) => ({ ...r, index }))
+    }));
+    context.gearRows = (s.gear ?? []).map((r, index) => ({ ...r, index }));
+    context.mountRows = (s.mounts ?? []).map((r, index) => ({ ...r, index }));
+    context.coin = COIN;
     context.healthPct = s.health.max ? Math.round(100 * s.health.value / s.health.max) : 0;
     context.initiativeLabel = initiativeLabel(actor);
     context.weapons = (context.items.weapon ?? []).map(item => ({
@@ -105,11 +118,30 @@ class AFCActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     for (const ability of Object.values(data.system?.abilities ?? {})) {
       if (ability.specialties && !Array.isArray(ability.specialties)) ability.specialties = Object.values(ability.specialties);
     }
-    for (const key of ["events", "household", "members"]) {
-      const list = data.system?.[key];
-      if (list && !Array.isArray(list)) data.system[key] = Object.values(list);
+    for (const key of ["events", "household", "members", ...LIST_PATHS]) {
+      const list = foundry.utils.getProperty(data.system ?? {}, key);
+      if (list && !Array.isArray(list)) foundry.utils.setProperty(data.system, key, Object.values(list));
     }
     return data;
+  }
+
+  /**
+   * Clics perdus (retour du 09/11) : taper dans un champ puis cliquer sur « + » déclenchait l'enregistrement du champ,
+   * la fiche se redessinait et le clic tombait dans le vide. On garde le focus au clic sur un bouton d'action ;
+   * chaque action enregistre d'abord ce qui a été tapé.
+   */
+  _onRender(context, options) {
+    super._onRender?.(context, options);
+    this.element.querySelectorAll("[data-action]:not(input):not(select):not(textarea)").forEach(el => el.addEventListener("mousedown", event => {
+      const active = document.activeElement;
+      if (active && active !== el && this.element.contains(active) && ["INPUT", "TEXTAREA"].includes(active.tagName)) event.preventDefault();
+    }));
+  }
+
+  /** Enregistre le champ en cours de saisie avant une action qui modifie la fiche. */
+  async _flush() {
+    const active = document.activeElement;
+    if (this.isEditable && active && this.element?.contains(active) && ["INPUT", "TEXTAREA", "SELECT"].includes(active.tagName)) await this.submit();
   }
 
   /** Initiative du combat en cours (le jeton du personnage y est ajouté s'il n'y est pas). */
@@ -130,6 +162,7 @@ class AFCActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
 
   static async #onAddSpecialty(event, target) {
     if (!this.isEditable) return; // Fiche en lecture seule : rien ne change.
+    await this._flush();
     const key = target.dataset.ability;
     const list = [...this.document.system.toObject().abilities[key].specialties, { name: "", bonus: 1 }];
     return this.document.update({ [`system.abilities.${key}.specialties`]: list });
@@ -137,6 +170,7 @@ class AFCActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
 
   static async #onRemoveSpecialty(event, target) {
     if (!this.isEditable) return; // Fiche en lecture seule : rien ne change.
+    await this._flush();
     const key = target.dataset.ability;
     const list = this.document.system.toObject().abilities[key].specialties;
     list.splice(Number(target.dataset.index), 1);
@@ -145,6 +179,7 @@ class AFCActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
 
   static async #onCreateItem(event, target) {
     if (!this.isEditable) return; // Fiche en lecture seule : rien ne change.
+    await this._flush();
     const type = target.dataset.type;
     const name = game.i18n.format("AFC.Item.New", { type: game.i18n.localize(`TYPES.Item.${type}`) });
     const [item] = await this.document.createEmbeddedDocuments("Item", [{ name, type }]);
@@ -157,6 +192,7 @@ class AFCActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
 
   static async #onDeleteItem(event, target) {
     if (!this.isEditable) return; // Fiche en lecture seule : rien ne change.
+    await this._flush();
     const item = this.document.items.get(target.closest("[data-item-id]").dataset.itemId);
     return item?.deleteDialog();
   }
@@ -189,6 +225,10 @@ class AFCActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
 
   /** Lignes vides ajoutées aux listes du système. */
   static ROW_DEFAULTS = {
+    gear: { name: "", value: "" },
+    mounts: { name: "", value: "" },
+    "experience.log": { label: "", amount: 0 },
+    "glory.log": { label: "", amount: 0 },
     events: { name: "", note: "" },
     household: { role: "", name: "", actor: "" },
     members: { role: "", name: "", actor: "" }
@@ -205,15 +245,18 @@ class AFCActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
 
   static async #onAddRow(event, target) {
     if (!this.isEditable) return; // Fiche en lecture seule : rien ne change.
+    await this._flush();
     const key = target.dataset.list;
-    const list = [...this.document.system.toObject()[key], { ...AFCActorSheet.ROW_DEFAULTS[key] }];
+    const row = AFCActorSheet.ROW_DEFAULTS[key] ?? (key.startsWith("lists.") ? { text: "" } : {});
+    const list = [...(foundry.utils.getProperty(this.document.system.toObject(), key) ?? []), { ...row }];
     return this.document.update({ [`system.${key}`]: list });
   }
 
   static async #onRemoveRow(event, target) {
     if (!this.isEditable) return; // Fiche en lecture seule : rien ne change.
+    await this._flush();
     const key = target.dataset.list;
-    const list = this.document.system.toObject()[key];
+    const list = foundry.utils.getProperty(this.document.system.toObject(), key) ?? [];
     list.splice(Number(target.dataset.index), 1);
     return this.document.update({ [`system.${key}`]: list });
   }
@@ -251,6 +294,7 @@ const COMBATANT_TABS = (extra = []) => ({
       { id: "combat", label: "AFC.Tab.combat" },
       ...extra,
       { id: "qualities", label: "AFC.Tab.qualities" },
+      { id: "personal", label: "AFC.Tab.personal" },
       { id: "biography", label: "AFC.Tab.biography" }
     ],
     initial: "abilities"
@@ -265,7 +309,12 @@ export class CharacterSheet extends AFCActorSheet {
   async _prepareContext(options) {
     const context = await super._prepareContext(options);
     const s = this.document.system;
-    context.track.destiny = pips(s.destiny.value, Math.max(s.destiny.max, s.destiny.value));
+    context.track.destiny = pips(s.destiny.value, Math.max(s.destiny.total, s.destiny.value));
+    context.isCharacter = true;
+    context.spendTracks = ["experience", "glory"].map(key => ({
+      key, label: `AFC.Personal.${key}`, total: s[key].total, spent: s[key].spent, spentTotal: s[key].spentTotal, available: s[key].available,
+      rows: s[key].log.map((r, index) => ({ ...r, index }))
+    }));
     return context;
   }
 }
@@ -273,7 +322,7 @@ export class CharacterSheet extends AFCActorSheet {
 export class NpcSheet extends AFCActorSheet {
   static DEFAULT_OPTIONS = { classes: ["npc"], position: { width: 780, height: 780 } };
   static PARTS = { sheet: { template: `${TPL}/npc.hbs`, scrollable: [""] } };
-  static TABS = COMBATANT_TABS();
+  static TABS = COMBATANT_TABS([{ id: "equipment", label: "AFC.Tab.equipment" }]);
 }
 
 /** Icônes des ressources (Font Awesome). */
