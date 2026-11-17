@@ -21,7 +21,7 @@ import { renderBattleBar } from "./module/battle/bar.mjs";
 import { cancelMovePick } from "./module/battle/moves.mjs";
 import { getBattle, isDeploying } from "./module/battle/state.mjs";
 import { cancelTargetPick, drawHexNumbers, drawPlanArrows, drawRegionLabels, drawTroopMarks, onRenderTokenHUD, refreshOrderBadges, scheduleArrows } from "./module/battle/map.mjs";
-import { ensureUnitTroop, refreshTroopImage, registerTroopStatuses, syncTroopStatus } from "./module/battle/troops.mjs";
+import { ensureUnitTroop, isOldIcon, refreshTroopImage, registerTroopStatuses, setTroopImage, syncTroopStatus, troopIcon } from "./module/battle/troops.mjs";
 import { drawFog, invalidateFog, markActed, onPreUpdateToken, scheduleFog, unknownToMe } from "./module/battle/vision.mjs";
 import { evaluateTest, rollAbilityTest, rollTest } from "./module/dice/test-roll.mjs";
 import { onRenderChatMessage, resolveDamage, rollAttack } from "./module/dice/attack.mjs";
@@ -193,6 +193,13 @@ Hooks.once("ready", async () => {
   }
   const actors = game.actors.filter(a => a.type === "troop" && !a.prototypeToken.lockRotation).map(a => ({ _id: a.id, "prototypeToken.lockRotation": true }));
   if (actors.length) await Actor.updateDocuments(actors);
+  // Jetons ronds (décision du 2026-11-17) : les anciens symboles (cartes bleues ou rouges) passent au pictogramme du type,
+  // sur la fiche et sur les jetons posés ; une image choisie par un joueur ne bouge pas.
+  for (const actor of game.actors.filter(a => a.type === "troop" && isOldIcon(a.img))) await setTroopImage(actor, troopIcon(actor.system.unitType));
+  for (const scene of game.scenes) {
+    const updates = scene.tokens.filter(t => t.actor?.type === "troop" && isOldIcon(t.texture.src)).map(t => ({ _id: t.id, "texture.src": troopIcon(t.actor.system.unitType) }));
+    if (updates.length) await scene.updateEmbeddedDocuments("Token", updates);
+  }
 });
 // Brouillard : un jeton ennemi caché ou montré à la main par le MJ sort du brouillard.
 Hooks.on("preUpdateToken", onPreUpdateToken);
@@ -255,7 +262,7 @@ Hooks.on("updateActor", (actor, changes, options, userId) => {
   }
   // Icônes d'état du jeton, posées par le client qui a fait la modification.
   // État : marqueur au centre du jeton (et retrait des anciennes icônes d'état de Foundry).
-  if (["state", "book", "men", "units", "side"].some(k => foundry.utils.hasProperty(changes, `system.${k}`))) for (const t of actor.getActiveTokens()) drawTroopMarks(t);
+  if (["state", "book", "men", "units", "side", "appearance"].some(k => foundry.utils.hasProperty(changes, `system.${k}`))) for (const t of actor.getActiveTokens()) drawTroopMarks(t);
   if (userId === game.user.id && foundry.utils.hasProperty(changes, "system.state")) syncTroopStatus(actor);
   // Compétences : suivent le type et l'entraînement.
   if (userId === game.user.id && (foundry.utils.hasProperty(changes, "system.training") || foundry.utils.hasProperty(changes, "system.unitType"))) prepareBookTroop(actor, { force: true });

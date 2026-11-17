@@ -43,8 +43,15 @@ export function unitTypesOf(item) {
 }
 
 /** Symbole du jeton : type d'unité et camp (bleu pour la Compagnie, rouge pour l'ennemi). */
-export const troopIcon = (type, side) =>
-  `systems/${SYSTEM_ID}/assets/troops/${TYPE_ICONS[type] ?? "infantry"}-${side === "company" ? "company" : "enemy"}.svg`;
+/** Jetons ronds (décision du 2026-11-17) : un pictogramme game-icons par type d'unité, le même pour les deux camps. */
+export const ROUND_TYPES = [
+  "archers", "cavalry", "criminals", "crossbowmen", "crusaders", "engineers", "garrison", "guerillas", "heavyCavalry", "heavyInfantry",
+  "heavyShips", "hedgeKnights", "infantry", "lightCavalry", "lightInfantry", "lightShips", "mercenaries", "peasants", "personalGuard",
+  "pikemen", "raiders", "sailors", "scouts", "special", "specialists", "support", "volunteers", "warships"
+];
+export const troopIcon = type => `systems/${SYSTEM_ID}/assets/troops/round/${ROUND_TYPES.includes(type) ? type : "infantry"}.svg`;
+/** Symbole d'avant les jetons ronds (cartes bleues ou rouges) : remplacé au chargement du monde. */
+export const isOldIcon = img => !!img && img.startsWith(`systems/${SYSTEM_ID}/assets/troops/`) && !img.includes("/troops/round/");
 
 /** L'image est-elle un symbole du système (et non une image choisie par le joueur) ? */
 export const isAutoIcon = img => !img || img.startsWith(`systems/${SYSTEM_ID}/assets/troops/`);

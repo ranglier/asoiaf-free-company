@@ -751,6 +751,7 @@
       "UnitTroop": "Troop sheet",
       "NoTroopSheet": "This unit has no troop sheet yet: the GM creates it by deploying it.",
       "AlreadyDeployed": "{name} already has a block on this scene: split it from the map.",
+      "Ring": { "Color": "Ring colour", "Style": "Ring style", "simple": "Plain", "double": "Double", "thin": "Thin", "dotted": "Dotted", "stone": "Stone (Tokenizer)", "none": "None" },
       "HudStateUp": "Recover one state",
       "HudStateDown": "Lose one state",
       "HudCushionUp": "Cushion +1",

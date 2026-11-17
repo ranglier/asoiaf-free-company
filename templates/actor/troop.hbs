@@ -28,6 +28,8 @@
   <div class="grid-3 troop-source">
     <label>{{localize "AFC.Battle.SourceOwner"}}<select name="system.source.actor"><option value="">—</option>{{selectOptions owners selected=system.source.actor}}</select></label>
     <label>{{localize "AFC.Battle.SourceUnit"}}<select name="system.source.item"><option value="">—</option>{{selectOptions ownerUnits selected=system.source.item}}</select></label>
+    <label>{{localize "AFC.Battle.Ring.Color"}}<input type="color" name="system.appearance.ringColor" value="{{system.appearance.ringColor}}"></label>
+    <label>{{localize "AFC.Battle.Ring.Style"}}<select name="system.appearance.ringStyle">{{selectOptions ringStyles selected=system.appearance.ringStyle localize=true}}</select></label>
   </div>
   {{/if}}
 

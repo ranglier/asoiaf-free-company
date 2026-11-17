@@ -42,6 +42,11 @@ export default class TroopData extends foundry.abstract.TypeDataModel {
         item: new fields.StringField({ blank: true })
       }),
       notes: new fields.StringField({ blank: true }),
+      // Jeton rond (décision du 2026-11-17) : anneau au choix, plus de bleu ou de rouge imposé selon le camp.
+      appearance: new fields.SchemaField({
+        ringColor: new fields.StringField({ initial: "#2b2118" }),
+        ringStyle: new fields.StringField({ initial: "simple", choices: ["simple", "double", "thin", "dotted", "stone", "none"] })
+      }),
       // Règles du livre : données à part (basculer de règles ne perd rien).
       book: new fields.SchemaField({
         ready: new fields.BooleanField({ initial: false }),

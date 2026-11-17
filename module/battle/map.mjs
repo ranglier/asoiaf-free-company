@@ -496,9 +496,59 @@ function segment(g, a, b, dash) {
 /** Couleur du marqueur selon l'état (Fraîche : pas de marqueur). */
 const STATE_COLORS = { shaken: 0xc9a227, disordered: 0xd0701c, routed: 0x9b2c25, destroyed: 0x2b2118 };
 
+/** Rayon de l'anneau d'un jeton rond. */
+const ringRadius = token => Math.min(token.w, token.h) * 0.47;
+
 /**
- * Marqueur d'état dessiné au centre de la troupe (les icônes d'état de Foundry se placent dans le
- * coin du carré du jeton, hors du symbole sur une grille hexagonale). Visible de tous.
+ * Anneau du jeton (décision du 2026-11-17) : couleur et style au choix sur la fiche de troupe (simple, double, fin,
+ * pointillé, pierre si Tokenizer 2 est actif, aucun). Plus de couleur imposée selon le camp.
+ */
+async function drawRing(token) {
+  token.children.filter(c => c.name === "afcRing").forEach(c => c.destroy({ children: true }));
+  const doc = token.document;
+  if (doc.actor?.type !== "troop" || unknownToMe(doc)) return;
+  const { ringColor = "#2b2118", ringStyle = "simple" } = doc.actor.system.appearance ?? {};
+  if (ringStyle === "none") return;
+  const color = foundry.utils.Color.from(ringColor);
+  const r = ringRadius(token), cx = token.w / 2, cy = token.h / 2, w = token.w;
+  const ring = new PIXI.Container();
+  ring.name = "afcRing";
+  ring.eventMode = "none";
+  const stone = ringStyle === "stone" && game.modules.get("tokenizer-2")?.active;
+  if (stone) {
+    const texture = await foundry.canvas.loadTexture("modules/tokenizer-2/img/default-frame-pc.png").catch(() => null);
+    if (token.destroyed) return;
+    if (texture) {
+      const sprite = new PIXI.Sprite(texture);
+      sprite.anchor.set(0.5);
+      sprite.position.set(cx, cy);
+      sprite.width = sprite.height = r * 2.12;
+      ring.addChild(sprite);
+    }
+  } else {
+    const g = new PIXI.Graphics();
+    const width = ringStyle === "thin" ? w * 0.025 : w * 0.055;
+    if (ringStyle === "dotted") {
+      // Pointillé : des arcs réguliers, PIXI ne trace pas de tirets.
+      const n = 18, gap = 0.35;
+      for (let i = 0; i < n; i++) {
+        const a0 = (i / n) * 2 * Math.PI, a1 = a0 + (1 - gap) * (2 * Math.PI / n);
+        g.lineStyle({ width, color, alpha: 1 }).moveTo(cx + r * Math.cos(a0), cy + r * Math.sin(a0)).arc(cx, cy, r, a0, a1);
+      }
+    } else {
+      g.lineStyle({ width, color, alpha: 1 }).drawCircle(cx, cy, r);
+      if (ringStyle === "double") g.lineStyle({ width: w * 0.018, color, alpha: 1 }).drawCircle(cx, cy, r - w * 0.065);
+    }
+    ring.addChild(g);
+  }
+  token.children.filter(c => c.name === "afcRing").forEach(c => c.destroy({ children: true }));
+  token.addChild(ring);
+}
+
+/**
+ * Marqueur d'état (décision du 2026-11-17, « anneau d'état ») : un anneau intérieur dans la couleur de l'état, qui
+ * laisse le pictogramme entier ; en déroute et détruite, une pastille avec l'icône de l'état en bas à droite.
+ * Visible de tous, sauf sur une troupe ennemie non identifiée.
  */
 export async function drawStateMarker(token) {
   token.children.filter(c => c.name === "afcState").forEach(c => c.destroy({ children: true }));
@@ -509,10 +559,25 @@ export async function drawStateMarker(token) {
   if (!color || unknownToMe(token.document)) return;
   const marker = new PIXI.Container();
   marker.name = "afcState";
-  const r = token.w * 0.17;
+  marker.eventMode = "none";
+  const inner = new PIXI.Graphics();
+  inner.lineStyle({ width: token.w * 0.05, color, alpha: 0.95 }).drawCircle(token.w / 2, token.h / 2, ringRadius(token) - token.w * 0.075);
+  marker.addChild(inner);
+  token.addChild(marker);
+  token.children.filter(c => c.name === "afcState" && c !== marker).forEach(c => c.destroy({ children: true }));
+  if (!["routed", "destroyed"].includes(state)) return;
+  const pastille = new PIXI.Container();
+  const r = token.w * 0.13;
   const circle = new PIXI.Graphics();
   circle.lineStyle({ width: 3, color: 0xf3ead6, alpha: 1 }).beginFill(color, 0.95).drawCircle(0, 0, r).endFill();
-  marker.addChild(circle);
+  pastille.addChild(circle);
+  pastille.position.set(token.w * 0.8, token.h * 0.8);
+  marker.addChild(pastille);
+  await drawStateIcon(token, pastille, state, r);
+}
+
+/** Icône de l'état dans la pastille. */
+async function drawStateIcon(token, marker, state, r) {
   const src = TROOP_STATES[state]?.icon;
   if (src) {
     const texture = await foundry.canvas.loadTexture(src);
@@ -523,11 +588,6 @@ export async function drawStateMarker(token) {
       marker.addChild(icon);
     }
   }
-  if (token.destroyed || marker.destroyed) return;
-  // Un seul marqueur, même si deux dessins se sont croisés.
-  token.children.filter(c => c.name === "afcState").forEach(c => c.destroy({ children: true }));
-  marker.position.set(token.w / 2, token.h / 2);
-  token.addChild(marker);
 }
 
 /* ---------- Officier et image personnalisée ---------- */
@@ -590,7 +650,8 @@ function drawStrengthChevrons(token) {
   const total = n * h + (n - 1) * gap;
   // Colonne centrée verticalement, du bas vers le haut, comme des galons.
   const x = token.w * 0.04, yBottom = (token.h + total) / 2 - h;
-  const color = s.side === "company" ? 0x4f8fc8 : 0xd04a3f;
+  // Couleur de l'anneau choisi (plus de bleu ou de rouge selon le camp).
+  const color = foundry.utils.Color.from(s.appearance?.ringColor ?? "#2b2118");
   for (let i = 0; i < n; i++) {
     const y0 = yBottom - i * (h + gap);
     // Chevron pointe en haut, liseré clair pour rester lisible sur tous les terrains.
@@ -602,7 +663,9 @@ function drawStrengthChevrons(token) {
 
 /** Pastille d'ordre et marqueur d'état d'un jeton de troupe ; troupe inconnue (brouillard) : un « ? ». */
 export function drawTroopMarks(token) {
-  drawSideFrame(token);
+  // Plus de liseré aux couleurs du camp autour d'une image personnalisée : l'anneau choisi le remplace.
+  token.children.filter(c => c.name === "afcSideFrame").forEach(c => c.destroy({ children: true }));
+  drawRing(token);
   drawStrengthChevrons(token);
   drawOfficerMarker(token);
   drawOrderBadge(token);

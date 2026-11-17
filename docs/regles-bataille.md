@@ -379,7 +379,7 @@ Un tour de bataille dure **3 rounds individuels** (à l'essai, 2026-11-02). Un P
 
 **Compétences** : 2 + rangs de l'entraînement sur les 3 compétences clés du type. **Officier** : action Commander, contre la Discipline + 3 + effectif + moral : +1B dès 1 degré, +2B dès 3 degrés. **Encaissement** : 0, 1, 2, 3.
 
-**Symboles des jetons** (cadre bleu : Compagnie ; rouge : ennemis) : croix = infanterie ; croix et cadre en pointillés = infanterie légère ; croix et trait vertical = piquiers ; arc = archers ; arc et trait horizontal = arbalétriers ; diagonale = cavalerie légère ; bande claire en bas = lourd (infanterie ou cavalerie) ; diagonale et point = éclaireurs ; plus = soutien ; vague = navires. Une unité mixte prend le symbole de son dernier type.
+**Jetons** (décision du 2026-11-17, v0.40.0) : jetons ronds, un pictogramme par type d'unité (game-icons.net, liste dans `assets/troops/round/CREDITS.md`), le même pour les deux camps ; plus de bleu ou de rouge imposé : la couleur et le style de l'anneau (simple, double, fin, pointillé, pierre avec Tokenizer 2, aucun) se choisissent sur la fiche de troupe en mode édition. L'état se lit sur un anneau intérieur à sa couleur (jaune Éprouvée, orange Désorganisée, rouge En déroute, sombre Détruite), avec une pastille en déroute et à la destruction ; chevrons d'effectif à gauche, officier en haut à droite, ordre en bas. Une unité mixte prend le pictogramme de son dernier type ; un joueur peut mettre sa propre image.
 
 ## 12. À tester et questions ouvertes
 

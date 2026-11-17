@@ -107,6 +107,7 @@ export class TroopSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     Object.assign(context, {
       actor: this.document, system: s, editable: this.isEditable, blocks, isBlock: this.document.isToken,
       owners: Object.fromEntries(game.actors.filter(a => ["company", "house"].includes(a.type)).map(a => [a.id, a.name])),
+      ringStyles: Object.fromEntries(["simple", "double", "thin", "dotted", ...(game.modules.get("tokenizer-2")?.active ? ["stone"] : []), "none"].map(k => [k, `AFC.Battle.Ring.${k}`])),
       ownerUnits: Object.fromEntries((game.actors.get(s.source.actor)?.items.filter(i => i.type === "unit") ?? []).map(i => [i.id, i.name])),
       editMode: this.isEditable && this.editMode, subtitle, tracks, stats,
       traits, activeTraits: traits.filter(t => t.on), upgrades,
