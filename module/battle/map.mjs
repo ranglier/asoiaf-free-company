@@ -10,7 +10,7 @@ import { SYSTEM_ID } from "../config.mjs";
 import { BOOK_STATUS_CHIP, isBookTargeted } from "./book-config.mjs";
 import { drawBookHealth, fillBookHUD } from "./book.mjs";
 import { center, commandTroop, distance, mayCommand, plannedEngagements, rallyTroop, resolvePlanned, shootRange } from "./engagement.mjs";
-import { afterPlan, APPROACH_ORDERS, cancelMovePick, cellCenter, CONTACT_FORBIDDEN, hasMoved, inContact, PATH_ORDERS, plannedPath, startMovePick } from "./moves.mjs";
+import { afterPlan, APPROACH_ORDERS, cancelMovePick, cellCenter, contactForbidden, hasMoved, inContact, PATH_ORDERS, plannedPath, startMovePick } from "./moves.mjs";
 import { chooseSplit, SPLIT_ORDERS } from "./split.mjs";
 import { isAutoIcon } from "./troops.mjs";
 import { isBook } from "./rules.mjs";
@@ -123,7 +123,7 @@ export async function giveOrder(token, order) {
   if (["charge", "attack", "shoot"].includes(order) && token.actor.system.has.noncombat) return ui.notifications.warn(loc("AFC.Battle.Warn.noncombat"));
   if (order === "shoot" && (getBattle().reload ?? []).includes(token.id)) return ui.notifications.warn(fmt("AFC.Battle.Reloading", { name: token.name }));
   // Au contact d'un ennemi, on ne rompt le contact qu'en Se repliant (le MJ peut passer outre).
-  if (CONTACT_FORBIDDEN.includes(order) && !isBook(token.parent) && inContact(token)) {
+  if (contactForbidden(token, order) && !isBook(token.parent) && inContact(token)) {
     ui.notifications.warn(fmt("AFC.Battle.Moves.InContact", { name: token.name }));
     if (!game.user.isGM) return;
   }

@@ -9,7 +9,7 @@ import { battleRules, isBook, RULES } from "./rules.mjs";
 import { TerrainPainter } from "./terrain.mjs";
 import { battleReport, commandTroop, endTurn, mayCommand, officerBonus, orderLabel, pcPhase, plannedEngagements, rallyTroop, resolveMelee, resolvePlanned, resolveShoot, revealOrders, shootRange, startBattle } from "./engagement.mjs";
 import { chooseOfficer, giveOrder, hexNumber, hexNumbersOn, ORDER_ICONS, orderVisible, startMoveChoice, startTargetPick, TARGETED_ORDERS } from "./map.mjs";
-import { APPROACH_ORDERS, CONTACT_FORBIDDEN, hasMoved, inContact, PATH_ORDERS } from "./moves.mjs";
+import { APPROACH_ORDERS, contactForbidden, hasMoved, inContact, PATH_ORDERS } from "./moves.mjs";
 import { actionOf, describeAction, isDeclared, MANUAL_ACTIONS, mayAct, officerBusy, pcLines, recordAction, SCENE_ROUNDS } from "./pc-actions.mjs";
 import { cancelAction, declareAction, needsTroop, PC_ACTIONS, pendingActions, playAction, troopChoices } from "./pc-rolls.mjs";
 import { changePlan, PLAN_USES, planPoints } from "./plan-points.mjs";
@@ -129,7 +129,7 @@ export class BattleApp extends HandlebarsApplicationMixin(ApplicationV2) {
         id: token.id, name: fogName(token), img: unknown ? UNKNOWN_IMG : token.texture.src, hex: hexNumber(token), hidden: token.hidden, side: s.side, unknown,
         state: unknown ? "fresh" : s.state, stateLabel: TROOP_STATES[s.state].label, known, mine,
         order: unit.order, orderText: orderLabel(unit.order),
-        orderOptions: ORDERS.map(k => ({ key: k, label: loc(`AFC.Battle.Order.${k}`), selected: k === unit.order, disabled: (k === "shoot" && (!s.range || (battle.reload ?? []).includes(token.id))) || (engaged && CONTACT_FORBIDDEN.includes(k)) })), orderIcon: ORDER_ICONS[unit.order] ?? "fa-flag",
+        orderOptions: ORDERS.map(k => ({ key: k, label: loc(`AFC.Battle.Order.${k}`), selected: k === unit.order, disabled: (k === "shoot" && (!s.range || (battle.reload ?? []).includes(token.id))) || (engaged && contactForbidden(token, k)) })), orderIcon: ORDER_ICONS[unit.order] ?? "fa-flag",
         // Avant la révélation, un joueur ne sait même pas si l'ennemi a reçu un ordre.
         showOrder: visible && !!unit.order, secret: !visible && !!unit.order && (isGM || s.side === "company"),
         canSet: mine && !(battle.revealed && unit.countered && !isGM),

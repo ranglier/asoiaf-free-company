@@ -88,7 +88,7 @@ export default class TroopData extends foundry.abstract.TypeDataModel {
     this.range = Math.max(0, ...this.traits.map(k => RANGES[k] ?? 0));
     this.stateIndex = STATE_ORDER.indexOf(this.state);
     // Puissance de la troupe (repère, hors des règles de bataille) et force pour le surnombre : ses hommes ; une unité
-    // montée complète compte pour 200, une unité incomplète au prorata de ses cavaliers (décision du 2026-11-03).
+    // montée complète compte pour 100 (décision du 2026-11-17), une unité incomplète au prorata de ses cavaliers (décision du 2026-11-03).
     this.weight = this.units * (this.mightPerUnit || typeMight(this.unitType, this.unitType2));
     const perUnit = typeMen(this.unitType, this.unitType2);
     const mounted = perUnit ? Math.round(this.men * MOUNTED_UNIT_STRENGTH / perUnit) : this.units * MOUNTED_UNIT_STRENGTH;

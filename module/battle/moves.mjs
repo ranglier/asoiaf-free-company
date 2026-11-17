@@ -6,6 +6,10 @@
 import { initiativeFormula } from "../dice/initiative.mjs";
 import { adjacent, center, distance, regionTerrainKey, shootRange } from "./engagement.mjs";
 import { isBook } from "./rules.mjs";
+import { TERRAINS } from "./battle-config.mjs";
+import { specialtyBonus } from "../data/actor-character.mjs";
+import { rollDice } from "../dice/test-roll.mjs";
+import { troopPool } from "./troops.mjs";
 import { getBattle, gmHandlers, gmOnScene, requestGM, saveBattle, sceneOf, setUnit, unitOf } from "./state.mjs";
 import { publicName } from "./vision.mjs";
 
@@ -41,7 +45,9 @@ export function occupiedCells(scene, { all = false } = {}) {
 /** Portée du mouvement selon l'ordre. */
 export function moveRange(token, order) {
   const s = token.actor.system;
-  if (order === "withdraw") return 1;
+  // Se replier (décision du 2026-11-17) : le mouvement de la troupe, terrain compris (marais à 2) ; l'infanterie
+  // lourde (1 case) ne se replie donc pas dans un marais.
+  if (order === "withdraw") return s.move;
   const quick = s.has.mounted || s.has.light ? 1 : 0;
   if (order === "run") return s.move + quick + 1;
   return s.move + (order === "maneuver" ? quick : 0);
@@ -118,7 +124,11 @@ function approachPath(token, unit, occupied) {
   const chosen = unit.path?.at(-1);
   if (chosen && contact.has(chosen) && cells.has(chosen)) return cells.get(chosen).path;
   if (contact.has(keyOf(cellOf(token)))) return [];
-  const closest = list.filter(([key]) => contact.has(key)).sort((a, b) => a[1].cost - b[1].cost)[0];
+  // Case d'arrivée (décision du 2026-11-17) : d'abord une case sans malus (pas dans un gué ni sur un pont, pas de
+  // terrain qui gêne une troupe montée), puis la plus proche.
+  const mounted = token.actor.system.has.mounted;
+  const malus = key => cellTerrains(offsetOf(key), token.parent).reduce((n, k) => n + (TERRAINS[k]?.attackerPenalty ? 1 : 0) + (mounted && TERRAINS[k]?.cavalry ? 1 : 0), 0);
+  const closest = list.filter(([key]) => contact.has(key)).sort((a, b) => malus(a[0]) - malus(b[0]) || a[1].cost - b[1].cost)[0];
   if (closest) return closest[1].path;
   // Cible hors d'atteinte : on s'en rapproche autant que possible.
   const goal = canvas.grid.getCenterPoint(cellOf(target));
@@ -329,6 +339,25 @@ function settleMoves(moves, occupied) {
 
 const canMove = token => !["routed", "destroyed"].includes(token.actor.system.state);
 
+/** Difficulté pour qu'une cavalerie au contact se dégage en Manœuvrant (Délicat). */
+export const DISENGAGE = 9;
+const COMMAND_SPECIALTIES = ["commandement", "command"];
+const RIDE_SPECIALTIES = ["équitation", "equitation", "ride", "riding"];
+
+/** Test de Dressage de la troupe ; l'officier donne ses dés de Commandement ou d'Équitation (le meilleur des deux). */
+async function disengageTest(token, battle) {
+  const s = token.actor.system;
+  const base = troopPool(s, "animalHandling", battle);
+  const officer = game.actors.get(unitOf(battle, token.id).officer);
+  const a = officer?.system.abilities;
+  const help = a ? Math.max(specialtyBonus(a.warfare, COMMAND_SPECIALTIES), specialtyBonus(a.animalHandling, RIDE_SPECIALTIES)) : 0;
+  const test = await rollDice({ rank: base.rank, bonus: base.bonus + help, penalty: s.state === "disordered" ? 1 : 0, difficulty: DISENGAGE });
+  return { success: !!test.outcome?.success, total: test.total };
+}
+
+/** Ordre interdit au contact : seuls Tenir, Attaquer et Se replier ; une troupe montée peut aussi Manœuvrer (sur un test). */
+export const contactForbidden = (token, order) => CONTACT_FORBIDDEN.includes(order) && !(order === "maneuver" && token.actor?.system.has.mounted);
+
 /* ---------- Contact (décision du 2026-11-02) ---------- */
 
 /**
@@ -372,9 +401,29 @@ export async function executeMoves(scene = canvas.scene) {
   battle.deferred = [...withdrawing, ...relief].map(u => u.token.id);
   const deferred = new Set(battle.deferred);
 
-  const paths = units.filter(u => PATH_ORDERS.includes(u.unit.order) && u.unit.path?.length && !deferred.has(u.token.id)).map(u => ({ token: u.token, path: [...u.unit.path] }));
-  const notes = resolveDisputes(paths);
-  const settled = settleMoves(paths.filter(p => p.path.length), occupiedCells(scene, { all: true }));
+  const notes = [];
+  // Cavalerie au contact qui Manœuvre (décision du 2026-11-17) : elle se dégage sur un test de Dressage de la troupe
+  // (Délicat, 9), avec les dés de l'officier en Commandement ou en Équitation ; ratée, elle reste au contact, sans bonus.
+  battle.stuck = [];
+  for (const u of units.filter(u => u.unit.order === "maneuver" && u.unit.path?.length && contact.has(u.token.id) && u.token.actor.system.has.mounted)) {
+    const test = await disengageTest(u.token, battle);
+    const line = fmt(test.success ? "AFC.Battle.Moves.Disengage" : "AFC.Battle.Moves.DisengageFail", { name: esc(publicName(u.token)), n: test.total, d: DISENGAGE });
+    (u.token.hidden ? [] : notes).push(line);
+    if (!test.success) battle.stuck.push(u.token.id);
+  }
+  const stuck = new Set(battle.stuck);
+  const paths = units.filter(u => PATH_ORDERS.includes(u.unit.order) && u.unit.path?.length && !deferred.has(u.token.id) && !stuck.has(u.token.id)).map(u => ({ token: u.token, path: [...u.unit.path] }));
+  notes.push(...resolveDisputes(paths));
+  // Case d'un allié qui part à la charge ou à l'attaque (décision du 2026-11-17) : la manœuvre attend qu'il soit parti.
+  const occupiedBefore = occupiedCells(scene, { all: true });
+  const leaving = p => {
+    const other = occupiedBefore.get(p.path.at(-1));
+    if (!other || other.id === p.token.id || other.actor.system.side !== p.token.actor.system.side) return false;
+    const o = unitOf(battle, other.id);
+    return APPROACH_ORDERS.includes(o.order) && !!o.target;
+  };
+  const later = paths.filter(p => p.path.length && leaving(p));
+  const settled = settleMoves(paths.filter(p => p.path.length && !later.includes(p)), occupiedCells(scene, { all: true }));
   if (settled.length) await scene.updateEmbeddedDocuments("Token", settled.map(r => tokenUpdate(r.token, r.end)));
   settled.forEach(r => moved.add(r.token.id));
 
@@ -401,6 +450,12 @@ export async function executeMoves(scene = canvas.scene) {
     const target = scene.tokens.get(unit.target);
     if (target && !adjacent(token, target) && !token.hidden && !target.hidden) notes.push(fmt("AFC.Battle.Moves.NotReached", { a: esc(publicName(token)), d: esc(publicName(target)) }));
   }
+  // Manœuvres qui attendaient le départ d'un allié : la case est libre (ou il est resté, et elles s'arrêtent avant).
+  if (later.length) {
+    const after = settleMoves(later, occupiedCells(scene, { all: true }));
+    if (after.length) await scene.updateEmbeddedDocuments("Token", after.map(r => tokenUpdate(r.token, r.end)));
+    after.forEach(r => moved.add(r.token.id));
+  }
   // Repli bloqué (décision du 2026-11-03) : la case d'arrivée d'une troupe qui se replie au contact est encore
   // occupée après les mouvements, par une troupe qui ne part pas en fin de tour. Elle reste au contact et
   // combat sans l'avantage du repli.
@@ -421,7 +476,7 @@ export async function executeMoves(scene = canvas.scene) {
   }
   // Relit la bataille avant d'écrire : un point de plan ou un Commander arrivé pendant les mouvements reste.
   const fresh = getBattle(scene);
-  Object.assign(fresh, { contact: battle.contact, deferred: battle.deferred, withdrawBlocked: battle.withdrawBlocked, moved: [...moved] });
+  Object.assign(fresh, { contact: battle.contact, deferred: battle.deferred, withdrawBlocked: battle.withdrawBlocked, stuck: battle.stuck, moved: [...moved] });
   await saveBattle(fresh, scene);
   if (notes.length) await ChatMessage.create({ content: `<div class="afc-card battle"><ul class="month-lines">${notes.map(n => `<li>${n}</li>`).join("")}</ul></div>` });
   if (gmNotes.length) await ChatMessage.create({ whisper: ChatMessage.getWhisperRecipients("GM"), content: `<div class="afc-card battle"><ul class="month-lines">${gmNotes.map(n => `<li>${n}</li>`).join("")}</ul></div>` });
@@ -441,7 +496,8 @@ export async function executeDeferredMoves(scene = canvas.scene) {
   const notes = resolveDisputes(moves);
   const settled = settleMoves(moves.filter(m => m.path.length), occupiedCells(scene, { all: true }));
   if (settled.length) await scene.updateEmbeddedDocuments("Token", settled.map(r => tokenUpdate(r.token, r.end)));
-  for (const r of settled) notes.push(fmt("AFC.Battle.Moves.Disengaged", { name: esc(r.token.name) }));
+  // Repli : la troupe rompt le contact ; relève : elle le prend (décision du 2026-11-17, libellé).
+  for (const r of settled) notes.push(fmt(unitOf(battle, r.token.id).order === "withdraw" ? "AFC.Battle.Moves.Disengaged" : "AFC.Battle.Moves.Relieved", { name: esc(r.token.name) }));
   // Repli resté bloqué en fin de tour (case prise entre-temps) : la carte le dit.
   for (const m of moves) if (unitOf(battle, m.token.id).order === "withdraw" && !settled.some(r => r.token === m.token)) notes.push(fmt("AFC.Battle.Moves.WithdrawStuck", { name: esc(m.token.name) }));
   const fresh = getBattle(scene);

@@ -209,7 +209,11 @@ export function shootMods(shooter, target, battle) {
   const mods = [], diff = [{ label: loc("AFC.Battle.Mod.base"), value: 9 }], warnings = [];
   // Frondes (décision du 2026-11-03) : +6 contre l'Armure lourde au lieu de +3, mais la pluie ne les gêne pas.
   const slings = S.has.slings && !S.has.bows && !S.has.crossbows;
-  if ((T.has.heavyArmor || T.has.shields) && !S.has.piercing) diff.push({ label: loc(T.has.heavyArmor ? "AFC.Battle.Trait.heavyArmor.name" : "AFC.Battle.Trait.shields.name"), value: slings && T.has.heavyArmor ? 6 : 3 });
+  // Protection (décision du 2026-11-17) : Perforant passe l'armure lourde ou les boucliers, pas les deux ensemble ;
+  // Perforant lourd passe tout.
+  const protections = [T.has.heavyArmor && "heavyArmor", T.has.shields && "shields"].filter(Boolean);
+  const pierced = S.has.heavyPiercing || (S.has.piercing && protections.length < 2);
+  if (protections.length && !pierced) diff.push({ label: protections.map(k => loc(`AFC.Battle.Trait.${k}.name`)).join(" + "), value: slings && T.has.heavyArmor ? 6 : 3 });
   const cover = terrainValue(tTerrain, "cover");
   if (cover) diff.push({ label: loc("AFC.Battle.Mod.cover"), value: cover });
   if (terrainValue(sTerrain, "defense") && !terrainValue(tTerrain, "defense")) mods.push(mod(loc("AFC.Battle.Terrain.hill"), { b: 1 }));
@@ -224,7 +228,7 @@ export function shootMods(shooter, target, battle) {
   // Pertes non plafonnées (décision du 2026-11-03) : cible immobile (Tenir, Tirer), prise de flanc (au contact
   // d'un allié du tireur) ou désorganisée. Une cible en mouvement perd 1 état au plus.
   const flanked = flankers(target, S.side, [shooter.id]) > 0;
-  const uncapped = flanked || !MOVING_ORDERS.includes(tOrder) || T.state === "disordered";
+  const uncapped = flanked || !MOVING_ORDERS.includes(tOrder) || T.state === "disordered" || (battle.stuck ?? []).includes(target.id);
   if (!S.range) warnings.push(loc("AFC.Battle.Warn.noRange"));
   const range = shootRange(S, battle);
   const dist = distance(shooter, target);
@@ -247,7 +251,25 @@ const sideHTML = (title, r, mods, prefix) => `<div class="battle-side"><h3>${esc
 
 /** Total de dés : rang + dés en plus, dés de bonus (plafonnés par rollDice), malus. */
 function pool(r, mods, extra) {
-  return { rank: r.rank + sum(mods, "d"), bonus: r.bonus + sum(mods, "b") + extra.b, penalty: sum(mods, "p") + extra.p, modifier: extra.m };
+  const rank = r.rank + sum(mods, "d");
+  const bonus = r.bonus + sum(mods, "b") + extra.b;
+  // Plafond des dés de bonus (décision du 2026-11-17) : pas plus de dés de bonus que de dés de test ; chaque dé de
+  // bonus au-delà devient +1 au résultat.
+  const over = Math.max(0, bonus - rank);
+  return { rank, bonus: bonus - over, penalty: sum(mods, "p") + extra.p, modifier: extra.m + over };
+}
+
+/**
+ * Surnombre sur les pertes (décision du 2026-11-17, option Surnombre) : le vainqueur 2 fois plus nombreux que le
+ * vaincu inflige 1 état de plus, 4 fois plus nombreux 2 de plus ; 2 fois moins nombreux, 1 de moins (2 à 4 fois).
+ * Renvoie l'ajustement et sa note.
+ */
+function outnumberLosses(battle, winner, loser) {
+  if (!battle.outnumber || !winner || !loser) return { n: 0 };
+  const w = winner.actor.system.strength, l = loser.actor.system.strength;
+  const step = ratio => (ratio >= 4 ? 2 : ratio >= 2 ? 1 : 0);
+  const n = step(w / Math.max(1, l)) - step(l / Math.max(1, w));
+  return { n, note: n ? fmt(n > 0 ? "AFC.Battle.Card.OutnumberMore" : "AFC.Battle.Card.OutnumberLess", { n: Math.abs(n) }) : "" };
 }
 const readExtra = (f, p) => ({ b: Number(f[`${p}b`].value) || 0, p: Number(f[`${p}p`].value) || 0, m: Number(f[`${p}m`].value) || 0 });
 /** Case « Appliquer les pertes tout de suite » des dialogues de résolution. */
@@ -265,22 +287,6 @@ const poolLabel = (p, test) => `${p.rank}D${test.bonus ? ` +${test.bonus}B` : ""
 /** Modificateurs affichés en étiquettes : « Flanc (1) +1B ». */
 const modTags = mods => mods.map(m => `${m.label}${m.b ? ` +${m.b}B` : ""}${m.d ? ` +${m.d}D` : ""}${m.p ? ` −${m.p}D` : ""}`);
 const lossLabel = (name, n) => (n > 0 ? fmt(n === 1 ? "AFC.Battle.Card.Lose1" : "AFC.Battle.Card.LoseN", { l: name, n }) : loc("AFC.Battle.Card.NoLoss"));
-
-/** Jet unique de la cible (option) : une fois par tour, les mêmes dés servent contre chaque attaquant. */
-async function defenseRoll(p, id, scene) {
-  const battle = getBattle(scene);
-  const kept = battle.defenseDice.find(e => e.id === id)?.dice ?? [];
-  const bonus = Math.max(0, Math.min(p.bonus, p.rank));
-  const count = p.rank + bonus;
-  let roll = null, dice = kept;
-  if (kept.length < count) {
-    roll = await new Roll(`${count - kept.length}d6`).evaluate();
-    dice = [...kept, ...roll.dice[0].results.map(d => d.result)];
-    battle.defenseDice = [...battle.defenseDice.filter(e => e.id !== id), { id, dice }];
-    await saveBattle(battle, scene);
-  }
-  return { roll, bonus, reused: kept.length > 0, ...evaluateTest(dice.slice(0, count), p) };
-}
 
 /** Engagements dont la fenêtre de résolution est ouverte : un double clic n'en ouvre pas une deuxième. */
 const resolving = new Set();
@@ -345,8 +351,8 @@ async function meleeOnce(att, def) {
   markActed(att);
   const pa = pool(ra, m.am, opts.a), pd = pool(rd, m.dm, opts.d);
   const ta = await rollDice(pa);
-  const td = fleeing ? { roll: null, total: passive, dice: [], bonus: 0 }
-    : battle.singleDefense ? await defenseRoll(pd, def.id, scene) : await rollDice(pd);
+  // Un jet par affrontement (décision du 2026-11-17 : l'ancien « jet unique de la cible » est retiré).
+  const td = fleeing ? { roll: null, total: passive, dice: [], bonus: 0 } : await rollDice(pd);
   let winner = null, loser = null, degrees = 0;
   if (ta.total > td.total) { winner = att; loser = def; degrees = degreesOf(ta.total - td.total); }
   else if (td.total > ta.total && !fleeing) { winner = def; loser = att; degrees = degreesOf(td.total - ta.total); }
@@ -354,6 +360,10 @@ async function meleeOnce(att, def) {
   const notes = fleeing && winner ? [loc("AFC.Battle.Card.Pursuit")] : [];
   if (!fleeing && ((winner === att && m.heavyShock) || (winner === def && m.dHeavyShock))) { losses += 1; notes.push(loc("AFC.Battle.Trait.heavyShock.name")); }
   if (!fleeing && loser?.actor.system.has.heavyArmor && degrees >= 2) { losses -= 1; notes.push(loc("AFC.Battle.Trait.heavyArmor.name")); }
+  if (!fleeing && winner) {
+    const o = outnumberLosses(battle, winner, loser);
+    if (o.n) { losses = Math.max(0, losses + o.n); notes.push(o.note); }
+  }
   // Se replier : un état de moins, au moins un ; une troupe légère peut n'en perdre aucun. Un repli bloqué
   // (case d'arrivée restée occupée) ne protège pas.
   const loserOrder = loser === att ? m.aOrder : m.dOrder;
@@ -416,7 +426,10 @@ async function shootOnce(shooter, target) {
   const p = pool(r, m.mods, opts);
   const test = await rollDice({ ...p, difficulty: m.difficulty });
   const degrees = test.outcome?.success ? test.outcome.degrees : 0;
-  const losses = m.uncapped ? degrees : Math.min(1, degrees);
+  // Surnombre : 100 archers sur 1 000 hommes font peu de dégâts ; le plafond d'une cible en mouvement s'applique après.
+  const o = degrees ? outnumberLosses(battle, shooter, target) : { n: 0 };
+  const raw = Math.max(0, degrees + o.n);
+  const losses = m.uncapped ? raw : Math.min(1, raw);
   if (shooter.actor.system.has.reload) await setReload(shooter.id, scene);
   // Touchée, même si elle encaisse : pas de réorganisation en fin de tour.
   await markEngaged(scene, degrees ? [target.id] : [], [shooter.id], [[shooter.id, "shots", 1], [shooter.id, "hits", degrees ? 1 : 0], [shooter.id, "inflicted", losses]]);
@@ -425,7 +438,7 @@ async function shootOnce(shooter, target) {
     title: loc("AFC.Battle.Card.Shoot"),
     subtitle: fmt("AFC.Battle.Card.ShootAt", { a: publicName(shooter), d: publicName(target) }),
     total: test.total, dice: test.dice, success: degrees > 0, degrees,
-    verdict: degrees ? `${loc("AFC.Battle.Card.Hit")} : ${lossLabel(publicName(target), losses)}` : loc("AFC.Battle.Card.Miss"),
+    verdict: degrees ? `${loc("AFC.Battle.Card.Hit")} : ${lossLabel(publicName(target), losses)}${o.note ? ` (${o.note})` : ""}` : loc("AFC.Battle.Card.Miss"),
     detail: fmt("AFC.Battle.Card.Against", { n: m.difficulty, detail: m.diff.map(d => `${d.label} ${d.value}`).join(" + ") }),
     pool: poolLabel(p, test), tags: [r.name, ...modTags(m.mods)],
     ...cardApply(apply, opts.auto, volley)
@@ -948,6 +961,7 @@ async function endTurnNow() {
   battle.moved = [];
   battle.command = [];
   battle.defenseDice = [];
+  battle.stuck = [];
   battle.pendingShots = [];
   battle.actions = [];
   await saveBattle(battle);
