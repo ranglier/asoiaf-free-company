@@ -218,16 +218,23 @@ export function onRenderTokenHUD(hud, html) {
   if (!book) {
     const card = hudCard(hud, token, battle, unit);
     html.append(card);
-    // L'encadré se pose au-dessus de la plus haute colonne de boutons, sans les couvrir.
-    requestAnimationFrame(() => {
-      const box = html.getBoundingClientRect();
-      const top = Math.min(box.top, ...[...html.querySelectorAll(".col")].map(c => c.getBoundingClientRect().top));
+    // L'encadré se pose au-dessus du plus haut bouton visible, sans le couvrir. Mesuré sur le HUD affiché, plusieurs
+    // fois de suite : Foundry et les modules (Tokenizer) ajoutent leurs boutons après nous.
+    const place = () => {
+      const hudEl = document.getElementById("token-hud");
+      const live = hudEl?.querySelector(".afc-hud-card");
+      if (!live) return;
+      const box = hudEl.getBoundingClientRect();
+      const buttons = [...hudEl.querySelectorAll(".col > *")].filter(el => getComputedStyle(el).display !== "none" && el.getBoundingClientRect().height > 0);
+      const top = Math.min(box.top, ...buttons.map(el => el.getBoundingClientRect().top));
       // Le HUD suit le zoom de la carte : les distances à l'écran se ramènent à son échelle.
-      const parent = card.offsetParent ?? html;
+      const parent = live.offsetParent ?? hudEl;
       const ref = parent.getBoundingClientRect();
       const scale = parent.offsetHeight ? ref.height / parent.offsetHeight : 1;
-      card.style.bottom = `${Math.round((ref.bottom - top) / scale + 6)}px`;
-    });
+      live.style.bottom = `${Math.round((ref.bottom - top) / scale + 6)}px`;
+    };
+    requestAnimationFrame(place);
+    for (const ms of [60, 200, 500]) setTimeout(place, ms);
   }
 }
 
