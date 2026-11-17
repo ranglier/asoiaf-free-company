@@ -179,6 +179,21 @@ Hooks.on("preUpdateToken", (doc, changes) => {
   ui.notifications.warn(game.i18n.localize("AFC.Battle.Moves.Locked"));
   return false;
 });
+// Jetons de troupe : jamais de rotation (rotation automatique au déplacement, molette), image verrouillée
+// (retour du 2026-11-17). La remise à zéro ci-dessous passe par l'option afcRotation.
+Hooks.on("preCreateToken", doc => { if (doc.actor?.type === "troop") doc.updateSource({ lockRotation: true, rotation: 0 }); });
+Hooks.on("preUpdateToken", (doc, changes, options) => {
+  if (doc.actor?.type === "troop" && "rotation" in changes && !options.afcRotation) delete changes.rotation;
+});
+Hooks.once("ready", async () => {
+  if (game.users.activeGM?.id !== game.user.id) return;
+  for (const scene of game.scenes) {
+    const updates = scene.tokens.filter(t => t.actor?.type === "troop" && (!t.lockRotation || t.rotation)).map(t => ({ _id: t.id, lockRotation: true, rotation: 0 }));
+    if (updates.length) await scene.updateEmbeddedDocuments("Token", updates, { afcRotation: true });
+  }
+  const actors = game.actors.filter(a => a.type === "troop" && !a.prototypeToken.lockRotation).map(a => ({ _id: a.id, "prototypeToken.lockRotation": true }));
+  if (actors.length) await Actor.updateDocuments(actors);
+});
 // Brouillard : un jeton ennemi caché ou montré à la main par le MJ sort du brouillard.
 Hooks.on("preUpdateToken", onPreUpdateToken);
 // Une troupe déplacée peut ouvrir ou fermer un engagement ; une image changée redessine ses marques.

@@ -574,7 +574,8 @@ function drawSideFrame(token) {
 
 /**
  * Chevrons d'effectif (décision du 2026-11-17) : un chevron par centaine d'hommes de force (une unité montée complète
- * compte 100), 5 au plus, en bas du jeton. Pas sur une troupe ennemie que le joueur n'a pas identifiée.
+ * compte 100), 5 au plus, empilés sur le bord gauche du jeton (retour du 2026-11-17). Pas sur une troupe ennemie
+ * que le joueur n'a pas identifiée.
  */
 function drawStrengthChevrons(token) {
   token.children.filter(c => c.name === "afcChevrons").forEach(c => c.destroy({ children: true }));
@@ -585,12 +586,13 @@ function drawStrengthChevrons(token) {
   const g = new PIXI.Graphics();
   g.name = "afcChevrons";
   g.eventMode = "none";
-  const w = token.w * 0.15, h = w * 0.5, gap = w * 0.2;
-  const total = n * w + (n - 1) * gap;
-  const x0 = (token.w - total) / 2, y0 = token.h * 0.86;
+  const w = token.w * 0.13, h = w * 0.45, gap = h * 0.45;
+  const total = n * h + (n - 1) * gap;
+  // Colonne centrée verticalement, du bas vers le haut, comme des galons.
+  const x = token.w * 0.04, yBottom = (token.h + total) / 2 - h;
   const color = s.side === "company" ? 0x4f8fc8 : 0xd04a3f;
   for (let i = 0; i < n; i++) {
-    const x = x0 + i * (w + gap);
+    const y0 = yBottom - i * (h + gap);
     // Chevron pointe en haut, liseré clair pour rester lisible sur tous les terrains.
     g.lineStyle({ width: 7, color: 0xf3ead6, alpha: 1 }).moveTo(x, y0 + h).lineTo(x + w / 2, y0).lineTo(x + w, y0 + h);
     g.lineStyle({ width: 4, color, alpha: 1 }).moveTo(x, y0 + h).lineTo(x + w / 2, y0).lineTo(x + w, y0 + h);
